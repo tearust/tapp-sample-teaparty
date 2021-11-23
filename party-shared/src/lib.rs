@@ -35,13 +35,16 @@ pub enum TeapartyTxn{
 		amt: Balance,
 	},
 
+	TransferTea{from: Account, to:Account, amt:Balance},
+
 	PostMessage {
-		acct: Account,
+		from: Account,
+		ttl: u64,
 	},
 
 	ExtendMessage {
-		acct: Account,
-		extend_time: Option<u64>,
+		from: Account,
+		ttl: u64,
 	},
 	
 
@@ -70,58 +73,5 @@ impl Txn for TeapartyTxn{
 	}
 }
 
-// fn topup(
-// 	ctx: &mut TokenContext,
-// 	to: Account, 
-// 	amt:Balance
-// ) -> Result<TokenContext, TxnError> {
-// 	state.topup(&mut ctx, to, amt).map_err(|e| TxnError::CausedByOperateError(e))
-// }
-// fn withdraw(
-// 	ctx: &mut TokenContext,
-// 	from: Account, 
-// 	amt:Balance
-// ) -> Result<TokenContext, TxnError> {
-// 	state.withdraw(&mut ctx, from, amt).map_err(|e| TxnError::CausedByOperateError(e))
-// }
-// fn transfer(
-// 	ctx: &mut TokenContext,
-// 	from: Account, 
-// 	to: Account, 
-// 	amt: Balance,
-// ) -> Result<TokenContext, TxnError> {
-// 	state.move(&mut ctx, from, to, amt).map_err(|e| TxnError::CausedByOperateError(e))	
-// }
-
-// impl TeapartyTxn{
-// 	fn execute(
-// 		&self, 
-// 		state: &TokenState, 
-// 		tsid: Tsid, 
-// 		base: Tsid,
-// 	)->Result<TokenContext, TxnError>{
-
-// 		let mut ctx = TokenContext::new(tsid, base, TOKEN_ID_TEA);
-// 		match self {
-// 			TeapartyTxn::Topup{acct, amt} => {
-// 				topup(&mut ctx, *acct, *amt)
-// 			},
-// 			TeapartyTxn::Withdraw{acct, amt} => {
-// 				withdraw(&mut ctx, *acct, amt)
-// 			},
-// 			TeapartyTxn::PostMessage{acct} => {
-// 				let amt = 1 as Balance;
-// 				move()
-// 			}
-
-// 			SampleTxn::Topup{acct, amt}=>Self::topup(state, tsid, base, *acct, *amt),
-// 			SampleTxn::TransferTea{from, to, amt}=>Self::transfer_tea(state, tsid, base, *from, *to, *amt),
-// 			SampleTxn::TestComboTopupTransferWithdraw{topup, to, amt}=>
-// 				Self::test_combo_topup_transfer_withdraw(state, tsid, base, *topup, *to, *amt),
-// 			_=> Err(TxnError::NewTxnTypeNotHandled)
-// 		}
-// 	}
-
-// }
 
 
