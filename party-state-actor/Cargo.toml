@@ -1,0 +1,38 @@
+[package]
+name = "party-state-actor"
+version = "0.0.1"
+authors = ["kevingzhang <kevin.zhang.canada@gmail.com>"]
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+log = "0.4.8"
+anyhow = "1.0.38"
+prost = "0.6.1"
+base64="0.12.1"
+hex = "0.4.0"
+sha2 = "0.9.1"
+cid = "0.5.1"
+serde = { version = "1.0", features = ["derive"] }
+bincode = "1.2.1"
+vmh-codec = { path = "../../mini-runtime/vmh-codec" }
+tea-codec = {path="../../tea-codec"}
+tea-actor-utility = { path="../../tea-actor-utility" }
+wascc-actor = { git = "https://github.com/tearust/wascc-actor", branch = "nitro" }
+interface = {path = "../../statemachine/interface"}
+token-state = { path = "../../statemachine/token_state"}
+party-shared = { path = "../party-shared" }
+
+
+[dev-dependencies]
+rand = "0.8.4"
+
+[build-dependencies]
+prost-build = "0.6"
+
+[features]
+default = []
+nitro = ["tea-actor-utility/nitro"]
+tpm = ["tea-actor-utility/tpm"]

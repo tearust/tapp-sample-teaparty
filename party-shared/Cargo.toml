@@ -1,0 +1,18 @@
+[package]
+name = "party-shared"
+version = "0.1.0"
+authors = ["kevingzhang <kevin.zhang.canada@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+chrono = "0.4.19"
+sha2 = "0.9.8"
+thiserror="1.0.30"
+hex = "0.4.3"
+conveyor = {path = "../../statemachine/conveyor"}
+token-state = {path = "../../statemachine/token_state"}
+interface = {path = "../../statemachine/interface"}
+serde = { version = "1.0", features = ["derive"] }
+bincode = "1.2.1"
