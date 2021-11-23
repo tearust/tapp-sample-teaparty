@@ -66,35 +66,50 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 				amt,
 			})?
 		},
+		TeapartyTxn::PostMessage{from, ttl} => {
+			info!("PostMessage from ttl: {:?},{:?}", &from, &ttl);
+			
+			// ttl > 2000, 2 TEA, else, 1 TEA
+			let amt: Vec<u8> = {
+				let cost: Balance = match ttl > 2000 {
+					true => 2 as Balance,
+					false => 1 as Balance,
+				};
+
+				bincode::serialize(&cost)?
+			};
+
+			// This account could be a npc to dividend to all of tapp stakers.
+			// TODO if set acct to 0_u32, will return error 
+			let to_acct = 999_u32;
+			
+			let ctx = TokenContext::new(tsid, base, TOKEN_ID_TEA);
+			let ctx_bytes = bincode::serialize(&ctx)?;
+
+			let mov = MoveRequest {
+				ctx: ctx_bytes,
+				from,
+				to: to_acct,
+				amt,
+			};
+			actor_statemachine::mov(mov)?
+		},
+
+		TeapartyTxn::TransferTea{from, to, amt} => {
+			info!("TransferTea from to amt: {:?},{:?},{:?}", &from, &to, &amt);
+			let ctx = TokenContext::new(tsid, base, TOKEN_ID_TEA);
+			let ctx_bytes = bincode::serialize(&ctx)?;
+			let amt: Vec<u8> = bincode::serialize(&amt)?;
+
+			let mov = MoveRequest {
+				ctx: ctx_bytes,
+				from,
+				to,
+				amt,
+			};
+			actor_statemachine::mov(mov)?
+		},
 		
-		// SampleTxn::PostMessage{from, ttl} => {
-		// 	info!("PostMessage from ttl: {:?},{:?}", &from, &ttl);
-		// 	let cost_please_add_app_logic_here = (ttl/1024u32) as Balance;
-		// 	let to_please_add_app_logic_here_should_be_bonding_curve = 0u32;
-		// 	let ctx = TokenContext::new(tsid, base, TOKEN_ID_TEA);
-		// 	let ctx_bytes = bincode::serialize(&ctx)?;
-		// 	let amt: Vec<u8> = bincode::serialize(&cost_please_add_app_logic_here)?;
-		// 	actor_statemachine::mov(MoveRequest{
-		// 		ctx: ctx_bytes,
-		// 		from,
-		// 		to: to_please_add_app_logic_here_should_be_bonding_curve,
-		// 		amt,
-		// 	})?
-		// },
-		// SampleTxn::PrivateMessage{from, to, ttl} => {
-		// 	info!("PrivateMessage from ttl: {:?},{:?},{:?}", &from, &to, &ttl);
-		// 	let cost_please_add_app_logic_here = (ttl/1024u32) as Balance;
-		// 	let to_please_add_app_logic_here_should_be_bonding_curve = 0u32;
-		// 	let ctx = TokenContext::new(tsid, base, TOKEN_ID_TEA);
-		// 	let ctx_bytes = bincode::serialize(&ctx)?;
-		// 	let amt: Vec<u8> = bincode::serialize(&cost_please_add_app_logic_here)?;
-		// 	actor_statemachine::mov(MoveRequest{
-		// 		ctx: ctx_bytes,
-		// 		from,
-		// 		to: to_please_add_app_logic_here_should_be_bonding_curve,
-		// 		amt,
-		// 	})?
-		// },
 		_ =>Err(anyhow::anyhow!("Unhandled txn OP type"))?,
 	};
 	let res_commit_ctx_bytes = actor_statemachine::commit(CommitRequest{
