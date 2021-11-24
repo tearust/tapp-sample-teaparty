@@ -1,0 +1,31 @@
+[package]
+name = "party-actor"
+version = "0.0.1"
+authors = ["kevingzhang <kevin.zhang.canada@gmail.com>"]
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+log = "0.4"
+serde = {version = "1.0.106", features = ["derive"]}
+serde_derive = "1.0.106"
+prost = "0.6.1"
+serde_json = "1.0.55"
+base64 = "0.12.2"
+base58 = "0.1.0"
+hex = "0.4.2"
+anyhow = "1.0.34"
+num-traits = "0.2"
+num-bigint = {version = "0.2", features = ["serde"]}
+
+wascc-actor = { git = "https://github.com/tearust/wascc-actor", branch = "nitro" }
+vmh-codec = { path = "../../mini-runtime/vmh-codec" }
+tea-codec = {path="../../tea-codec"}
+tea-actor-utility = { path="../../tea-actor-utility" }
+
+[features]
+default = []
+nitro = ["tea-actor-utility/nitro"]
+tpm = ["tea-actor-utility/tpm"]
