@@ -32,7 +32,10 @@
 
   
   <el-menu-item index="/log">{{'Log'}}</el-menu-item>
-  <el-menu-item index="/home">{{bbs.channel || '...'}}</el-menu-item>
+  <el-menu-item index="/profile">{{'My assets'}}</el-menu-item>
+
+
+  <el-menu-item style="margin-right: 30px;" index="/home">{{bbs.channel || '...'}}</el-menu-item>
   <el-menu-item index="/channel">{{'Taste for free'}}</el-menu-item>
 
   

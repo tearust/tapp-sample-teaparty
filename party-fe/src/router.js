@@ -5,6 +5,7 @@ import Router from 'vue-router'
 import Home from './views/Home';
 import PostMsg from './views/PostMsg';
 import LogView from './views/LogView';
+import LoginAccount from './views/LoginAccount';
 
 import bbs from './views/bbs';
 
@@ -15,6 +16,11 @@ let routers = [
   {
     path: '/',
     redirect: '/home',
+  },
+  {
+    path: '/profile',
+    name: 'profile',
+    component: LoginAccount,
   },
   {
     path: '/home',

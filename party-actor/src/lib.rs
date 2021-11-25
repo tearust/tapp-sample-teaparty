@@ -1,4 +1,4 @@
-use crate::channel::{load_message_list, post_message, extend_message, delete_message};
+use crate::channel::{delete_message, extend_message, load_message_list, post_message};
 use crate::validating::{login, logout, prepare_login};
 use actor::prelude::*;
 use codec::messaging::BrokerMessage;
@@ -13,7 +13,7 @@ use tea_actor_utility::{
 };
 use types::*;
 use vmh_codec::error::DISCARD_MESSAGE_ERROR;
-use vmh_codec::message::structs_proto::{layer1, rpc, orbitdb};
+use vmh_codec::message::structs_proto::{layer1, orbitdb, rpc};
 use vmh_codec::rpc::adapter::AdapterDispatchType;
 
 #[macro_use]
@@ -25,8 +25,10 @@ mod balance;
 mod channel;
 mod types;
 mod validating;
+mod state;
 
 const BINDING_NAME: &'static str = "tea_tapp_bbs";
+const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 actor_handlers! {
 	codec::messaging::OP_DELIVER_MESSAGE => handle_message,
@@ -42,12 +44,23 @@ fn handle_message(msg: BrokerMessage) -> HandlerResult<Vec<u8>> {
 		["actor", "tapp_bbs", "echo", ..] => echo(&msg)?,
 		["adapter", section] => return handle_adapter_request(msg.body.as_slice(), section),
 		["layer1", "event"] => return handle_layer1_event(&msg.body),
+		["actor", "version"] => version(&msg)?,
 		_ => {}
 	}
 	Ok(vec![])
 }
 
 fn health(_req: codec::core::HealthRequest) -> HandlerResult<()> {
+	Ok(())
+}
+
+fn version(msg: &BrokerMessage) -> HandlerResult<()> {
+	reply_intercom(
+		&msg.reply_to,
+		tea_codec::serialize(tea_codec::ActorVersionMessage {
+			version: VERSION.to_string(),
+		})?,
+	)?;
 	Ok(())
 }
 
@@ -72,8 +85,8 @@ fn handle_layer1_event(data: &[u8]) -> HandlerResult<Vec<u8>> {
 
 	let res = match layer_inbound.msg {
 		Some(layer1::layer1_inbound::Msg::TappTopupEvent(ev)) => balance::on_top_up(ev),
-		Some(layer1::layer1_inbound::Msg::TappHostedEvent(ev)) => balance::on_tapp_hosted(ev),
-		Some(layer1::layer1_inbound::Msg::TappUnhostedEvent(ev)) => balance::on_tapp_unhosted(ev),
+		// Some(layer1::layer1_inbound::Msg::TappHostedEvent(ev)) => balance::on_tapp_hosted(ev),
+		// Some(layer1::layer1_inbound::Msg::TappUnhostedEvent(ev)) => balance::on_tapp_unhosted(ev),
 		_ => {
 			debug!("ignored events: {:?}", layer_inbound.msg);
 			Ok(())
@@ -150,8 +163,10 @@ fn handle_adapter_http_request(req: rpc::AdapterHttpRequest) -> anyhow::Result<V
 			delete_message(&uuid, req)
 		}
 		"query_balance" => {
-			Ok(b"100".to_vec())
-		},
+			let req: QueryBalanceRequest = serde_json::from_slice(&req.payload)?;
+
+			state::query_tea_balance("1")
+		}
 		_ => {
 			debug!("unknown action: {}", req.action);
 			Err(anyhow::anyhow!("{}", DISCARD_MESSAGE_ERROR))

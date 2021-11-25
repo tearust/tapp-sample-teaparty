@@ -3,6 +3,7 @@ import {_, axios, moment} from 'tearust_utils';
 import utils from '../tea/utils';
 import tapp from '../tea/tapp';
 import store from '../store';
+import { hexToString, numberToHex } from 'tearust_layer1';
 
 const default_channel = utils.urlParam('c') || 'test';
 console.log('channel => '+default_channel);
@@ -11,6 +12,8 @@ let layer2_url = utils.get_env('layer2_url');
 if(!_.includes(['127.0.0.1', 'localhost'], location.hostname)){
   layer2_url = `http://${location.hostname}:8000`;
 }
+
+const NPC = '5D2od84fg3GScGR139Li56raDWNQQhzgYbV7QsEJKS4KfTGv';
 
 console.log('layer2 url => '+layer2_url);
 
@@ -156,6 +159,37 @@ const F = {
 
         close();
         self.$root.success();
+      }
+    });
+  },
+
+  async topupFromLayer1(self, succ_cb){
+    const layer1_instance = self.wf.getLayer1Instance();
+    const api = layer1_instance.getApi();
+
+    const tappId = F.getTappId();
+
+    self.$store.commit('modal/open', {
+      key: 'common_form',
+      param: {
+        title: 'Topup',
+        text: `You will topup to tapp ${tappId} 100 TEA.`,
+        props: {
+          
+        },
+      },
+      cb: async (form, close)=>{
+        self.$root.loading(true);
+        const total = utils.layer1.amountToBalance(100);
+        const amt = numberToHex(total);
+
+        const tx = api.tx.bondingCurve.topup(NPC, tappId, amt);
+        await layer1_instance.sendTx(self.layer1_account.address, tx);
+
+        self.$root.loading(false);
+        close();
+        self.$root.success();
+        
       }
     });
   }

@@ -44,6 +44,13 @@ pub struct DeleteMessageRequest {
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct QueryBalanceRequest {
+	pub tapp_id: u64,
+	pub address: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct MessageItem {
 	pub tapp_id: u64,
 	pub content: String,
