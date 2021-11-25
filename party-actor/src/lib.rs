@@ -149,6 +149,9 @@ fn handle_adapter_http_request(req: rpc::AdapterHttpRequest) -> anyhow::Result<V
 			let req: DeleteMessageRequest = serde_json::from_slice(&req.payload)?;
 			delete_message(&uuid, req)
 		}
+		"query_balance" => {
+			Ok(b"100".to_vec())
+		},
 		_ => {
 			debug!("unknown action: {}", req.action);
 			Err(anyhow::anyhow!("{}", DISCARD_MESSAGE_ERROR))

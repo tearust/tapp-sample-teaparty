@@ -1,0 +1,741 @@
+{
+  "nested": {
+    "actor_delegate": {
+      "nested": {
+        "CidHash": {
+          "fields": {
+            "cid": {
+              "rule": "required",
+              "type": "string",
+              "id": 1
+            },
+            "hash": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 2
+            }
+          }
+        },
+        "TaskRegisterRequest": {
+          "fields": {
+            "cidHash": {
+              "rule": "repeated",
+              "type": "CidHash",
+              "id": 1
+            },
+            "blockChainAccount": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 3
+            },
+            "wasm": {
+              "rule": "required",
+              "type": "CidHash",
+              "id": 4
+            },
+            "wasmManifest": {
+              "rule": "required",
+              "type": "CidHash",
+              "id": 5
+            },
+            "wasmChecker": {
+              "rule": "required",
+              "type": "CidHash",
+              "id": 6
+            },
+            "payment": {
+              "rule": "required",
+              "type": "uint32",
+              "id": 7
+            }
+          }
+        },
+        "TaskRegisterResponse": {
+          "fields": {
+            "RefNum": {
+              "type": "string",
+              "id": 1
+            },
+            "RsaPubKey": {
+              "type": "string",
+              "id": 3
+            },
+            "Error": {
+              "type": "string",
+              "id": 2
+            }
+          }
+        },
+        "DataRegisterRequest": {
+          "fields": {
+            "depositTxId": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 1
+            },
+            "blockChainAccount": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 3
+            }
+          }
+        },
+        "DataRegisterResponse": {
+          "oneofs": {
+            "res": {
+              "oneof": [
+                "Error",
+                "RsaPubKey"
+              ]
+            }
+          },
+          "fields": {
+            "Error": {
+              "type": "string",
+              "id": 1
+            },
+            "RsaPubKey": {
+              "type": "string",
+              "id": 2
+            }
+          }
+        },
+        "ServiceRegisterRequest": {
+          "fields": {
+            "depositTxId": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 1
+            },
+            "blockChainAccount": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 3
+            }
+          }
+        },
+        "ServiceRegisterResponse": {
+          "oneofs": {
+            "res": {
+              "oneof": [
+                "Error",
+                "RsaPubKey"
+              ]
+            }
+          },
+          "fields": {
+            "Error": {
+              "type": "string",
+              "id": 1
+            },
+            "RsaPubKey": {
+              "type": "string",
+              "id": 2
+            }
+          }
+        },
+        "DataUploadCompletedNotify": {
+          "oneofs": {
+            "Cid": {
+              "oneof": [
+                "CidData",
+                "CidDescription",
+                "CidCapchecker"
+              ]
+            }
+          },
+          "fields": {
+            "CidData": {
+              "type": "string",
+              "id": 1
+            },
+            "CidDescription": {
+              "type": "string",
+              "id": 2
+            },
+            "CidCapchecker": {
+              "type": "string",
+              "id": 3
+            },
+            "RsaPubKey": {
+              "rule": "required",
+              "type": "string",
+              "id": 10
+            },
+            "KeyUrlEncoded": {
+              "type": "string",
+              "id": 11
+            }
+          }
+        },
+        "AddNewTask": {
+          "fields": {
+            "teaId": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 1
+            },
+            "refNum": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 2
+            },
+            "rsaPub": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 3
+            },
+            "capCid": {
+              "rule": "required",
+              "type": "string",
+              "id": 4
+            },
+            "modelCid": {
+              "rule": "required",
+              "type": "string",
+              "id": 5
+            },
+            "dataCid": {
+              "rule": "required",
+              "type": "string",
+              "id": 6
+            },
+            "payment": {
+              "rule": "required",
+              "type": "uint32",
+              "id": 7
+            }
+          }
+        },
+        "TaskBody": {
+          "fields": {
+            "manifestCid": {
+              "rule": "required",
+              "type": "string",
+              "id": 4
+            },
+            "capCid": {
+              "rule": "required",
+              "type": "string",
+              "id": 3
+            },
+            "wasmCid": {
+              "rule": "required",
+              "type": "string",
+              "id": 5
+            },
+            "dataCid": {
+              "rule": "required",
+              "type": "string",
+              "id": 6
+            },
+            "ekey1": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 7
+            }
+          }
+        },
+        "Task": {
+          "fields": {
+            "refNum": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 1
+            },
+            "delegateId": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 2
+            },
+            "modelCid": {
+              "rule": "required",
+              "type": "string",
+              "id": 3
+            },
+            "bodyCid": {
+              "rule": "required",
+              "type": "string",
+              "id": 4
+            },
+            "payment": {
+              "rule": "required",
+              "type": "uint32",
+              "id": 5
+            }
+          }
+        },
+        "Data": {
+          "fields": {
+            "delegatorEphemeralId": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 1
+            },
+            "deploymentId": {
+              "rule": "required",
+              "type": "string",
+              "id": 2
+            },
+            "dataCid": {
+              "rule": "required",
+              "type": "string",
+              "id": 3
+            },
+            "descriptionCid": {
+              "rule": "required",
+              "type": "string",
+              "id": 4
+            },
+            "capCid": {
+              "type": "string",
+              "id": 5
+            }
+          }
+        },
+        "Service": {
+          "fields": {
+            "delegateId": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 2
+            },
+            "modelCid": {
+              "rule": "required",
+              "type": "string",
+              "id": 3
+            },
+            "bodyCid": {
+              "rule": "required",
+              "type": "string",
+              "id": 4
+            },
+            "payment": {
+              "rule": "required",
+              "type": "uint32",
+              "id": 5
+            }
+          }
+        },
+        "AddNewTaskRequest": {
+          "fields": {
+            "task": {
+              "rule": "required",
+              "type": "Task",
+              "id": 1
+            }
+          }
+        },
+        "AddNewTaskResponse": {
+          "fields": {
+            "accountId": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 1
+            },
+            "task": {
+              "rule": "required",
+              "type": "Task",
+              "id": 2
+            }
+          }
+        },
+        "AddNewDataRequest": {
+          "fields": {
+            "data": {
+              "rule": "required",
+              "type": "Data",
+              "id": 1
+            }
+          }
+        },
+        "AddNewDataResponse": {
+          "fields": {
+            "accountId": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 1
+            },
+            "data": {
+              "rule": "required",
+              "type": "Data",
+              "id": 2
+            }
+          }
+        },
+        "CompleteTaskRequest": {
+          "fields": {
+            "refNum": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 1
+            },
+            "teaId": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 2
+            },
+            "delegateSig": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 3
+            },
+            "result": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 4
+            },
+            "resultSig": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 5
+            }
+          }
+        },
+        "CompleteTaskResponse": {
+          "fields": {
+            "refNum": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 1
+            },
+            "accountId": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 2
+            },
+            "result": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 3
+            }
+          }
+        },
+        "DepositInfoRequest": {
+          "fields": {
+            "accountId": {
+              "rule": "required",
+              "type": "string",
+              "id": 1
+            },
+            "delegatorTeaId": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 2
+            }
+          }
+        },
+        "DepositInfoResponse": {
+          "fields": {
+            "accountId": {
+              "rule": "required",
+              "type": "string",
+              "id": 1
+            },
+            "delegatorTeaId": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 2
+            },
+            "delegatorEphemeralId": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 3
+            },
+            "delegatorSignature": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 4
+            },
+            "amount": {
+              "rule": "required",
+              "type": "uint32",
+              "id": 5
+            },
+            "expiredTime": {
+              "rule": "required",
+              "type": "uint64",
+              "id": 6
+            }
+          }
+        },
+        "Bill": {
+          "fields": {
+            "accountId": {
+              "rule": "required",
+              "type": "string",
+              "id": 1
+            },
+            "payment": {
+              "rule": "required",
+              "type": "uint32",
+              "id": 2
+            }
+          }
+        },
+        "SettleAccountsRequest": {
+          "fields": {
+            "employer": {
+              "rule": "required",
+              "type": "string",
+              "id": 1
+            },
+            "delegatorTeaId": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 2
+            },
+            "delegatorEphemeralId": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 3
+            },
+            "errandUuid": {
+              "rule": "required",
+              "type": "string",
+              "id": 4
+            },
+            "errandJsonCid": {
+              "rule": "required",
+              "type": "string",
+              "id": 5
+            },
+            "bills": {
+              "rule": "repeated",
+              "type": "Bill",
+              "id": 6
+            },
+            "employerSignature": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 7
+            },
+            "executorEphemeralId": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 8
+            },
+            "expiredTime": {
+              "rule": "required",
+              "type": "uint64",
+              "id": 9
+            },
+            "delegateSignature": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 10
+            },
+            "resultCid": {
+              "rule": "required",
+              "type": "string",
+              "id": 11
+            },
+            "executorSingature": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 12
+            }
+          }
+        },
+        "SettleAccountsResponse": {
+          "fields": {
+            "accountId": {
+              "rule": "required",
+              "type": "string",
+              "id": 1
+            },
+            "delegatorTeaId": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 2
+            },
+            "employer": {
+              "rule": "required",
+              "type": "string",
+              "id": 3
+            },
+            "delegatorEphemeralId": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 4
+            },
+            "errandUuid": {
+              "rule": "required",
+              "type": "string",
+              "id": 5
+            },
+            "errandJsonCid": {
+              "rule": "required",
+              "type": "string",
+              "id": 6
+            },
+            "bills": {
+              "rule": "repeated",
+              "type": "Bill",
+              "id": 7
+            },
+            "executorEphemeralId": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 8
+            },
+            "expiredTime": {
+              "rule": "required",
+              "type": "uint64",
+              "id": 9
+            },
+            "resultCid": {
+              "rule": "required",
+              "type": "string",
+              "id": 10
+            }
+          }
+        },
+        "UpdateRuntimeActivity": {
+          "fields": {
+            "teaId": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 1
+            },
+            "cid": {
+              "rule": "required",
+              "type": "string",
+              "id": 2
+            },
+            "ephemeralId": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 3
+            },
+            "signature": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 4
+            }
+          }
+        },
+        "RuntimeActivityRequest": {
+          "fields": {
+            "teaId": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 1
+            }
+          }
+        },
+        "RuntimeActivityResponse": {
+          "fields": {
+            "teaId": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 1
+            },
+            "cid": {
+              "rule": "required",
+              "type": "string",
+              "id": 2
+            },
+            "updateHeight": {
+              "rule": "required",
+              "type": "uint32",
+              "id": 3
+            }
+          }
+        },
+        "AddNewNodeRequest": {
+          "fields": {
+            "teaId": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 1
+            }
+          }
+        },
+        "AddNewNodeResponse": {
+          "fields": {
+            "accountId": {
+              "rule": "required",
+              "type": "string",
+              "id": 1
+            },
+            "teaId": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 2
+            }
+          }
+        },
+        "NotifyDelegateTaskComplete": {
+          "fields": {
+            "refNum": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 1
+            }
+          }
+        },
+        "BeMyDelegateRequest": {
+          "fields": {
+            "layer1Account": {
+              "rule": "required",
+              "type": "string",
+              "id": 1
+            },
+            "nonce": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 2
+            }
+          }
+        },
+        "QueryBalanceRequest": {
+          "fields": {
+            "accountId": {
+              "rule": "required",
+              "type": "string",
+              "id": 1
+            },
+            "delegatorTeaId": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 2
+            }
+          }
+        },
+        "QueryErrandExecutionResult": {
+          "fields": {
+            "errandId": {
+              "rule": "required",
+              "type": "bytes",
+              "id": 1
+            }
+          }
+        },
+        "RepinDeploymentRequest": {
+          "fields": {
+            "deploymentId": {
+              "rule": "required",
+              "type": "string",
+              "id": 1
+            },
+            "dataCid": {
+              "rule": "required",
+              "type": "string",
+              "id": 2
+            },
+            "descriptionCid": {
+              "rule": "required",
+              "type": "string",
+              "id": 3
+            },
+            "capCid": {
+              "type": "string",
+              "id": 4
+            }
+          }
+        }
+      }
+    }
+  }
+}

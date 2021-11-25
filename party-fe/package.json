@@ -1,0 +1,62 @@
+{
+  "name": "party-fe",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "npm run local",
+    "local": "vue-cli-service serve --mode test",
+    "build": "vue-cli-service build --mode prod",
+    "testnet": "vue-cli-service build --mode stage",
+    "ipfs:local": "ipfs add -r dist --api /ip4/127.0.0.1/tcp/5001/p2p/12D3KooWFUxYThyJVZD8MkK1NKmn4ANgb4D7HUefM5oACWXqx9YH"
+  },
+  "dependencies": {
+    "axios": "^0.21.1",
+    "bignumber.js": "^9.0.1",
+    "core-js": "3.15.1",
+    "element-ui": "2.13.2",
+    "jquery": "3.6.0",
+    "js-yaml": "^3.14.0",
+    "lodash": "4.17.21",
+    "pubsub-js": "^1.9.0",
+    "tearust_layer1": "0.1.4",
+    "tearust_utils": "0.1.4",
+    "vue": "2.6.14",
+    "vue-router": "3.3.4",
+    "vuex": "^3.6.0"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "4.4.4",
+    "@vue/cli-plugin-eslint": "4.4.4",
+    "@vue/cli-service": "4.4.4",
+    "babel-eslint": "^10.1.0",
+    "eslint": "7.2.0",
+    "eslint-plugin-vue": "^6.2.2",
+    "sass": "^1.35.1",
+    "sass-loader": "8.0.2",
+    "sass-resources-loader": "2.2.3",
+    "vue-template-compiler": "2.6.14"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/essential",
+      "eslint:recommended"
+    ],
+    "parserOptions": {
+      "parser": "babel-eslint"
+    },
+    "rules": {
+      "no-unused-vars": 1,
+      "no-empty": 1,
+      "no-async-promise-executor": 1
+    }
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
+}

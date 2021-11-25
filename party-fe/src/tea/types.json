@@ -1,0 +1,219 @@
+{
+  "Address": "MultiAddress",
+  "LookupSource": "MultiAddress",
+  "Url": "Bytes",
+  "TeaPubKey": "[u8; 32]",
+  "PeerId": "Bytes",
+  "Cid": "Bytes",
+  "Signature": "Bytes",
+  "NodeStatus": {
+    "_enum": [
+      "Pending",
+      "Active",
+      "Inactive",
+      "Invalid"
+    ]
+  },
+  "Node": {
+    "teaId": "TeaPubKey",
+    "ephemeralId": "TeaPubKey",
+    "profileCid": "Bytes",
+    "urls": "Vec<Url>",
+    "peerId": "Bytes",
+    "createTime": "BlockNumber",
+    "updateTime": "BlockNumber",
+    "raNodes": "Vec<(TeaPubKey, bool)>",
+    "status": "NodeStatus"
+  },
+  "RaResult": {
+    "teaId": "TeaPubKey",
+    "teaTargetId": "TeaPubKey",
+    "isPass": "bool",
+    "targetStatus": "NodeStatus"
+  },
+  "RuntimeActivity": {
+    "teaId": "TeaPubKey",
+    "cid": "Option<Cid>",
+    "ephemeralId": "TeaPubKey",
+    "updateHeight": "BlockNumber"
+  },
+  "CmlType": {
+    "_enum": [
+      "A",
+      "B",
+      "C"
+    ]
+  },
+  "DefrostScheduleType": {
+    "_enum": [
+      "Investor",
+      "Team"
+    ]
+  },
+  "Coupon": {
+    "amount": "u32",
+    "cml_type": "CmlType"
+  },
+  "CmlId": "u64",
+  "CmlStatus": {
+    "_enum": {
+      "FrozenSeed": null,
+      "FreshSeed": "CmlStatusFreshSeed",
+      "Tree": null,
+      "Staking": "CmlStatusStaking"
+    }
+  },
+
+  "CmlStatusFreshSeed": {
+    "fresh_seed": "BlockNumber"
+  },
+  "CmlStatusStaking": {
+    "cml_id": "CmlId",
+    "staking_index": "StakingIndex"
+  },
+
+  "MinerStatus": {
+    "_enum": [
+      "Active",
+      "Offline",
+      "ScheduleDown"
+    ]
+  },
+  "StakingCategory": {
+    "_enum": [
+      "Tea",
+      "Cml"
+    ]
+  },
+  "StakingItem": {
+    "owner": "AccountId",
+    "category": "StakingCategory",
+    "amount": "Option<Balance>",
+    "cml": "Option<CmlId>"
+  },
+  "StakingIndex": "u32",
+  "MachineId": "[u8; 32]",
+  "MinerItem": {
+    "cml_id": "CmlId",
+    "id": "MachineId",
+    "ip": "Bytes",
+    "status": "MinerStatus",
+    "orbitdb_id": "Option<Bytes>",
+    "suspend_height": "Option<BlockNumber>",
+    "schedule_down_height": "Option<BlockNumber>"
+  },
+  "performance": "u32",
+  "ServiceTaskPoint": "u32",
+  "Seed": {
+    "id": "CmlId",
+    "cml_type": "CmlType",
+    "defrost_schedule": "Option<DefrostScheduleType>",
+    "generate_defrost_time": "Option<BlockNumber>",
+    "lifespan": "BlockNumber",
+    "performance": "performance"
+  },
+  "CML": {
+    "intrinsic": "Seed",
+    "status": "CmlStatus",
+    "owner": "Option<AccountId>",
+    "planted_at": "Option<BlockNumber>",
+    "staking_slot": "Vec<StakingItem>",
+    "machine_id": "Option<MachineId>",
+    "fresh_duration": "PhantomData<FreshDuration>"
+  },
+
+  "AuctionStatus": {
+    "_enum": ["Normal", "Suspended"]
+  },
+  "AuctionId": "u64",
+  "AuctionItem": {
+    "id": "AuctionId",
+    "cml_id": "CmlId",
+    "cml_owner": "AccountId",
+    "starting_price": "Balance",
+    "buy_now_price": "Option<Balance>",
+    "start_at": "BlockNumber",
+    "status": "AuctionStatus",
+    "bid_user": "Option<AccountId>",
+    "auto_renew": "bool"
+  },
+  "BidItem": {
+    "auction_id": "AuctionId",
+    "user": "AccountId",
+    "price": "Balance",
+    "deposit": "Option<Balance>",
+    "created_at": "BlockNumber",
+    "updated_at": "BlockNumber"
+  },
+  "chainbridge::ChainId": "u8",
+  "ChainId": "u8",
+  "ResourceId": "[u8; 32]",
+  "DepositNonce": "u64",
+  "ProposalVotes": {
+    "votes_for": "Vec<AccountId>",
+    "votes_against": "Vec<AccountId>",
+    "status": "enum"
+  },
+  "TokenId": "U256",
+
+  "AssetId": "Bytes",
+  "AssetType": {
+    "_enum": ["CML"]
+  },
+  "AssetUniqueId": {
+    "asset_type": "AssetType",
+    "inner_id": "AssetId"
+  },
+  "Loan": {
+    "start_at": "BlockNumber",
+    "owner": "AccountId"
+  },
+  "StakingSnapshotItem": {
+    "owner": "AccountId",
+    "weight": "u32",
+    "staking_at": "u32"
+  },
+
+  "TAppId": "u64",
+  "Performance": "u32",
+  "TAppType": {
+    "_enum": ["YouTube", "Reddit", "Twitter", "Bbs"]
+  },
+  "BillingMode": {
+    "_enum": {
+      "FixedHostingFee": "BillingModeFixedHostingFee",
+      "FixedHostingToken": "BillingModeFixedHostingToken"
+    }
+  },
+  "BillingModeFixedHostingFee": {
+    "FixedHostingFee": "Balance"
+  },
+  "BillingModeFixedHostingToken": {
+    "FixedHostingToken": "Balance"
+  },
+  "TAppStatus": {
+    "_enum": {
+      "Active": "TAppStatusActive", 
+      "Pending": null
+    }
+  },
+  "TAppStatusActive": {
+    "Active": "BlockNumber"
+  },
+
+  "TAppItem": {
+    "id": "TAppId",
+    "name": "Bytes",
+    "ticker": "Bytes",
+    "owner": "AccountId",
+    "detail": "Bytes",
+    "link": "Bytes",
+    "max_allowed_hosts": "u32",
+    "current_cost": "Balance",
+    "status": "TAppStatus",
+    "tapp_type": "TAppType",
+    "billing_mode": "BillingMode",
+    "buy_curve_theta": "u32",
+    "sell_curve_theta": "u32"
+  }
+}

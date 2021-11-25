@@ -1,0 +1,11 @@
+.tea-toast-success{
+  border-color: $mainColor;
+
+  .el-icon-success{
+    color: $mainColor;
+  }
+
+  .el-message__content{
+    color: $mainColor;
+  }
+}
