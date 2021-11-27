@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate log;
 use serde::{Serialize, Deserialize};
+use std::convert::TryInto;
 use bincode::Result as SerdeResult;
 use wascc_actor::prelude::codec::messaging::BrokerMessage;
 use wascc_actor::prelude::*;
@@ -9,7 +10,7 @@ use party_shared::{{TeapartyTxn}};
 use prost::Message;
 use tea_actor_utility::actor_crypto::public_key_from_ss58;
 use tea_actor_utility::actor_statemachine;
-use interface::{TOKEN_ID_TEA, Balance, Tsid,};
+use interface::{TOKEN_ID_TEA, Balance, Tsid, Account};
 use token_state::token_context::TokenContext;
 use vmh_codec::message::structs_proto::tokenstate::*;
 actor_handlers! {
@@ -59,11 +60,11 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 		TeapartyTxn::Topup{acct, amt} =>{
 			let ctx = TokenContext::new(tsid, base, TOKEN_ID_TEA);
 			let ctx_bytes = bincode::serialize(&ctx)?;
-			let to: u32 = acct;
+			let to: Account = acct;
 			let amt: Vec<u8> = bincode::serialize(&amt)?;
 			actor_statemachine::topup(TopupRequest{
 				ctx: ctx_bytes,
-				to,
+				to: to.to_vec(),
 				amt,
 			})?
 		},
@@ -82,15 +83,19 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 
 			// This account could be a npc to dividend to all of tapp stakers.
 			// TODO if set acct to 0_u32, will return error 
-			let to_acct = 999_u32;
+			let to_acct: Account = {
+				let tmp = "5Eo1WB2ieinHgcneq6yUgeJHromqWTzfjKnnhbn43Guq4gVP";
+				let tmp = public_key_from_ss58(&tmp)?;
+				tmp.try_into().unwrap()
+			};
 			
 			let ctx = TokenContext::new(tsid, base, TOKEN_ID_TEA);
 			let ctx_bytes = bincode::serialize(&ctx)?;
 
 			let mov = MoveRequest {
 				ctx: ctx_bytes,
-				from,
-				to: to_acct,
+				from: from.to_vec(),
+				to: to_acct.to_vec(),
 				amt,
 			};
 			actor_statemachine::mov(mov)?
@@ -104,8 +109,8 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 
 			let mov = MoveRequest {
 				ctx: ctx_bytes,
-				from,
-				to,
+				from: from.to_vec(),
+				to: to.to_vec(),
 				amt,
 			};
 			actor_statemachine::mov(mov)?
