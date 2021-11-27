@@ -83,12 +83,7 @@ pub(crate) fn on_top_up(event: layer1::TappTopupEvent) -> anyhow::Result<()> {
 	// TODO, how to fix this unwrap
 	let amt = amt.to_u128().unwrap();
 
-	// TODO, how to convert layer1 account str to u32(Account).
-	// let acct = public_key_from_ss58(&event.from_account)?;
-	// let acct = u32::from_ne_bytes(acct);
-
-	let acct = 1;
-
+	let acct = state::parse_to_acct(&event.from_account)?;
 
 	info!("1111 => {:?}", tapp_id);
 	info!("2222 => {:?}", amt);

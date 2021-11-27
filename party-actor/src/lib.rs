@@ -165,7 +165,7 @@ fn handle_adapter_http_request(req: rpc::AdapterHttpRequest) -> anyhow::Result<V
 		"query_balance" => {
 			let req: QueryBalanceRequest = serde_json::from_slice(&req.payload)?;
 
-			state::query_tea_balance("1")
+			state::query_tea_balance(&req.address)
 		}
 		_ => {
 			debug!("unknown action: {}", req.action);

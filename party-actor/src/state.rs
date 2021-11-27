@@ -1,7 +1,8 @@
 
 use bincode;
+use std::convert::TryInto;
 use tea_actor_utility::actor_env::{get_system_time, };
-use tea_actor_utility::actor_crypto::{ sha256, };
+use tea_actor_utility::actor_crypto::{ sha256, public_key_from_ss58};
 
 use tea_actor_utility::actor_enclave::generate_uuid;
 use base64;
@@ -15,7 +16,6 @@ use interface::{
   Hash, TxnSerial, Followup, Ts,
   Account, Balance,
 };
-use std::convert::TryInto;
 use tea_actor_utility::actor_rpc::layer1::execute_http_request_ex;
 
 
@@ -142,12 +142,11 @@ pub(crate) fn topup(
 
 
 pub(crate) fn query_tea_balance(acct_str: &str) -> anyhow::Result<Vec<u8>> {
-	let acct: Account = acct_str.parse()?;
 
 	info!("begin to query tea balance");
 	let query = json!({
 		"msg_type": "tea_balance".to_string(),
-		"acct": acct, 
+		"acct": acct_str, 
 	});
 	
 	let query_bytes = serde_json::to_vec(&query).unwrap();
@@ -155,4 +154,15 @@ pub(crate) fn query_tea_balance(acct_str: &str) -> anyhow::Result<Vec<u8>> {
 	send_query_via_http(query_bytes)?;
 
 	Ok(b"100".to_vec())
+}
+
+
+pub(crate) fn parse_to_acct(ss58_address: &str) -> anyhow::Result<Account> {
+	let acct = public_key_from_ss58(&ss58_address)?;
+	if acct.len() != 32 {
+		return Err(anyhow::anyhow!("{}", "Invalid ss58 account."));
+	}
+	let acct: Account = acct.try_into().unwrap();
+
+	Ok(acct)
 }
