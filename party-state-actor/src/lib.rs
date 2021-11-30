@@ -57,7 +57,7 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 	let base: Tsid = helper_get_state_tsid()?;
 	info!("base tsid is {:?}", &base);
 	let context_bytes = match sample_txn {
-		TeapartyTxn::Topup{acct, amt} =>{
+		TeapartyTxn::Topup{acct, amt, uuid} =>{
 			let ctx = TokenContext::new(tsid, base, TOKEN_ID_TEA);
 			let ctx_bytes = bincode::serialize(&ctx)?;
 			let to: Account = acct;
@@ -68,7 +68,7 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 				amt,
 			})?
 		},
-		TeapartyTxn::PostMessage{from, ttl} => {
+		TeapartyTxn::PostMessage{from, ttl, uuid} => {
 			info!("PostMessage from ttl: {:?},{:?}", &from, &ttl);
 			
 			// ttl > 2000, 2 TEA, else, 1 TEA
@@ -101,7 +101,7 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 			actor_statemachine::mov(mov)?
 		},
 
-		TeapartyTxn::TransferTea{from, to, amt} => {
+		TeapartyTxn::TransferTea{from, to, amt, uuid} => {
 			info!("TransferTea from to amt: {:?},{:?},{:?}", &from, &to, &amt);
 			let ctx = TokenContext::new(tsid, base, TOKEN_ID_TEA);
 			let ctx_bytes = bincode::serialize(&ctx)?;

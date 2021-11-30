@@ -20,6 +20,7 @@ use interface::{
 };
 
 use crate::state;
+use crate::help;
 
 // pub(crate) fn prepare_tapp_balances(uuid: &str, tapp_id: u64) -> anyhow::Result<()> {
 // 	let (pub_key, pri_key) = generate("sr25519".into())?;

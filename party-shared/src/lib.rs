@@ -29,22 +29,31 @@ pub enum TeapartyTxn{
 	Topup {
 		acct: Account,
 		amt: Balance,
+		uuid: String,
 	},
 	Withdraw {
 		acct: Account,
 		amt: Balance,
+		uuid: String,
 	},
 
-	TransferTea{from: Account, to:Account, amt:Balance},
+	TransferTea{
+		from: Account, 
+		to:Account, 
+		amt:Balance,
+		uuid: String,
+	},
 
 	PostMessage {
 		from: Account,
 		ttl: u64,
+		uuid: String,
 	},
 
 	ExtendMessage {
 		from: Account,
 		ttl: u64,
+		uuid: String,
 	},
 	
 

@@ -9,11 +9,12 @@ use tea_actor_utility::action::get_uuid;
 use tea_actor_utility::actor_enclave::generate_uuid;
 use tea_actor_utility::actor_layer1::register_layer1_event;
 use tea_actor_utility::{
+	actor_env::{get_system_time, get_env_var},
 	action::reply_intercom, actor_rpc::register_adapter_dispatcher, wascc_actor as actor,
 };
 use types::*;
 use vmh_codec::error::DISCARD_MESSAGE_ERROR;
-use vmh_codec::message::structs_proto::{layer1, orbitdb, rpc};
+use vmh_codec::message::structs_proto::{layer1, orbitdb, rpc, libp2p};
 use vmh_codec::rpc::adapter::AdapterDispatchType;
 
 #[macro_use]
@@ -26,9 +27,12 @@ mod channel;
 mod types;
 mod validating;
 mod state;
+mod help;
 
 const BINDING_NAME: &'static str = "tea_tapp_bbs";
 const VERSION: &str = env!("CARGO_PKG_VERSION");
+
+
 
 actor_handlers! {
 	codec::messaging::OP_DELIVER_MESSAGE => handle_message,
@@ -45,8 +49,26 @@ fn handle_message(msg: BrokerMessage) -> HandlerResult<Vec<u8>> {
 		["adapter", section] => return handle_adapter_request(msg.body.as_slice(), section),
 		["layer1", "event"] => return handle_layer1_event(&msg.body),
 		["actor", "version"] => version(&msg)?,
+		["libp2p", "state-receiver", "back"] => return ipfs_send_message(&msg),
 		_ => {}
 	}
+	Ok(vec![])
+}
+
+pub fn can_do() -> anyhow::Result<bool> {
+	let miner_type = get_env_var("CML_TYPE")?;
+	Ok(miner_type.eq("B"))
+}
+
+fn ipfs_send_message(msg: &BrokerMessage) -> HandlerResult<Vec<u8>> {
+	let libp2p_request = libp2p::Libp2pRequest::decode(msg.body.as_slice())?;
+	if let Some(libp2p::libp2p_request::Msg::GeneralRequest(r)) = libp2p_request.msg {
+
+		let body: serde_json::Value = serde_json::from_slice(r.clone().runtime_message.unwrap().content.as_slice())?;
+		info!("party actor get lib msg back => {:?}", body);
+
+	}
+
 	Ok(vec![])
 }
 
@@ -81,6 +103,10 @@ fn handle_system_init(_msg: &BrokerMessage) -> HandlerResult<()> {
 }
 
 fn handle_layer1_event(data: &[u8]) -> HandlerResult<Vec<u8>> {
+	if false == can_do()? {
+		return Ok(vec![]);
+	}
+
 	let layer_inbound = layer1::Layer1Inbound::decode(data)?;
 
 	let res = match layer_inbound.msg {
