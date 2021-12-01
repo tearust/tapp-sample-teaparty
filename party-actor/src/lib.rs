@@ -10,7 +10,7 @@ use tea_actor_utility::actor_enclave::generate_uuid;
 use tea_actor_utility::actor_layer1::register_layer1_event;
 use tea_actor_utility::{
 	actor_env::{get_system_time, get_env_var},
-	action::reply_intercom, actor_rpc::register_adapter_dispatcher, wascc_actor as actor,
+	action::reply_intercom, actor_rpc::register_adapter_http_dispatcher, wascc_actor as actor,
 };
 use types::*;
 use vmh_codec::error::DISCARD_MESSAGE_ERROR;
@@ -97,7 +97,21 @@ fn echo(msg: &BrokerMessage) -> HandlerResult<()> {
 
 fn handle_system_init(_msg: &BrokerMessage) -> HandlerResult<()> {
 	info!("tapp bbs received tea.system.init");
-	register_adapter_dispatcher(vec![AdapterDispatchType::AdapterHttpRequest.into()])?;
+	register_adapter_http_dispatcher(
+		vec![
+			"loginPrepare",
+			"login",
+			"logout",
+			"postMessage",
+			"loadMessageList",
+			"extendMessage",
+			"deleteMessage",
+			"query_balance",
+		]
+		.iter()
+		.map(|v| v.to_string())
+		.collect(),
+	)?;
 	register_layer1_event()?;
 	Ok(())
 }
