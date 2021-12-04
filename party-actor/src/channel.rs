@@ -18,6 +18,8 @@ use tea_actor_utility::actor_env::current_timestamp;
 use tea_codec::{deserialize, serialize};
 use tea_codec;
 
+use crate::state;
+
 use vmh_codec::message::{
 	structs_proto::{orbitdb},
 	encode_protobuf,
@@ -57,13 +59,7 @@ pub(crate) fn post_message(
 	uuid: &str, 
 	request: PostMessageRequest,
 ) -> anyhow::Result<Vec<u8>> {
-	// check_user_login(&request.address)?;
-
-	// if is_host_locally(request.tapp_id) {
-	// 	return post_message_locally(uuid, request);
-	// }
-
-	// todo find host node and relay post message
+	check_user_login(&request.address)?;
 
 	// to orbitdb
 	let message = {
@@ -79,6 +75,9 @@ pub(crate) fn post_message(
 			false => (24 * 60 * 60) as u64,
 		}
 	};
+
+	// state
+	state::post_message(&request.address, ttl.clone(), uuid)?;
 
 	let dbname = db_name(request.tapp_id, &request.channel);
 	let add_message_data = orbitdb::AddMessageRequest {
@@ -100,7 +99,8 @@ pub(crate) fn post_message(
 			.map_err(|e| anyhow::anyhow!("{}", e))?
 			.as_slice(),
 	)?;
-	// info!("[bbs] post_message response: {:?}", res);
+	info!("[bbs] post_message response: {:?}", res);
+
 
 	Ok(res.data.into_bytes())
 }

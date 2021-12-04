@@ -26,6 +26,11 @@
         <b>{{'My TEA' | cardTitle}}</b>
         <span :inner-html.prop="layer1_account ? layer1_account.balance : '' | teaIcon"></span>
       </div>
+
+      <div class="x-item">
+        <b>{{'My tapp balance'}}</b>
+        <span :inner-html.prop="tapp_balance===null ? '...' : tapp_balance"></span>
+      </div>
       
 
      
@@ -74,18 +79,7 @@ export default {
   },
   data(){
     return {
-      has_coupon_tab: false,
-      tab: 'my_cml',
-      
-      rate: {
-        usdToTea: null,
-        teaToUsd: null,
-      },
-
-      usd_interest_rate: null,
-
-      loan_rate: null,
-      loan_amount: null,
+      tapp_balance: null,
     };
   },
 
@@ -112,8 +106,8 @@ export default {
     this.$root.loading(false);
     
 
-    const layer1_instance = this.wf.getLayer1Instance();
-    const api = layer1_instance.getApi();
+    // const layer1_instance = this.wf.getLayer1Instance();
+    // const api = layer1_instance.getApi();
     
   },
 
@@ -123,10 +117,9 @@ export default {
     },
 
 
-
     async rechargeHandler(){
       bbs.topupFromLayer1(this, async ()=>{
-
+        await this.refreshAccount(true);
       });
     },
 
@@ -135,24 +128,17 @@ export default {
       await this.wf.refreshCurrentAccount();
 
       const layer1_account = this.layer1_account;
-      if (
-        layer1_account && (
-          layer1_account.coupon_team_A || layer1_account.coupon_team_B || layer1_account.coupon_team_C ||
-          layer1_account.coupon_investor_A || layer1_account.coupon_investor_B || layer1_account.coupon_investor_C
-        )
-      ) {
-        
-        // this.tab = 'my_coupon';
-        this.has_coupon_tab = true;
-      }
-      else {
-        this.has_coupon_tab = false;
-        if(this.tab === 'my_coupon'){
-          this.tab = 'my_cml';
-        }
-      }
+
+      await this.queryTokenBalance();
+      
       
       flag && this.$root.loading(false);
+    },
+
+    async queryTokenBalance(){
+      this.tapp_balance = await bbs.query_balance({
+        address: this.layer1_account.address,
+      });
     },
 
 

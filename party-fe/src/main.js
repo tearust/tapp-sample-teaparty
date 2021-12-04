@@ -47,7 +47,7 @@ new Vue({
       if (f) {
         C._loading = Loading.service({
           lock: true,
-          text: 'Loading...',
+          text,
           customClass: 'c-fullscreen-loading',
           spinner: 'el-icon-loading',
           background: 'rgba(0, 0, 0, 0.05)'

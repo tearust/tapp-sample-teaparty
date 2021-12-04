@@ -16,6 +16,8 @@ use wascc_actor::untyped;
 use tea_codec;
 use base64;
 
+use crate::BINDING_NAME;
+
 
 pub fn p2p_send_to_receive_actor(
   msg: Vec<u8>, 
@@ -90,4 +92,23 @@ pub fn conn_id_by_tea_id(tea_id: Vec<u8>) -> anyhow::Result<String> {
 	Ok(res.conn_id)
 }
 
+pub fn set_mem_cache(
+  key: &str,
+  val: Vec<u8>,
+) -> anyhow::Result<()> {
+  actor_kvp::set(
+    BINDING_NAME,
+    &key,
+    &val,
+    600,
+  ).map_err(|e| anyhow::anyhow!("{}", e))?;
+
+  Ok(())
+}
+
+pub fn get_mem_cache(key: &str) -> anyhow::Result<Vec<u8>> {
+  let rs: Vec<u8> = actor_kvp::get(BINDING_NAME, &key)?.ok_or(anyhow::anyhow!("failed to get value with {}", key))?;
+
+  Ok(rs)
+}
 

@@ -83,5 +83,3 @@ impl Txn for TeapartyTxn{
 }
 
 
-
-

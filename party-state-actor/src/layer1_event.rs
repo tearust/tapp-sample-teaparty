@@ -31,9 +31,6 @@ pub(crate) fn on_top_up(event: layer1::TappTopupEvent) -> anyhow::Result<()> {
 	let acct = state::parse_to_acct(&event.from_account)?;
 	let block_str = event.height.to_string();
 
-	info!("1111 => {:?}", tapp_id);
-	info!("2222 => {:?}", amt);
-	info!("3333 => {:?}", acct);
 
 	state::topup(acct, amt, block_str)?;
 

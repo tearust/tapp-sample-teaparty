@@ -37,7 +37,7 @@ fn get_serial_and_hash_from_txn(txn_bytes: Vec<u8>) -> anyhow::Result<(TxnSerial
 	Ok((txn_serial, txn_hash))
 }
 
-pub fn send_followup_to_replica(followup_bytes: Vec<u8>) -> anyhow::Result<Tsid> {
+pub fn send_followup_to_replica(followup_bytes: Vec<u8>) -> anyhow::Result<()> {
 	info!("begin to send followup to replica");
 	let res = untyped::default()
 		.call(
@@ -54,13 +54,14 @@ pub fn send_followup_to_replica(followup_bytes: Vec<u8>) -> anyhow::Result<Tsid>
 		let tsid: Tsid = bincode::deserialize(&res)?;
 		info!("[replica provider] OP_REV_FOLLOWUP => {:?}", tsid);
 
-		return Ok(tsid);
-	}
+  }
+  
+  Ok(())
 
-	Err(anyhow::anyhow!("{}", "No followup tsid returned."))
+	// Err(anyhow::anyhow!("{}", "No followup tsid returned."))
 }
 
-pub fn send_tx_to_replica(txn_bytes: Vec<u8>) -> anyhow::Result<Tsid> {
+pub fn send_tx_to_replica(txn_bytes: Vec<u8>) -> anyhow::Result<()> {
 	let (txn_serial, txn_hash) = get_serial_and_hash_from_txn(txn_bytes)?;
 	let req_txn = replica::ReceiveTxn {
 		txn_bytes: bincode::serialize(&txn_serial)?,
@@ -80,10 +81,11 @@ pub fn send_tx_to_replica(txn_bytes: Vec<u8>) -> anyhow::Result<Tsid> {
 		let tsid: Tsid = bincode::deserialize(&res)?;
 		info!("[replica provider] OP_REV_TXN => {:?}", tsid);
 
-		return Ok(tsid);
-	}
+  }
+  
+  Ok(())
 
-	Err(anyhow::anyhow!("{}", "No tx tsid returned."))
+	// Err(anyhow::anyhow!("{}", "No tx tsid returned."))
 }
 
 
@@ -108,8 +110,7 @@ fn execute_tx_with_txn(
   // step 1, send tx
   let txn_bytes = bincode::serialize(&txn)?;
 
-  let res = send_tx_to_replica(txn_bytes.clone())?;
-  info!("111 => {:?}", res);
+  send_tx_to_replica(txn_bytes.clone())?;
 
   let (_, txn_hash) = get_serial_and_hash_from_txn(txn_bytes)?;
   let sent_time = get_current_ts()?;
@@ -122,9 +123,7 @@ fn execute_tx_with_txn(
 		sender: sender_actor_hash,
   };
   let fu_bytes = bincode::serialize(&req_fu)?;
-  let res = send_followup_to_replica(fu_bytes);
-
-  info!("222 => {:?}", res);
+  send_followup_to_replica(fu_bytes);
 
 	Ok(())
 }
@@ -141,6 +140,8 @@ pub(crate) fn topup(
 		amt,
 		uuid: block_str,
   };
+
+  info!("txn => {:?}", txn);
 
   execute_tx_with_txn(txn)?;
 

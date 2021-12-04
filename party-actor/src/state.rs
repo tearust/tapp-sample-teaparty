@@ -43,6 +43,7 @@ fn get_hash_from_txn(
 
 fn send_tx_via_p2p(
 	txn: TeapartyTxn,
+	uuid: String,
 ) -> anyhow::Result<(Ts, Hash)> {
 	
 	let txn_bytes = bincode::serialize(&txn)?;
@@ -53,17 +54,37 @@ fn send_tx_via_p2p(
 	let payload = encode_protobuf(
 		libp2p::StateMessageRequest {
 			action: "state_command".into(),
-			msg_b64: txn_b64
+			msg_b64: txn_b64,
+			uuid,
 		}
 	)?;
 	info!("txn payload => {:?}", payload);
-
-	let uuid = generate_uuid()?;
 
 	help::p2p_send_to_receive_actor(payload)?;
 
 	let sent_time = get_current_ts()?;
 	Ok((sent_time, txn_hash))
+}
+
+fn send_query_via_p2p(
+	query_json_bytes: Vec<u8>,
+	uuid: &str,
+) -> anyhow::Result<Vec<u8>> {
+	
+	let query_b64 = base64::encode(query_json_bytes.clone());
+
+	let payload = encode_protobuf(
+		libp2p::StateMessageRequest {
+			action: "state_query".into(),
+			msg_b64: query_b64,
+			uuid: uuid.to_string(),
+		}
+	)?;
+	info!("query payload => {:?}", payload);
+
+	help::p2p_send_to_receive_actor(payload)?;
+
+	Ok(b"ok".to_vec())
 }
 
 fn get_current_ts() -> anyhow::Result<Ts> {
@@ -80,6 +101,7 @@ fn send_actor_hash() -> Hash {
 
 fn send_followup_via_p2p(
 	fu: Followup,
+	uuid: String,
 ) -> anyhow::Result<()> {
 	let fu_bytes = bincode::serialize(&fu)?;
 	let fu_b64 = base64::encode(fu_bytes);
@@ -88,11 +110,11 @@ fn send_followup_via_p2p(
 		libp2p::StateMessageRequest {
 			action: "state_followup".into(),
 			msg_b64: fu_b64,
+			uuid,
 		}
 	)?;
 	info!("followup payload => {:?}", payload);
 
-	let uuid = generate_uuid()?;
 	help::p2p_send_to_receive_actor(payload)?;
 
 	// info!("followup response => {:?}", res_str);
@@ -100,27 +122,12 @@ fn send_followup_via_p2p(
 	Ok(())
 }
 
-// fn send_query_via_http(
-// 	query: Vec<u8>
-// ) -> anyhow::Result<()> {
-// 	let hostname = "http://host.docker.internal:8000";
-// 	let url = format!("{}/tapp/state_query", hostname);
-
-// 	let payload = Some(query);
-
-// 	let uuid = generate_uuid()?;
-
-// 	info!("send http query");
-// 	let _res_str = execute_http_request_ex(url.as_str(), uuid.to_string(), vec![], "POST".into(), payload, None)?;
-
-// 	Ok(())
-// }
-
 fn execute_tx_with_txn(
-	txn: TeapartyTxn
+	txn: TeapartyTxn,
+	uuid: String,
 ) -> anyhow::Result<()> {
 	// step 1, send tx
-	let (sent_time, txn_hash) = send_tx_via_p2p(txn)?;
+	let (sent_time, txn_hash) = send_tx_via_p2p(txn, uuid.clone())?;
 	// step 2, send followup
 	let sender_actor_hash = send_actor_hash();
 	let req_fu: Followup = Followup{
@@ -129,34 +136,37 @@ fn execute_tx_with_txn(
 		sender: sender_actor_hash,
 	};
 
-	send_followup_via_p2p(req_fu)?;
+	send_followup_via_p2p(req_fu, uuid.clone())?;
 
 	Ok(())
 }
 
-pub(crate) fn topup(
-  acct: Account,
-	amt: Balance
+
+pub fn post_message(
+	acct: &str,
+	ttl: u64,
+	uuid: &str,
 ) -> anyhow::Result<()> {
-  info!("begin to topup");
+	info!("begin to post_message");
+	let txn = TeapartyTxn::PostMessage {
+		from: parse_to_acct(acct)?,
+		ttl,
+		uuid: uuid.to_string(),
+	};
 
-  let txn = TeapartyTxn::Topup{
-    acct,
-		amt,
-		uuid: generate_uuid()?,
-  };
+	execute_tx_with_txn(txn, uuid.to_string())?;
+	info!("post message success");
 
-  execute_tx_with_txn(txn)?;
-
-  info!("topup success!");
-
-  Ok(())
+	Ok(())
 }
 
 
 
 
-pub(crate) fn query_tea_balance(acct_str: &str) -> anyhow::Result<Vec<u8>> {
+pub(crate) fn query_tea_balance(
+	acct_str: &str,
+	uuid: &str,
+) -> anyhow::Result<Vec<u8>> {
 
 	info!("begin to query tea balance");
 	let query = json!({
@@ -166,9 +176,9 @@ pub(crate) fn query_tea_balance(acct_str: &str) -> anyhow::Result<Vec<u8>> {
 	
 	let query_bytes = serde_json::to_vec(&query).unwrap();
 
-	// send_query_via_http(query_bytes)?;
+	let res = send_query_via_p2p(query_bytes, uuid)?;
 
-	Ok(b"100".to_vec())
+	Ok(res)
 }
 
 

@@ -6,6 +6,7 @@ pub struct PostMessageRequest {
 	/// Base64 encoded
 	pub encrypted_message: String,
 	pub address: String,
+	pub uuid: String,
 }
 
 
@@ -44,10 +45,19 @@ pub struct DeleteMessageRequest {
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct QueryBalanceRequest {
+pub struct HttpQueryBalanceRequest {
 	pub tapp_id: u64,
 	pub address: String,
+	pub uuid: String,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct HttpQueryResultWithUuid {
+	pub uuid: String,
+}
+
+
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

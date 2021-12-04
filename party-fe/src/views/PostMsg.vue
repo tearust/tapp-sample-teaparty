@@ -108,8 +108,8 @@ export default {
       
       this.$root.loading(true);
       try{
-        await bbs.sendMessage(this.layer1_account.address, msg, this.channel);
-        this.$message.success('Publish success.');
+        const rs = await bbs.sendMessage(this.layer1_account.address, msg, this.channel);
+        this.$message.success('Publish success. ts is '+rs.ts);
         this.closeModal();
         if(cb){
           await cb();

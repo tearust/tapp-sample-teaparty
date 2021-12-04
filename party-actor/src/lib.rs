@@ -33,7 +33,6 @@ const BINDING_NAME: &'static str = "tea_tapp_bbs";
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 
-
 actor_handlers! {
 	codec::messaging::OP_DELIVER_MESSAGE => handle_message,
 	codec::core::OP_HEALTH_REQUEST => health
@@ -49,7 +48,7 @@ fn handle_message(msg: BrokerMessage) -> HandlerResult<Vec<u8>> {
 		["adapter", section] => return handle_adapter_request(msg.body.as_slice(), section),
 		// ["layer1", "event"] => return handle_layer1_event(&msg.body),
 		["actor", "version"] => version(&msg)?,
-		["libp2p", "state-receiver", "back"] => return ipfs_send_message(&msg),
+		["libp2p", "state-receiver", "back"] => return libp2p_back_message(&msg),
 		_ => {}
 	}
 	Ok(vec![])
@@ -60,12 +59,18 @@ pub fn can_do() -> anyhow::Result<bool> {
 	Ok(miner_type.eq("B"))
 }
 
-fn ipfs_send_message(msg: &BrokerMessage) -> HandlerResult<Vec<u8>> {
+fn libp2p_back_message(msg: &BrokerMessage) -> HandlerResult<Vec<u8>> {
 	let libp2p_request = libp2p::Libp2pRequest::decode(msg.body.as_slice())?;
 	if let Some(libp2p::libp2p_request::Msg::GeneralRequest(r)) = libp2p_request.msg {
 
-		let body: serde_json::Value = serde_json::from_slice(r.clone().runtime_message.unwrap().content.as_slice())?;
+		let body: serde_json::Value = serde_json::from_slice(r.runtime_message.unwrap().content.as_slice())?;
 		info!("party actor get lib msg back => {:?}", body);
+
+		if let Some(uuid) = body["uuid"].as_str() {
+			help::set_mem_cache(&uuid, serde_json::to_vec(&body)?)?;
+
+			info!("set to kvp with uuid {} success.", &uuid);
+		}
 
 	}
 
@@ -107,6 +112,7 @@ fn handle_system_init(_msg: &BrokerMessage) -> HandlerResult<()> {
 			"extendMessage",
 			"deleteMessage",
 			"query_balance",
+			"query_result",
 		]
 		.iter()
 		.map(|v| v.to_string())
@@ -189,7 +195,7 @@ fn handle_adapter_http_request(req: rpc::AdapterHttpRequest) -> anyhow::Result<V
 		}
 		"postMessage" => {
 			let req: PostMessageRequest = serde_json::from_slice(&req.payload)?;
-			post_message(&uuid, req)
+			post_message(&req.uuid.clone(), req)
 		}
 		"loadMessageList" => {
 			let req: LoadMessageRequest = serde_json::from_slice(&req.payload)?;
@@ -204,9 +210,16 @@ fn handle_adapter_http_request(req: rpc::AdapterHttpRequest) -> anyhow::Result<V
 			delete_message(&uuid, req)
 		}
 		"query_balance" => {
-			let req: QueryBalanceRequest = serde_json::from_slice(&req.payload)?;
+			let req: HttpQueryBalanceRequest = serde_json::from_slice(&req.payload)?;
 
-			state::query_tea_balance(&req.address)
+			state::query_tea_balance(&req.address, &req.uuid)
+		},
+		"query_result" => {
+			let req: HttpQueryResultWithUuid = serde_json::from_slice(&req.payload)?;
+
+			let res_val = help::get_mem_cache(&req.uuid)?;
+
+			Ok(res_val)
 		}
 		_ => {
 			debug!("unknown action: {}", req.action);

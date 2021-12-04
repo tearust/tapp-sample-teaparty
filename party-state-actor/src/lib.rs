@@ -31,12 +31,11 @@ actor_handlers! {
 
 pub fn can_do() -> anyhow::Result<bool> {
 	let miner_type = get_env_var("CML_TYPE")?;
-	info!("3333 => {:?}", miner_type);
 	Ok(miner_type.eq("A"))
 }
 
 fn handle_message(msg: BrokerMessage) -> HandlerResult<Vec<u8>> {
-	info!("party state actor received deliver message11, {:?}", &msg);
+	debug!("party state actor received deliver message, {:?}", &msg);
 
 	match handle_message_inner(msg) {
 		Ok(res) => Ok(res),
