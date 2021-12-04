@@ -75,22 +75,22 @@ use crate::help;
 pub(crate) fn on_top_up(event: layer1::TappTopupEvent) -> anyhow::Result<()> {
 	info!("received topup event, details: {:?}", event);
 
-	let npc_account = event.to_account;
-	// TODO check npc account
+	// let npc_account = event.to_account;
+	// // TODO check npc account
 
-	let tapp_id = event.tapp_id;
-	let amt = BigUint::from_bytes_le(&event.amount);
+	// let tapp_id = event.tapp_id;
+	// let amt = BigUint::from_bytes_le(&event.amount);
 
-	// TODO, how to fix this unwrap
-	let amt = amt.to_u128().unwrap();
+	// // TODO, how to fix this unwrap
+	// let amt = amt.to_u128().unwrap();
 
-	let acct = state::parse_to_acct(&event.from_account)?;
+	// let acct = state::parse_to_acct(&event.from_account)?;
 
-	info!("1111 => {:?}", tapp_id);
-	info!("2222 => {:?}", amt);
-	info!("3333 => {:?}", acct);
+	// info!("1111 => {:?}", tapp_id);
+	// info!("2222 => {:?}", amt);
+	// info!("3333 => {:?}", acct);
 
-	state::topup(acct, amt)?;
+	// state::topup(acct, amt)?;
 
 
 	Ok(())

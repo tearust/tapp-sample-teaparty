@@ -9,17 +9,34 @@ use wascc_actor::HandlerResult;
 use party_shared::{{TeapartyTxn}};
 use prost::Message;
 use tea_actor_utility::actor_crypto::public_key_from_ss58;
-use tea_actor_utility::actor_statemachine;
+use tea_actor_utility::actor_layer1::register_layer1_event;
+use tea_actor_utility::{
+	actor_statemachine,
+	actor_env::{get_system_time, get_env_var},
+};
+use vmh_codec::message::structs_proto::{layer1};
+
 use interface::{TOKEN_ID_TEA, Balance, Tsid, Account};
 use token_state::token_context::TokenContext;
 use vmh_codec::message::structs_proto::tokenstate::*;
+
+mod layer1_event;
+mod state;
+
 actor_handlers! {
 	codec::messaging::OP_DELIVER_MESSAGE => handle_message,
 	tea_codec::OP_ACTOR_EXEC_TXN => handle_txn_exec,
 	codec::core::OP_HEALTH_REQUEST => health
 }
+
+pub fn can_do() -> anyhow::Result<bool> {
+	let miner_type = get_env_var("CML_TYPE")?;
+	info!("3333 => {:?}", miner_type);
+	Ok(miner_type.eq("A"))
+}
+
 fn handle_message(msg: BrokerMessage) -> HandlerResult<Vec<u8>> {
-	debug!("simple-actor received deliver message, {:?}", &msg);
+	info!("party state actor received deliver message11, {:?}", &msg);
 
 	match handle_message_inner(msg) {
 		Ok(res) => Ok(res),
@@ -33,13 +50,39 @@ fn handle_message_inner(msg: BrokerMessage) -> HandlerResult<Vec<u8>> {
 	let channel_parts: Vec<&str> = msg.subject.split('.').collect();
 	match &channel_parts[..] {
 		["tea", "system", "init"] => handle_system_init()?,
+		["layer1", "event"] => return handle_layer1_event(&msg.body),
 		_ => (),
 	};
 	Ok(vec![])
 }
 fn handle_system_init() -> anyhow::Result<()> {
 	info!("simple actor system init...");
+
+	register_layer1_event()?;
 	Ok(())
+}
+
+fn handle_layer1_event(data: &[u8]) -> HandlerResult<Vec<u8>> {
+	if false == can_do()? {
+		return Ok(vec![]);
+	}
+
+	let layer_inbound = layer1::Layer1Inbound::decode(data)?;
+
+	let res = match layer_inbound.msg {
+		Some(layer1::layer1_inbound::Msg::TappTopupEvent(ev)) => layer1_event::on_top_up(ev),
+		// Some(layer1::layer1_inbound::Msg::TappHostedEvent(ev)) => balance::on_tapp_hosted(ev),
+		// Some(layer1::layer1_inbound::Msg::TappUnhostedEvent(ev)) => balance::on_tapp_unhosted(ev),
+		_ => {
+			debug!("ignored events: {:?}", layer_inbound.msg);
+			Ok(())
+		}
+	};
+	if let Err(e) = res {
+		error!("process layer1 event error: {}", e);
+	}
+
+	Ok(vec![])
 }
 
 

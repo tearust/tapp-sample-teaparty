@@ -47,7 +47,7 @@ fn handle_message(msg: BrokerMessage) -> HandlerResult<Vec<u8>> {
 		["tea", "system", "init"] => handle_system_init(&msg)?,
 		["actor", "tapp_bbs", "echo", ..] => echo(&msg)?,
 		["adapter", section] => return handle_adapter_request(msg.body.as_slice(), section),
-		["layer1", "event"] => return handle_layer1_event(&msg.body),
+		// ["layer1", "event"] => return handle_layer1_event(&msg.body),
 		["actor", "version"] => version(&msg)?,
 		["libp2p", "state-receiver", "back"] => return ipfs_send_message(&msg),
 		_ => {}
@@ -112,11 +112,12 @@ fn handle_system_init(_msg: &BrokerMessage) -> HandlerResult<()> {
 		.map(|v| v.to_string())
 		.collect(),
 	)?;
-	register_layer1_event()?;
+	// register_layer1_event()?;
 	Ok(())
 }
 
 fn handle_layer1_event(data: &[u8]) -> HandlerResult<Vec<u8>> {
+// 	info!("kkkkkkkkkkkk");
 	if false == can_do()? {
 		return Ok(vec![]);
 	}
