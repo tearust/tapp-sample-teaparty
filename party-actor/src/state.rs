@@ -23,7 +23,6 @@ use interface::{
   Hash, TxnSerial, Followup, Ts,
   Account, Balance,
 };
-use tea_actor_utility::actor_rpc::layer1::execute_http_request_ex;
 
 use crate::help;
 
@@ -101,21 +100,21 @@ fn send_followup_via_p2p(
 	Ok(())
 }
 
-fn send_query_via_http(
-	query: Vec<u8>
-) -> anyhow::Result<()> {
-	let hostname = "http://host.docker.internal:8000";
-	let url = format!("{}/tapp/state_query", hostname);
+// fn send_query_via_http(
+// 	query: Vec<u8>
+// ) -> anyhow::Result<()> {
+// 	let hostname = "http://host.docker.internal:8000";
+// 	let url = format!("{}/tapp/state_query", hostname);
 
-	let payload = Some(query);
+// 	let payload = Some(query);
 
-	let uuid = generate_uuid()?;
+// 	let uuid = generate_uuid()?;
 
-	info!("send http query");
-	let _res_str = execute_http_request_ex(url.as_str(), uuid.to_string(), vec![], "POST".into(), payload, None)?;
+// 	info!("send http query");
+// 	let _res_str = execute_http_request_ex(url.as_str(), uuid.to_string(), vec![], "POST".into(), payload, None)?;
 
-	Ok(())
-}
+// 	Ok(())
+// }
 
 fn execute_tx_with_txn(
 	txn: TeapartyTxn
@@ -125,7 +124,7 @@ fn execute_tx_with_txn(
 	// step 2, send followup
 	let sender_actor_hash = send_actor_hash();
 	let req_fu: Followup = Followup{
-		ts: vec!(sent_time),
+		ts: sent_time,
 		hash: txn_hash,
 		sender: sender_actor_hash,
 	};
@@ -167,7 +166,7 @@ pub(crate) fn query_tea_balance(acct_str: &str) -> anyhow::Result<Vec<u8>> {
 	
 	let query_bytes = serde_json::to_vec(&query).unwrap();
 
-	send_query_via_http(query_bytes)?;
+	// send_query_via_http(query_bytes)?;
 
 	Ok(b"100".to_vec())
 }

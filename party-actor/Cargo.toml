@@ -20,11 +20,13 @@ hex = "0.4.2"
 anyhow = "1.0.34"
 num-traits = "0.2"
 num-bigint = {version = "0.2", features = ["serde"]}
-
 wascc-actor = { git = "https://github.com/tearust/wascc-actor", branch = "nitro" }
+
+
+tea-actor-utility = { path="../../mini-runtime/actors/utility" }
 vmh-codec = { path = "../../mini-runtime/vmh-codec" }
 tea-codec = {path="../../tea-codec"}
-tea-actor-utility = { path="../../tea-actor-utility" }
+
 interface = {path = "../../statemachine/interface"}
 party-shared = { path = "../party-shared" }
 
