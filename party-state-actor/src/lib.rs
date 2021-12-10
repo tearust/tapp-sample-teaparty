@@ -1,8 +1,6 @@
 #[macro_use]
 extern crate log;
-use serde::{Serialize, Deserialize};
 use std::convert::TryInto;
-use bincode::Result as SerdeResult;
 use wascc_actor::prelude::codec::messaging::BrokerMessage;
 use wascc_actor::prelude::*;
 use wascc_actor::HandlerResult;
@@ -12,7 +10,7 @@ use tea_actor_utility::actor_crypto::public_key_from_ss58;
 use tea_actor_utility::actor_layer1::register_layer1_event;
 use tea_actor_utility::{
 	actor_statemachine,
-	actor_env::{get_system_time, get_env_var},
+	actor_env::{get_env_var},
 };
 use vmh_codec::message::structs_proto::{layer1};
 
@@ -99,7 +97,7 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 	let base: Tsid = helper_get_state_tsid()?;
 	info!("base tsid is {:?}", &base);
 	let context_bytes = match sample_txn {
-		TeapartyTxn::Topup{acct, amt, uuid} =>{
+		TeapartyTxn::Topup{acct, amt, ..} =>{
 			let ctx = TokenContext::new(tsid, base, TOKEN_ID_TEA);
 			let ctx_bytes = bincode::serialize(&ctx)?;
 			let to: Account = acct;
@@ -110,7 +108,7 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 				amt,
 			})?
 		},
-		TeapartyTxn::PostMessage{from, ttl, uuid} => {
+		TeapartyTxn::PostMessage{from, ttl, ..} => {
 			info!("PostMessage from ttl: {:?},{:?}", &from, &ttl);
 			
 			// ttl > 2000, 2 TEA, else, 1 TEA
@@ -143,7 +141,7 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 			actor_statemachine::mov(mov)?
 		},
 
-		TeapartyTxn::TransferTea{from, to, amt, uuid} => {
+		TeapartyTxn::TransferTea{from, to, amt, ..} => {
 			info!("TransferTea from to amt: {:?},{:?},{:?}", &from, &to, &amt);
 			let ctx = TokenContext::new(tsid, base, TOKEN_ID_TEA);
 			let ctx_bytes = bincode::serialize(&ctx)?;

@@ -69,6 +69,7 @@ fn send_tx_via_p2p(
 fn send_query_via_p2p(
 	query_json_bytes: Vec<u8>,
 	uuid: &str,
+
 ) -> anyhow::Result<Vec<u8>> {
 	
 	let query_b64 = base64::encode(query_json_bytes.clone());

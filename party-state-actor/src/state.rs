@@ -1,21 +1,20 @@
-
 use bincode;
 use std::convert::TryInto;
 use tea_actor_utility::actor_env::{get_system_time, };
 use tea_actor_utility::actor_crypto::{ sha256, public_key_from_ss58};
 
-use tea_actor_utility::actor_enclave::generate_uuid;
-use base64;
+// use tea_actor_utility::actor_enclave::generate_uuid;
+// use base64;
 use tea_codec;
 
 use vmh_codec::{
 	message::{
-		structs_proto::{libp2p, replica,},
+		structs_proto::{replica,},
 		encode_protobuf,
 	},
 };
 
-use wascc_actor::HandlerResult;
+// use wascc_actor::HandlerResult;
 use wascc_actor::untyped;
 use party_shared::{TeapartyTxn};
 
@@ -62,7 +61,7 @@ pub fn send_followup_to_replica(followup_bytes: Vec<u8>) -> anyhow::Result<()> {
 }
 
 pub fn send_tx_to_replica(txn_bytes: Vec<u8>) -> anyhow::Result<()> {
-	let (txn_serial, txn_hash) = get_serial_and_hash_from_txn(txn_bytes)?;
+	let (txn_serial, _txn_hash) = get_serial_and_hash_from_txn(txn_bytes)?;
 	let req_txn = replica::ReceiveTxn {
 		txn_bytes: bincode::serialize(&txn_serial)?,
 	};
@@ -123,7 +122,7 @@ fn execute_tx_with_txn(
 		sender: sender_actor_hash,
   };
   let fu_bytes = bincode::serialize(&req_fu)?;
-  send_followup_to_replica(fu_bytes);
+  send_followup_to_replica(fu_bytes)?;
 
 	Ok(())
 }
