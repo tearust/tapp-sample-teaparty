@@ -2,14 +2,8 @@ use serde::{Serialize, Deserialize};
 use bincode;
 use bincode::Result as SerdeResult;
 use thiserror::Error;
-use interface::{
-	Account, Balance, TOKEN_ID_TEA, Tsid, Operate, 
-};
+use interface::{Account, Balance};
 use interface::txn::{Txn, TxnError, TxnSerial};
-use token_state::{
-	token_state::{TokenState},
-	token_context::{TokenContext},
-};
 
 pub const HANDLED_BY_ACTOR_NAME: &str = "TeapartyTxn";
 
