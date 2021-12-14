@@ -30,6 +30,7 @@
     <el-button style="margin-left: 10px;" @click="loginOrLogout()" type="text">{{user ? 'Logout' : 'Login'}}</el-button>
   </div>
 
+  <el-menu-item index="/test">{{'TEST'}}</el-menu-item>
   
   <el-menu-item index="/log">{{'Log'}}</el-menu-item>
   <el-menu-item index="/profile">{{'My assets'}}</el-menu-item>

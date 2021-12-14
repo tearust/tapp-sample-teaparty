@@ -260,6 +260,20 @@ const sync_request = async (method, param, message_cb) => {
   return rs;
 };
 
+F.test = {
+  get_uuid(){
+    return uuid();
+  }, 
+  async request(_uuid, payload, method){
+    const step1_rs = await _axios.post('/tapp/'+method, {
+      ...payload,
+      uuid: _uuid,
+    });
+    
+    console.log('step 1 result => ', step1_rs);
+  }
+};
+
 F.consts = {
   channel: default_channel,
 };

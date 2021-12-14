@@ -6,8 +6,10 @@ import Home from './views/Home';
 import PostMsg from './views/PostMsg';
 import LogView from './views/LogView';
 import LoginAccount from './views/LoginAccount';
+import Test from './views/Test';
 
 import bbs from './views/bbs';
+
 
 Vue.use(Router);
 
@@ -47,6 +49,11 @@ let routers = [
     path: '/log',
     name: 'log',
     component: LogView,
+  },
+  {
+    path: '/test',
+    name: 'test',
+    component: Test,
   }
   
   
