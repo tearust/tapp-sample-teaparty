@@ -265,12 +265,27 @@ F.test = {
     return uuid();
   }, 
   async request(_uuid, payload, method){
-    const step1_rs = await _axios.post('/tapp/'+method, {
-      ...payload,
-      uuid: _uuid,
-    });
-    
-    console.log('step 1 result => ', step1_rs);
+    try{
+      const rs = await _axios.post('/tapp/'+method, {
+        ...payload,
+        uuid: _uuid,
+      });
+
+      return rs;
+    }catch(e){
+      return e.message || e.toString();
+    }
+  },
+  async result(_uuid){
+    try{
+      const rs = await _axios.post('/tapp/test_result', {
+        uuid: _uuid,
+      });
+
+      return rs;
+    }catch(e){
+      return e.message || e.toString();
+    }
   }
 };
 

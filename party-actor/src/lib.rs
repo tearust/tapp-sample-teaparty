@@ -115,6 +115,7 @@ fn handle_system_init(_msg: &BrokerMessage) -> HandlerResult<()> {
 			"query_result",
 			
 			"test_action",
+			"test_result",
 		]
 		.iter()
 		.map(|v| v.to_string())
@@ -224,10 +225,22 @@ fn handle_adapter_http_request(req: rpc::AdapterHttpRequest) -> anyhow::Result<V
 			Ok(res_val)
 		},
 		"test_action" => {
-			let req: serde_json::Value = serde_json::from_slice(&req.payload)?;
-			info!("test action req => {:?}", req);
+			let req_json: serde_json::Value = serde_json::from_slice(&req.payload)?;
+			info!("test action req => {:?}", req_json);
+
+			let uuid = req_json["uuid"].as_str().unwrap();
+			help::set_mem_cache(&uuid, req.payload)?;
 
 			Ok(b"ok".to_vec())
+		},
+		"test_result" => {
+			let req_json: serde_json::Value = serde_json::from_slice(&req.payload)?;
+			info!("test result req => {:?}", req_json);
+
+			let uuid = req_json["uuid"].as_str().unwrap();
+			let rs = help::get_mem_cache(&uuid)?;
+
+			Ok(rs)
 		},
 		_ => {
 			debug!("unknown action: {}", req.action);

@@ -301,6 +301,17 @@ const F = {
     throw 'Can not convert to BN => '+val;
   },
 
+  parseJSON(str, default_value=null){
+    let rs;
+    try{
+      rs = JSON.parse(str);
+    }catch(e){
+      rs = default_value
+    }
+
+    return rs;
+  },
+
   bnToBalanceNumber(bn){
     const value = parseInt(bn.toString(),10)/(1000000*1000000);
     // const value = bn.div(BN_MILLION.mul(BN_MILLION)).toNumber();

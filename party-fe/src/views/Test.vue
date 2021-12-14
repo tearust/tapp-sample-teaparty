@@ -1,13 +1,13 @@
 <template>
 <div class="tea-page">
-  <el-form :model="form">
-    <el-form-item label="Action">
+  <el-form :model="form" :rules="rules">
+    <el-form-item label="Action" prop="action">
       <el-input v-model="form.action"></el-input>
     </el-form-item>
-    <el-form-item label="Payload">
-      <el-input type="textarea" :rows="8" v-model="form.payload"></el-input>
+    <el-form-item label="Payload" prop="payload">
+      <el-input type="textarea" :rows="4" v-model="form.payload"></el-input>
     </el-form-item>
-    <el-form-item label="UUID">
+    <el-form-item label="UUID" prop="uuid">
       <el-input v-model="form.uuid"></el-input>
     </el-form-item>
 
@@ -16,9 +16,11 @@
   <div style="text-align:right;">
     <el-button type="primary" plain @click="generate_uuid()">Generate UUID</el-button>
 
-    <el-button type="primary">Request action</el-button>
-    <el-button type="primary">Query result</el-button>
+    <el-button type="primary" @click="test_action()">Request action</el-button>
+    <el-button type="primary" @click="test_result()">Query result</el-button>
   </div>
+
+  <div style="margin-top: 20px; background: #111; color: #0f0; padding: 4px 8px;min-height: 40px;">{{result}}</div>
   
 </div>
 </template>
@@ -42,6 +44,12 @@ export default {
         action: 'test_action',
         payload: '',
         uuid: '',
+      },
+      result: '',
+      rules: {
+        action: [{required: true}],
+        payload: [{required: true}],
+        uuid: [{required: true}],
       }
     };
   },
@@ -70,6 +78,39 @@ export default {
   methods: {
     generate_uuid(){
       this.form.uuid = bbs.test.get_uuid();
+    },
+    async test_action(){
+      const {payload, uuid, action} = this.form;
+
+      const json = utils.parseJSON(payload);
+      console.log(111, json);
+      if(!json){
+        alert('Invalid json payload');
+        return;
+      }
+
+      if(!uuid){
+        alert('Invalid UUID');
+        return;
+      }
+
+      if(!action){
+        alert("Invalid action");
+        return;
+      }
+
+      const rs = await bbs.test.request(uuid, json, action);
+      this.result = JSON.stringify(rs);
+
+    },
+    async test_result(){
+      const {uuid} = this.form;
+      if(!uuid){
+        alert('Invalid UUID');
+        return;
+      }
+      const rs = await bbs.test.result(uuid);
+      this.result = JSON.stringify(rs);
     }
 
     

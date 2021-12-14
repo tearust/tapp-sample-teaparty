@@ -4,6 +4,7 @@
   "Url": "Bytes",
   "TeaPubKey": "[u8; 32]",
   "PeerId": "Bytes",
+  "ConnId": "Bytes",
   "Cid": "Bytes",
   "Signature": "Bytes",
   "NodeStatus": {
@@ -18,8 +19,8 @@
     "teaId": "TeaPubKey",
     "ephemeralId": "TeaPubKey",
     "profileCid": "Bytes",
-    "urls": "Vec<Url>",
     "peerId": "Bytes",
+    "conn_id": "Bytes",
     "createTime": "BlockNumber",
     "updateTime": "BlockNumber",
     "raNodes": "Vec<(TeaPubKey, bool)>",
@@ -97,6 +98,7 @@
     "cml_id": "CmlId",
     "id": "MachineId",
     "ip": "Bytes",
+    "controller_account": "AccountId",
     "status": "MinerStatus",
     "orbitdb_id": "Option<Bytes>",
     "suspend_height": "Option<BlockNumber>",
@@ -214,6 +216,9 @@
     "tapp_type": "TAppType",
     "billing_mode": "BillingMode",
     "buy_curve_theta": "u32",
-    "sell_curve_theta": "u32"
-  }
+    "sell_curve_theta": "u32",
+    "created_at": "BlockNumber"
+  },
+
+  "VersionItem": ["Bytes", "Bytes"]
 }
