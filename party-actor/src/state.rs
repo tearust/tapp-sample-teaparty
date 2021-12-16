@@ -11,7 +11,7 @@ use serde_json::{json};
 
 use vmh_codec::{
 	message::{
-		structs_proto::{libp2p},
+		structs_proto::{tokenstate},
 		encode_protobuf,
 	},
 };
@@ -45,17 +45,17 @@ fn send_tx_via_p2p(
 	txn: TeapartyTxn,
 	uuid: String,
 ) -> anyhow::Result<(Ts, Hash)> {
-	
 	let txn_bytes = bincode::serialize(&txn)?;
-	let txn_b64 = base64::encode(txn_bytes.clone());
-	let txn_hash = get_hash_from_txn(txn_bytes)?;
+	let txn_hash = get_hash_from_txn(txn_bytes.clone())?;
 
-	
 	let payload = encode_protobuf(
-		libp2p::StateMessageRequest {
-			action: "state_command".into(),
-			msg_b64: txn_b64,
+		tokenstate::StateReceiverMessage {
 			uuid,
+            msg: Some(tokenstate::state_receiver_message::Msg::StateCommand(
+                tokenstate::StateCommand {
+                    data: txn_bytes
+                }
+            )),
 		}
 	)?;
 	info!("txn payload => {:?}", payload);
@@ -67,17 +67,13 @@ fn send_tx_via_p2p(
 }
 
 fn send_query_via_p2p(
-	query_json_bytes: Vec<u8>,
+    state_query: tokenstate::StateQuery,
 	uuid: &str,
 ) -> anyhow::Result<Vec<u8>> {
-	
-	let query_b64 = base64::encode(query_json_bytes.clone());
-
 	let payload = encode_protobuf(
-		libp2p::StateMessageRequest {
-			action: "state_query".into(),
-			msg_b64: query_b64,
+		tokenstate::StateReceiverMessage {
 			uuid: uuid.to_string(),
+            msg: Some(tokenstate::state_receiver_message::Msg::StateQuery(state_query)),
 		}
 	)?;
 	info!("query payload => {:?}", payload);
@@ -104,13 +100,15 @@ fn send_followup_via_p2p(
 	uuid: String,
 ) -> anyhow::Result<()> {
 	let fu_bytes = bincode::serialize(&fu)?;
-	let fu_b64 = base64::encode(fu_bytes);
 
 	let payload = encode_protobuf(
-		libp2p::StateMessageRequest {
-			action: "state_followup".into(),
-			msg_b64: fu_b64,
+		tokenstate::StateReceiverMessage {
 			uuid,
+            msg: Some(tokenstate::state_receiver_message::Msg::StateFollowup(
+                tokenstate::StateFollowup {
+                    data: fu_bytes,
+                }
+            )),
 		}
 	)?;
 	info!("followup payload => {:?}", payload);
@@ -169,14 +167,15 @@ pub(crate) fn query_tea_balance(
 ) -> anyhow::Result<Vec<u8>> {
 
 	info!("begin to query tea balance");
-	let query = json!({
-		"msg_type": "tea_balance".to_string(),
-		"acct": acct_str, 
-	});
+	let query = tokenstate::StateQuery {
+        msg: Some(tokenstate::state_query::Msg::TeaBalanceRequest(
+            tokenstate::TeaBalanceRequest {
+                account: acct_str.into(),
+            }
+        )),
+	};
 	
-	let query_bytes = serde_json::to_vec(&query).unwrap();
-
-	let res = send_query_via_p2p(query_bytes, uuid)?;
+	let res = send_query_via_p2p(query, uuid)?;
 
 	Ok(res)
 }
