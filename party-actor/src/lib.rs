@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
 #![allow(non_camel_case_types)]
+
 use crate::channel::{delete_message, extend_message, load_message_list, post_message};
 use crate::validating::{login, logout, prepare_login};
 use actor::prelude::*;
