@@ -3,9 +3,7 @@
 #![allow(non_camel_case_types)]
 #[macro_use]
 extern crate log;
-use serde::{Serialize, Deserialize};
 use std::convert::TryInto;
-use bincode::Result as SerdeResult;
 use wascc_actor::prelude::codec::messaging::BrokerMessage;
 use wascc_actor::prelude::*;
 use wascc_actor::HandlerResult;

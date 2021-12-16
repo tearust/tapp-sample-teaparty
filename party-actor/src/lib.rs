@@ -105,7 +105,7 @@ fn echo(msg: &BrokerMessage) -> HandlerResult<()> {
 }
 
 fn handle_system_init(_msg: &BrokerMessage) -> HandlerResult<()> {
-	info!("tapp bbs received tea.system.init");
+	info!("tapp tea-party actor received tea.system.init");
 	register_adapter_http_dispatcher(
 		vec![
 			"loginPrepare",

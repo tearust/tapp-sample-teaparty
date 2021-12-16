@@ -1,21 +1,20 @@
-
 use bincode;
 use std::convert::TryInto;
 use tea_actor_utility::actor_env::{get_system_time, };
 use tea_actor_utility::actor_crypto::{ sha256, public_key_from_ss58};
 
-use tea_actor_utility::actor_enclave::generate_uuid;
-use base64;
+// use tea_actor_utility::actor_enclave::generate_uuid;
+// use base64;
 use tea_codec;
 
 use vmh_codec::{
 	message::{
-		structs_proto::{libp2p, replica,},
+		structs_proto::{replica,},
 		encode_protobuf,
 	},
 };
 
-use wascc_actor::HandlerResult;
+// use wascc_actor::HandlerResult;
 use wascc_actor::untyped;
 use party_shared::{TeapartyTxn};
 
