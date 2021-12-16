@@ -278,4 +278,5 @@ F.consts = {
   channel: default_channel,
 };
 
+F.sync_request = sync_request;
 export default F;
