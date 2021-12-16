@@ -35,7 +35,7 @@ pub fn p2p_send_to_receive_actor(
   info!("target conn id => {:?}", target_conn_id);
   
   // TOOD send to at least 2 A node.
-  for node in A_nodes{
+  for node in a_nodes{
     info!("loop for all A nodes...");
     let target_conn_id = conn_id_by_tea_id(node.clone())?;
     info!("target conn id => {:?}", target_conn_id);
