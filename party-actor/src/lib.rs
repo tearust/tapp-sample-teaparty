@@ -14,7 +14,7 @@ use tea_actor_utility::{
 };
 use types::*;
 use vmh_codec::error::DISCARD_MESSAGE_ERROR;
-use vmh_codec::message::structs_proto::{layer1, orbitdb, rpc, libp2p};
+use vmh_codec::message::structs_proto::{layer1, orbitdb, rpc, libp2p, tokenstate};
 use vmh_codec::rpc::adapter::AdapterDispatchType;
 
 #[macro_use]
@@ -63,15 +63,14 @@ fn libp2p_back_message(msg: &BrokerMessage) -> HandlerResult<Vec<u8>> {
 	let libp2p_request = libp2p::Libp2pRequest::decode(msg.body.as_slice())?;
 	if let Some(libp2p::libp2p_request::Msg::GeneralRequest(r)) = libp2p_request.msg {
 
-		let body: serde_json::Value = serde_json::from_slice(r.runtime_message.unwrap().content.as_slice())?;
+		let content = r.runtime_message
+			.ok_or(anyhow::anyhow!("failed to get runtime message"))?
+			.content;
+		let body = 
+			tokenstate::StateReceiverResponse::decode(content.as_slice())?;
 		info!("party actor get lib msg back => {:?}", body);
 
-		if let Some(uuid) = body["uuid"].as_str() {
-			help::set_mem_cache(&uuid, serde_json::to_vec(&body)?)?;
-
-			info!("set to kvp with uuid {} success.", &uuid);
-		}
-
+		help::set_mem_cache(&body.uuid, content)?;
 	}
 
 	Ok(vec![])
@@ -220,9 +219,8 @@ fn handle_adapter_http_request(req: rpc::AdapterHttpRequest) -> anyhow::Result<V
 		"query_result" => {
 			let req: HttpQueryResultWithUuid = serde_json::from_slice(&req.payload)?;
 
-			let res_val = help::get_mem_cache(&req.uuid)?;
-
-			Ok(res_val)
+			let res_val = help::to_json_response(&req.uuid)?;
+			Ok(serde_json::to_vec(&res_val)?)
 		},
 		"test_action" => {
 			let req_json: serde_json::Value = serde_json::from_slice(&req.payload)?;

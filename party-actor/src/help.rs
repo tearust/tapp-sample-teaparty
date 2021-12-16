@@ -1,3 +1,4 @@
+use interface::Tsid;
 use prost::Message;
 
 use tea_actor_utility::{
@@ -10,8 +11,9 @@ use tea_actor_utility::{
 
 use vmh_codec::message::{
   encode_protobuf, 
-  structs_proto::{libp2p, layer1},
+  structs_proto::{libp2p, layer1, tokenstate},
 };
+use serde_json::json;
 use wascc_actor::untyped;
 use tea_codec;
 use base64;
@@ -112,3 +114,40 @@ pub fn get_mem_cache(key: &str) -> anyhow::Result<Vec<u8>> {
   Ok(rs)
 }
 
+pub fn to_json_response(key: &str) -> anyhow::Result<serde_json::Value> {
+  let value = get_mem_cache(key)?;
+  let res = tokenstate::StateReceiverResponse::decode(value.as_slice())?;
+  let rtn = match res.msg.as_ref() {
+    Some(tokenstate::state_receiver_response::Msg::TeaBalanceResponse(balance_res)) => {
+      json!({
+				"balance": u128_from_le_buffer(&balance_res.balance)?.to_string(),
+				"ts": u128_from_le_buffer(&balance_res.ts)?.to_string(),
+				"uuid": res.uuid.clone(),
+			})
+    }
+    Some(tokenstate::state_receiver_response::Msg::CommandFollowupResponse(cf_res)) => {
+      json!({
+        "ts": u128_from_le_buffer(&cf_res.ts)?.to_string(),
+        "hash": hex::encode(&cf_res.hash),
+        "sender": hex::encode(&cf_res.sender),
+				"uuid": res.uuid.clone(),
+      })
+    }
+    _ => json!({
+      "error": format!("unknown response: {:?}", res)
+    })
+  };
+  Ok(rtn)
+}
+
+fn u128_from_le_buffer(data: &[u8]) -> anyhow::Result<u128> {
+	const U128_LENGTH: usize = 16;
+
+	if data.len() < U128_LENGTH {
+		return Err(anyhow::anyhow!("u128 length should be {}", U128_LENGTH));
+	}
+
+	let mut u128_buf = [0u8; U128_LENGTH];
+	u128_buf.copy_from_slice(&data[0..U128_LENGTH]);
+	Ok(u128::from_le_bytes(u128_buf))
+}
