@@ -1,3 +1,8 @@
+use interface::{
+	AuthKey,
+};
+
+
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PostMessageRequest {
@@ -7,6 +12,7 @@ pub struct PostMessageRequest {
 	pub encrypted_message: String,
 	pub address: String,
 	pub uuid: String,
+	pub auth: AuthKey,
 }
 
 
@@ -49,6 +55,7 @@ pub struct HttpQueryBalanceRequest {
 	pub tapp_id: u64,
 	pub address: String,
 	pub uuid: String,
+	pub auth: AuthKey,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

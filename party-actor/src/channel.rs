@@ -17,7 +17,9 @@ use tea_actor_utility::common::calculate_hash;
 use tea_actor_utility::actor_env::current_timestamp;
 use tea_codec::{deserialize, serialize};
 use tea_codec;
-
+use interface::{
+	AuthKey,
+};
 use crate::state;
 
 use vmh_codec::message::{
@@ -57,6 +59,7 @@ pub(crate) fn check_user_login(address: &str) -> anyhow::Result<()> {
 
 pub(crate) fn post_message(
 	uuid: &str, 
+	auth: AuthKey,
 	request: PostMessageRequest,
 ) -> anyhow::Result<Vec<u8>> {
 	check_user_login(&request.address)?;
@@ -77,7 +80,7 @@ pub(crate) fn post_message(
 	};
 
 	// state
-	state::post_message(&request.address, ttl.clone(), uuid)?;
+	state::post_message(&request.address, ttl.clone(), uuid, auth)?;
 
 	let dbname = db_name(request.tapp_id, &request.channel);
 	let add_message_data = orbitdb::AddMessageRequest {
@@ -106,7 +109,7 @@ pub(crate) fn post_message(
 }
 
 pub(crate) fn load_message_list(
-	uuid: &str,
+	_uuid: &str,
 	request: LoadMessageRequest,
 ) -> anyhow::Result<Vec<u8>> {
 	// check_user_login(&request.address)?;
@@ -141,7 +144,7 @@ pub(crate) fn load_message_list(
 	)?;
 	
 	let mut rs: Vec<MessageItem> = Vec::new();
-	let mut arr: Vec<serde_json::Value>;
+	let arr: Vec<serde_json::Value>;
 	let tmp: serde_json::Value = serde_json::from_str(&res.data)?;
 	match tmp.as_array() {
 		Some(v) => (arr = v.clone()),
@@ -172,7 +175,7 @@ pub(crate) fn extend_message(
 	request: ExtendMessageRequest,
 ) -> anyhow::Result<Vec<u8>> {
 	let utc_expired = {
-		let now: u64 = current_timestamp()? as u64;
+		let _now: u64 = current_timestamp()? as u64;
 		let ttl: u64 = (1 * 60 * 60) as u64;
 		match request.time {
 			Some(v) => (v as u64),

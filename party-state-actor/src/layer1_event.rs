@@ -19,10 +19,10 @@ use crate::state;
 pub(crate) fn on_top_up(event: layer1::TappTopupEvent) -> anyhow::Result<()> {
 	info!("received topup event, details: {:?}", event);
 
-	let npc_account = event.to_account;
+	let _npc_account = event.to_account;
 	// TODO check npc account
 
-	let tapp_id = event.tapp_id;
+	let _tapp_id = event.tapp_id;
 	let amt = BigUint::from_bytes_le(&event.amount);
 
 	// TODO, how to fix this unwrap

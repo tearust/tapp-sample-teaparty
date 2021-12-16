@@ -1,4 +1,6 @@
-
+#![allow(dead_code)]
+#![allow(unused_imports)]
+#![allow(non_camel_case_types)]
 use bincode;
 use std::convert::TryInto;
 use tea_actor_utility::actor_env::{get_system_time, };
@@ -21,7 +23,7 @@ use party_shared::{TeapartyTxn};
 
 use interface::{
   Hash, TxnSerial, Followup, Ts,
-  Account, Balance,
+  Account, Balance, AuthKey, 
 };
 
 use crate::help;
@@ -146,12 +148,14 @@ pub fn post_message(
 	acct: &str,
 	ttl: u64,
 	uuid: &str,
+	auth: AuthKey,
 ) -> anyhow::Result<()> {
 	info!("begin to post_message");
 	let txn = TeapartyTxn::PostMessage {
 		from: parse_to_acct(acct)?,
 		ttl,
 		uuid: uuid.to_string(),
+		auth,
 	};
 
 	execute_tx_with_txn(txn, uuid.to_string())?;
@@ -166,12 +170,14 @@ pub fn post_message(
 pub(crate) fn query_tea_balance(
 	acct_str: &str,
 	uuid: &str,
+	auth: AuthKey,
 ) -> anyhow::Result<Vec<u8>> {
 
 	info!("begin to query tea balance");
 	let query = json!({
 		"msg_type": "tea_balance".to_string(),
 		"acct": acct_str, 
+		"auth": auth,
 	});
 	
 	let query_bytes = serde_json::to_vec(&query).unwrap();

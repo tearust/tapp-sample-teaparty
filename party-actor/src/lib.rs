@@ -1,3 +1,6 @@
+#![allow(dead_code)]
+#![allow(unused_imports)]
+#![allow(non_camel_case_types)]
 use crate::channel::{delete_message, extend_message, load_message_list, post_message};
 use crate::validating::{login, logout, prepare_login};
 use actor::prelude::*;
@@ -198,7 +201,7 @@ fn handle_adapter_http_request(req: rpc::AdapterHttpRequest) -> anyhow::Result<V
 		}
 		"postMessage" => {
 			let req: PostMessageRequest = serde_json::from_slice(&req.payload)?;
-			post_message(&req.uuid.clone(), req)
+			post_message(&req.uuid.clone(), req.auth, req)
 		}
 		"loadMessageList" => {
 			let req: LoadMessageRequest = serde_json::from_slice(&req.payload)?;
@@ -215,7 +218,7 @@ fn handle_adapter_http_request(req: rpc::AdapterHttpRequest) -> anyhow::Result<V
 		"query_balance" => {
 			let req: HttpQueryBalanceRequest = serde_json::from_slice(&req.payload)?;
 
-			state::query_tea_balance(&req.address, &req.uuid)
+			state::query_tea_balance(&req.address, &req.uuid, req.auth)
 		},
 		"query_result" => {
 			let req: HttpQueryResultWithUuid = serde_json::from_slice(&req.payload)?;

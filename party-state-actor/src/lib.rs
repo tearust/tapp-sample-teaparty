@@ -1,3 +1,6 @@
+#![allow(dead_code)]
+#![allow(unused_imports)]
+#![allow(non_camel_case_types)]
 #[macro_use]
 extern crate log;
 use serde::{Serialize, Deserialize};
@@ -11,12 +14,14 @@ use prost::Message;
 use tea_actor_utility::actor_crypto::public_key_from_ss58;
 use tea_actor_utility::actor_layer1::register_layer1_event;
 use tea_actor_utility::{
-	actor_statemachine,
+	actor_statemachine::{
+		self, query_auth_ops_bytes,
+	},
 	actor_env::{get_system_time, get_env_var},
 };
 use vmh_codec::message::structs_proto::{layer1};
 
-use interface::{TOKEN_ID_TEA, Balance, Tsid, Account};
+use interface::{TOKEN_ID_TEA, Balance, Tsid, Account, TOPUP_AUTH_KEY};
 use token_state::token_context::TokenContext;
 use vmh_codec::message::structs_proto::tokenstate::*;
 
@@ -99,8 +104,10 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 	let base: Tsid = helper_get_state_tsid()?;
 	info!("base tsid is {:?}", &base);
 	let context_bytes = match sample_txn {
-		TeapartyTxn::Topup{acct, amt, uuid} =>{
-			let ctx = TokenContext::new(tsid, base, TOKEN_ID_TEA);
+		TeapartyTxn::Topup{acct, amt, uuid:_}=>{
+			let auth = TOPUP_AUTH_KEY;
+			let auth_ops_bytes = query_auth_ops_bytes(auth)?;
+			let ctx = TokenContext::new(tsid, base, TOKEN_ID_TEA, &auth_ops_bytes);
 			let ctx_bytes = bincode::serialize(&ctx)?;
 			let to: Account = acct;
 			let amt: Vec<u8> = bincode::serialize(&amt)?;
@@ -110,7 +117,7 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 				amt,
 			})?
 		},
-		TeapartyTxn::PostMessage{from, ttl, uuid} => {
+		TeapartyTxn::PostMessage{from, ttl, uuid:_, auth} => {
 			info!("PostMessage from ttl: {:?},{:?}", &from, &ttl);
 			
 			// ttl > 2000, 2 TEA, else, 1 TEA
@@ -131,7 +138,8 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 				tmp.try_into().unwrap()
 			};
 			
-			let ctx = TokenContext::new(tsid, base, TOKEN_ID_TEA);
+			let auth_ops_bytes: Vec<u8> = query_auth_ops_bytes(auth)?;
+			let ctx = TokenContext::new(tsid, base, TOKEN_ID_TEA, &auth_ops_bytes);
 			let ctx_bytes = bincode::serialize(&ctx)?;
 
 			let mov = MoveRequest {
@@ -143,9 +151,10 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 			actor_statemachine::mov(mov)?
 		},
 
-		TeapartyTxn::TransferTea{from, to, amt, uuid} => {
-			info!("TransferTea from to amt: {:?},{:?},{:?}", &from, &to, &amt);
-			let ctx = TokenContext::new(tsid, base, TOKEN_ID_TEA);
+		TeapartyTxn::TransferTea{from, to, amt, uuid:_, auth} => {
+			info!("TransferTea from to amt: {:?},{:?},{:?},{}", &from, &to, &amt, auth);
+			let auth_ops_bytes: Vec<u8> = query_auth_ops_bytes(auth)?;
+			let ctx = TokenContext::new(tsid, base, TOKEN_ID_TEA, &auth_ops_bytes);
 			let ctx_bytes = bincode::serialize(&ctx)?;
 			let amt: Vec<u8> = bincode::serialize(&amt)?;
 

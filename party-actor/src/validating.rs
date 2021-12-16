@@ -97,7 +97,7 @@ fn get_aes_key_from_appstore() -> anyhow::Result<Vec<u8>> {
 }
 
 pub(crate) fn aes_encrypt_local(message: &str) -> anyhow::Result<String> {
-	let aes_key = get_aes_key_from_appstore()?;
+	let _aes_key = get_aes_key_from_appstore()?;
 
 	// TODO will fail when data size less than 8. throw crypto provider handle_call error: BlockModeError
 	// let data = b"hello12";

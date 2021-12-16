@@ -21,7 +21,7 @@ use party_shared::{TeapartyTxn};
 
 use interface::{
   Hash, TxnSerial, Followup, Ts,
-  Account, Balance, Tsid,
+  Account, Balance, Tsid, AuthKey,
 };
 
 
@@ -62,7 +62,7 @@ pub fn send_followup_to_replica(followup_bytes: Vec<u8>) -> anyhow::Result<()> {
 }
 
 pub fn send_tx_to_replica(txn_bytes: Vec<u8>) -> anyhow::Result<()> {
-	let (txn_serial, txn_hash) = get_serial_and_hash_from_txn(txn_bytes)?;
+	let (txn_serial, _txn_hash) = get_serial_and_hash_from_txn(txn_bytes)?;
 	let req_txn = replica::ReceiveTxn {
 		txn_bytes: bincode::serialize(&txn_serial)?,
 	};
@@ -123,7 +123,7 @@ fn execute_tx_with_txn(
 		sender: sender_actor_hash,
   };
   let fu_bytes = bincode::serialize(&req_fu)?;
-  send_followup_to_replica(fu_bytes);
+  let _ = send_followup_to_replica(fu_bytes)?;
 
 	Ok(())
 }
