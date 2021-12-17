@@ -1,15 +1,11 @@
+use std::convert::{TryFrom, TryInto};
 use serde::{Serialize, Deserialize};
 use bincode;
-use bincode::Result as SerdeResult;
 use thiserror::Error;
 use interface::{
 	Account, Balance, AuthKey,
+	txn::{Txn, TxnSerial, Transferable},
 };
-use interface::txn::{Txn, TxnError, TxnSerial};
-// use token_state::{
-// 	token_state::{TokenState},
-// 	token_context::{TokenContext},
-// };
 
 pub const HANDLED_BY_ACTOR_NAME: &str = "TeapartyTxn";
 
@@ -24,7 +20,7 @@ pub enum TeapartyTxnError{
 }
 
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum TeapartyTxn{
 	Topup {
 		acct: Account,
@@ -61,24 +57,36 @@ pub enum TeapartyTxn{
 	},
 }
 
-impl Txn for TeapartyTxn{
-	fn into_bytes(&self)->Vec<u8>{
-		let txn_serial = TxnSerial{
-			actor_name : HANDLED_BY_ACTOR_NAME.to_string(),
-			bytes : bincode::serialize(&self).unwrap(),
-		};
-		bincode::serialize(&txn_serial).unwrap()
-	}
-	fn from_bytes(bytes:Vec<u8>)->SerdeResult<Self>{
-		bincode::deserialize::<Self>(&bytes)
-	}
-	fn get_handler_actor()->String{
+impl Transferable for TeapartyTxn {
+	fn get_handler_actor() -> String {
 		HANDLED_BY_ACTOR_NAME.into()
 	}
-	fn deserialize_to_txn_serial(bytes: &[u8])->Result<TxnSerial, TxnError>{
-		let txn_serial: TxnSerial = 
-			bincode::deserialize(bytes)
-			.map_err(|e| TxnError::ParseFailed(e.to_string()))?;
-		Ok(txn_serial)
+}
+
+impl TryFrom<TxnSerial> for TeapartyTxn {
+	type Error = bincode::Error;
+
+	fn try_from(value: TxnSerial) -> Result<Self, Self::Error> {
+		bincode::deserialize::<Self>(&value.bytes)
+	}
+}
+
+impl TryInto<TxnSerial> for TeapartyTxn {
+	type Error = bincode::Error;
+
+	fn try_into(self) -> Result<TxnSerial, Self::Error> {
+		Ok(TxnSerial {
+			actor_name: HANDLED_BY_ACTOR_NAME.to_string(),
+			bytes: bincode::serialize(&self).unwrap(),
+		})
+	}
+}
+
+impl Txn<'static> for TeapartyTxn {}
+
+impl TeapartyTxn {
+	pub fn to_serial_bytes(self) -> Result<Vec<u8>, bincode::Error> {
+		let serial: TxnSerial = self.try_into()?;
+		bincode::serialize(&serial)
 	}
 }
