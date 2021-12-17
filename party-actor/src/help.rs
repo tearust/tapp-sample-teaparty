@@ -25,42 +25,48 @@ pub fn p2p_send_to_receive_actor(
   msg: Vec<u8>, 
 )-> anyhow::Result<()> {
   // let my_tea_id = get_my_tea_id()?;
-  let A_nodes = get_all_active_a_nodes()?;
+  let a_nodes = get_all_active_a_nodes()?;
 
-  info!("all A nodes => {:?}", A_nodes);
+  info!("all A nodes => {:?}", a_nodes);
 
-  if(A_nodes.len() < 1){
+  if a_nodes.len() < 1 {
     return Err(anyhow::anyhow!("{}", "No active A nodes."));
   }
 
-  let target_conn_id = conn_id_by_tea_id(A_nodes[0].clone())?;
+  let target_conn_id = conn_id_by_tea_id(a_nodes[0].clone())?;
   info!("target conn id => {:?}", target_conn_id);
   
   // TOOD send to at least 2 A node.
+  for node in a_nodes{
+    info!("loop for all A nodes...");
+    let target_conn_id = conn_id_by_tea_id(node.clone())?;
+    info!("target conn id => {:?}", target_conn_id);
+  
+    let target_key = tea_codec::ACTOR_PUBKEY_STATE_RECEIVER.to_string();
+    let target_type = libp2p::TargetType::Actor as i32;
+
+    let from_key = tea_codec::ACTOR_PUBKEY_TAPP_BBS.to_string();
+
+    // TODO, convert to send
+
+    info!("p2p send msg start...");
+    actor_libp2p::send_message(
+      target_conn_id,
+      libp2p::RuntimeAddress {
+        target_key,
+        target_type,
+        target_action: "libp2p.state-receiver".to_string(),
+      },
+      Some(libp2p::RuntimeAddress {
+        target_key: from_key,
+        target_type,
+        target_action: Default::default(), // not needed
+      }),
+      msg.clone(),
+    )?;
+  }
 
 
-  let target_key = tea_codec::ACTOR_PUBKEY_STATE_RECEIVER.to_string();
-  let target_type = libp2p::TargetType::Actor as i32;
-
-  let from_key = tea_codec::ACTOR_PUBKEY_TAPP_BBS.to_string();
-
-  // TODO, convert to send
-
-  info!("p2p send msg start...");
-  actor_libp2p::send_message(
-    target_conn_id,
-    libp2p::RuntimeAddress {
-      target_key,
-      target_type,
-      target_action: "libp2p.state-receiver".to_string(),
-    },
-    Some(libp2p::RuntimeAddress {
-      target_key: from_key,
-      target_type,
-      target_action: Default::default(), // not needed
-    }),
-    msg,
-  )?;
   info!("p2p send msg finish...");
 
   Ok(())

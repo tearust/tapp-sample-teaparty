@@ -25,8 +25,8 @@ pub(crate) fn prepare_login(_uuid: &str, request: &PrepareLoginRequest) -> anyho
 	}
 
 	let aes_key = communication_aes_key(&request.address);
-	if actor_kvp::exists(BINDING_NAME, &aes_key).map_err(|e| anyhow::anyhow!("{}", e))? {
-		actor_kvp::del(BINDING_NAME, &aes_key).map_err(|e| anyhow::anyhow!("{}", e))?;
+	if actor_kvp::exists(BINDING_NAME, &aes_key).map_err(|e| anyhow::anyhow!("actor_kvp exists aes_key error:{}", e))? {
+		actor_kvp::del(BINDING_NAME, &aes_key).map_err(|e| anyhow::anyhow!("actor_kvp del aes_key error: {}", e))?;
 	}
 
 	let (rsa_pub, rsa_pri) = generate_rsa_keypair(512)?;
@@ -36,7 +36,7 @@ pub(crate) fn prepare_login(_uuid: &str, request: &PrepareLoginRequest) -> anyho
 		&rsa_pri,
 		6000,
 	)
-	.map_err(|e| anyhow::anyhow!("{}", e))?;
+	.map_err(|e| anyhow::anyhow!("actor_kvp set ras_pri error:{}", e))?;
 
 	let sign_data = sr25519_pubkey;
 	let signature = sign("ed25519".into(), get_my_ephemeral_key()?, sign_data.clone())?;
@@ -97,7 +97,7 @@ fn get_aes_key_from_appstore() -> anyhow::Result<Vec<u8>> {
 }
 
 pub(crate) fn aes_encrypt_local(message: &str) -> anyhow::Result<String> {
-	let aes_key = get_aes_key_from_appstore()?;
+	let _aes_key = get_aes_key_from_appstore()?;
 
 	// TODO will fail when data size less than 8. throw crypto provider handle_call error: BlockModeError
 	// let data = b"hello12";

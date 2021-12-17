@@ -3,13 +3,13 @@ use bincode;
 use bincode::Result as SerdeResult;
 use thiserror::Error;
 use interface::{
-	Account, Balance, TOKEN_ID_TEA, Tsid, Operate, 
+	Account, Balance, AuthKey,
 };
 use interface::txn::{Txn, TxnError, TxnSerial};
-use token_state::{
-	token_state::{TokenState},
-	token_context::{TokenContext},
-};
+// use token_state::{
+// 	token_state::{TokenState},
+// 	token_context::{TokenContext},
+// };
 
 pub const HANDLED_BY_ACTOR_NAME: &str = "TeapartyTxn";
 
@@ -35,6 +35,7 @@ pub enum TeapartyTxn{
 		acct: Account,
 		amt: Balance,
 		uuid: String,
+		auth: AuthKey,
 	},
 
 	TransferTea{
@@ -42,21 +43,22 @@ pub enum TeapartyTxn{
 		to:Account, 
 		amt:Balance,
 		uuid: String,
+		auth: AuthKey,
 	},
 
 	PostMessage {
 		from: Account,
 		ttl: u64,
 		uuid: String,
+		auth: AuthKey,
 	},
 
 	ExtendMessage {
 		from: Account,
 		ttl: u64,
 		uuid: String,
+		auth: AuthKey,
 	},
-	
-
 }
 
 impl Txn for TeapartyTxn{
@@ -68,7 +70,6 @@ impl Txn for TeapartyTxn{
 		bincode::serialize(&txn_serial).unwrap()
 	}
 	fn from_bytes(bytes:Vec<u8>)->SerdeResult<Self>{
-
 		bincode::deserialize::<Self>(&bytes)
 	}
 	fn get_handler_actor()->String{
@@ -81,5 +82,3 @@ impl Txn for TeapartyTxn{
 		Ok(txn_serial)
 	}
 }
-
-
