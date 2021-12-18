@@ -11,7 +11,7 @@ use tea_actor_utility::{
 
 use vmh_codec::message::{
   encode_protobuf, 
-  structs_proto::{libp2p, layer1, tokenstate},
+  structs_proto::{libp2p, tappstore, layer1, tokenstate},
 };
 use serde_json::json;
 use wascc_actor::untyped;
@@ -124,12 +124,8 @@ pub fn to_json_response(key: &str) -> anyhow::Result<serde_json::Value> {
   let value = get_mem_cache(key)?;
   let res = tokenstate::StateReceiverResponse::decode(value.as_slice())?;
   let rtn = match res.msg.as_ref() {
-    Some(tokenstate::state_receiver_response::Msg::TeaBalanceResponse(balance_res)) => {
-      json!({
-				"balance": u128_from_le_buffer(&balance_res.balance)?.to_string(),
-				"ts": u128_from_le_buffer(&balance_res.ts)?.to_string(),
-				"uuid": res.uuid.clone(),
-			})
+    Some(tokenstate::state_receiver_response::Msg::GeneralQueryResponse(r)) => {
+      parse_tappstore_response(&r.data, &res.uuid)?
     }
     Some(tokenstate::state_receiver_response::Msg::CommandFollowupResponse(cf_res)) => {
       json!({
@@ -139,8 +135,28 @@ pub fn to_json_response(key: &str) -> anyhow::Result<serde_json::Value> {
 				"uuid": res.uuid.clone(),
       })
     }
+    Some(tokenstate::state_receiver_response::Msg::DirectResponse(_)) => {
+      json!({"status": "pending"})
+    }
     _ => json!({
       "error": format!("unknown response: {:?}", res)
+    })
+  };
+  Ok(rtn)
+}
+
+fn parse_tappstore_response(data: &[u8], uuid: &str) -> anyhow::Result<serde_json::Value> {
+  let tapp_query_response = tappstore::TappQueryResponse::decode(data)?;
+  let rtn = match tapp_query_response.msg {
+    Some(tappstore::tapp_query_response::Msg::TeaBalanceResponse(balance_res)) => {
+      json!({
+        "balance": u128_from_le_buffer(&balance_res.balance)?.to_string(),
+        "ts": u128_from_le_buffer(&balance_res.ts)?.to_string(),
+        "uuid": uuid.to_string(),
+      })
+    }
+    _ => json!({
+      "error": format!("unknown tappstore response: {:?}", tapp_query_response)
     })
   };
   Ok(rtn)

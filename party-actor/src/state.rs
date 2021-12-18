@@ -2,6 +2,7 @@
 #![allow(unused_imports)]
 #![allow(non_camel_case_types)]
 use bincode;
+use interface::txn::QuerySerial;
 use std::convert::TryInto;
 use tea_actor_utility::actor_env::{get_system_time, };
 use tea_actor_utility::actor_crypto::{ sha256, public_key_from_ss58};
@@ -13,7 +14,7 @@ use serde_json::{json};
 
 use vmh_codec::{
 	message::{
-		structs_proto::{tokenstate},
+		structs_proto::{tokenstate, tappstore},
 		encode_protobuf,
 	},
 };
@@ -69,13 +70,15 @@ fn send_tx_via_p2p(
 }
 
 fn send_query_via_p2p(
-    state_query: tokenstate::StateQuery,
+  serial: QuerySerial,
 	uuid: &str,
 ) -> anyhow::Result<Vec<u8>> {
 	let payload = encode_protobuf(
 		tokenstate::StateReceiverMessage {
 			uuid: uuid.to_string(),
-            msg: Some(tokenstate::state_receiver_message::Msg::StateQuery(state_query)),
+      msg: Some(tokenstate::state_receiver_message::Msg::StateQuery(tokenstate::StateQuery {
+				data: bincode::serialize(&serial)?,
+			})),
 		}
 	)?;
 	info!("query payload => {:?}", payload);
@@ -172,16 +175,20 @@ pub(crate) fn query_tea_balance(
 ) -> anyhow::Result<Vec<u8>> {
 
 	info!("begin to query tea balance");
-	let query = tokenstate::StateQuery {
-        msg: Some(tokenstate::state_query::Msg::TeaBalanceRequest(
-            tokenstate::TeaBalanceRequest {
+	let req = tappstore::TappQueryRequest {
+        msg: Some(tappstore::tapp_query_request::Msg::TeaBalanceRequest(
+            tappstore::TeaBalanceRequest {
                 account: acct_str.into(),
                 auth: auth.to_be_bytes().to_vec(),
             }
         )),
 	};
+	let serial = QuerySerial {
+		actor_name: tea_codec::ACTOR_PUBKEY_TAPPSTORE.into(),
+		bytes: encode_protobuf(req)?,
+	};
 	
-	let res = send_query_via_p2p(query, uuid)?;
+	let res = send_query_via_p2p(serial, uuid)?;
 
 	Ok(res)
 }
