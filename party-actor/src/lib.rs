@@ -13,6 +13,8 @@ use tea_actor_utility::action::get_uuid;
 use tea_actor_utility::actor_enclave::generate_uuid;
 use tea_actor_utility::actor_layer1::register_layer1_event;
 use tea_actor_utility::{
+	actor_enclave::get_my_tea_id,
+	actor_layer1::{fetch_miner_info_remotely, MinerClass},
 	actor_env::{get_system_time, get_env_var},
 	action::reply_intercom, actor_rpc::register_adapter_http_dispatcher, wascc_actor as actor,
 };
@@ -59,8 +61,8 @@ fn handle_message(msg: BrokerMessage) -> HandlerResult<Vec<u8>> {
 }
 
 pub fn can_do() -> anyhow::Result<bool> {
-	let miner_type = get_env_var("CML_TYPE")?;
-	Ok(miner_type.eq("B"))
+	let miner_info = fetch_miner_info_remotely(get_my_tea_id()?)?;
+	Ok(miner_info.class == MinerClass::B)
 }
 
 fn libp2p_back_message(msg: &BrokerMessage) -> HandlerResult<Vec<u8>> {
