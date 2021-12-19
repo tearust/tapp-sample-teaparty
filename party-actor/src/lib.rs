@@ -32,6 +32,7 @@ mod types;
 mod validating;
 mod state;
 mod help;
+mod user;
 
 const BINDING_NAME: &'static str = "tea_tapp_bbs";
 const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -189,12 +190,12 @@ fn handle_adapter_http_request(req: rpc::AdapterHttpRequest) -> anyhow::Result<V
 	match req.action.as_str() {
 		"loginPrepare" => {
 			let req: PrepareLoginRequest = serde_json::from_slice(&req.payload)?;
-			prepare_login(&uuid, &req)
+			user::prepare_login_request(&req)
 		}
-		"login" => {
-			let req: LoginRequest = serde_json::from_slice(&req.payload)?;
-			login(&uuid, &req)
-		}
+		// "login" => {
+		// 	let req: LoginRequest = serde_json::from_slice(&req.payload)?;
+		// 	login(&uuid, &req)
+		// }
 		"logout" => {
 			let req: LogoutRequest = serde_json::from_slice(&req.payload)?;
 			logout(&uuid, &req)

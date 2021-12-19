@@ -1,4 +1,3 @@
-
 import {_, axios, moment, uuid} from 'tearust_utils';
 import utils from '../tea/utils';
 import tapp from '../tea/tapp';
@@ -9,9 +8,9 @@ const default_channel = utils.urlParam('c') || 'test';
 console.log('channel => '+default_channel);
 let layer2_url = utils.get_env('layer2_url');
 
-// if(!_.includes(['127.0.0.1', 'localhost'], location.hostname)){
-//   layer2_url = `http://${location.hostname}:8000`;
-// }
+if(!_.includes(['127.0.0.1', 'localhost'], location.hostname)){
+  layer2_url = `http://${location.hostname}:8000`;
+}
 
 const NPC = '5D2od84fg3GScGR139Li56raDWNQQhzgYbV7QsEJKS4KfTGv';
 
@@ -218,7 +217,7 @@ const sync_request = async (method, param, message_cb) => {
   });
   const _uuid = uuid();
 
-  message_cb('start first request...', param);
+  message_cb('start first request...');
   const step1_rs = await _axios.post('/tapp/'+method, {
     ...param,
     uuid: _uuid,
@@ -265,27 +264,12 @@ F.test = {
     return uuid();
   }, 
   async request(_uuid, payload, method){
-    try{
-      const rs = await _axios.post('/tapp/'+method, {
-        ...payload,
-        uuid: _uuid,
-      });
-
-      return rs;
-    }catch(e){
-      return e.message || e.toString();
-    }
-  },
-  async result(_uuid){
-    try{
-      const rs = await _axios.post('/tapp/test_result', {
-        uuid: _uuid,
-      });
-
-      return rs;
-    }catch(e){
-      return e.message || e.toString();
-    }
+    const step1_rs = await _axios.post('/tapp/'+method, {
+      ...payload,
+      uuid: _uuid,
+    });
+    
+    console.log('step 1 result => ', step1_rs);
   }
 };
 
@@ -293,4 +277,5 @@ F.consts = {
   channel: default_channel,
 };
 
+F.sync_request = sync_request;
 export default F;

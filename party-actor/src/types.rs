@@ -92,6 +92,7 @@ pub struct PrepareLoginRequest {
 	pub data: String,
 	/// Base64 encoded
 	pub signature: String,
+	pub uuid: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
