@@ -9,12 +9,13 @@ use wascc_actor::prelude::*;
 use wascc_actor::HandlerResult;
 use party_shared::{{TeapartyTxn}};
 use prost::Message;
-use tea_actor_utility::actor_crypto::public_key_from_ss58;
-use tea_actor_utility::actor_layer1::register_layer1_event;
 use tea_actor_utility::{
 	actor_statemachine::{
 		self, query_auth_ops_bytes,
 	},
+	actor_enclave::get_my_tea_id,
+	actor_crypto::public_key_from_ss58,
+	actor_layer1::{register_layer1_event, fetch_miner_info_remotely, MinerClass},
 	actor_env::{get_system_time, get_env_var},
 };
 use vmh_codec::message::structs_proto::{layer1};
@@ -33,8 +34,8 @@ actor_handlers! {
 }
 
 pub fn can_do() -> anyhow::Result<bool> {
-	let miner_type = get_env_var("CML_TYPE")?;
-	Ok(miner_type.eq("A"))
+	let miner_info = fetch_miner_info_remotely(get_my_tea_id()?)?;
+	Ok(miner_info.class == MinerClass::A)
 }
 
 fn handle_message(msg: BrokerMessage) -> HandlerResult<Vec<u8>> {
