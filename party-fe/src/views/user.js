@@ -32,26 +32,36 @@ const F = {
       signature: sig,
     });
 
-    const json = rs;
+    const j = rs;
+    if(j.ts){
+      // query check user via uuid
+
+      const r1 = await bbs.sync_request('checkUserAuth', {
+        uuid: j.uuid
+      }, null, 'checkUserAuth');
+
+      console.log(111, r1);
+
+    }
     // const rsaPublicKey = utils.forge.util.decode64(json.rsaPublicKey);
 
     // utils.crypto.set_rsa_publickey(address, rsaPublicKey);
-    if(json.is_login){
-      // login success
-      console.log('login success');
+    // if(json.is_login){
+    //   // login success
+    //   console.log('login success');
 
-      const user = {
-        address,
-        isLogin: true,
-        session_key: json.session_key,
-      };
-      // console.log(111, user);
-      utils.cache.put(F.getUserId(address), user);
+    //   const user = {
+    //     address,
+    //     isLogin: true,
+    //     session_key: json.session_key,
+    //   };
+    //   // console.log(111, user);
+    //   utils.cache.put(F.getUserId(address), user);
 
-      await store.dispatch('init_user');
+    //   await store.dispatch('init_user');
 
-      return true;
-    }
+    //   return true;
+    // }
 
     return false;
   },

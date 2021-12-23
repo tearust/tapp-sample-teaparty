@@ -25,6 +25,7 @@ wascc-actor = { git = "https://github.com/tearust/wascc-actor", branch = "nitro"
 
 tea-actor-utility = { path="../../mini-runtime/actors/utility" }
 vmh-codec = { path = "../../mini-runtime/vmh-codec" }
+actor-txns = { path = "../../mini-runtime/defs/actor-txns"}
 tea-codec = {path="../../tea-codec"}
 
 interface = {path = "../../statemachine/interface"}

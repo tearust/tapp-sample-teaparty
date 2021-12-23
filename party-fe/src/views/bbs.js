@@ -211,19 +211,25 @@ const F = {
   }
 };
 
-const sync_request = async (method, param, message_cb) => {
+const sync_request = async (method, param, message_cb, sp_method='query_result') => {
   message_cb = message_cb || ((msg) => {
     msg && console.log(msg);
   });
   const _uuid = uuid();
 
   message_cb('start first request...');
-  const step1_rs = await _axios.post('/tapp/'+method, {
-    ...param,
-    uuid: _uuid,
-  });
-  message_cb('first step result => '+step1_rs);
-  utils.sleep(3000);
+  try{
+    const step1_rs = await _axios.post('/tapp/'+method, {
+      uuid: _uuid,
+      ...param,
+    });
+    message_cb('first step result => '+step1_rs);
+  }catch(e){
+    // TODO
+    console.log('continue request');
+  }
+  
+  utils.sleep(6000);
   message_cb('start second request...');
 
   let rs = null;
@@ -233,7 +239,7 @@ const sync_request = async (method, param, message_cb) => {
       return;
     }
     try{
-      rs = await _axios.post('/tapp/query_result', {
+      rs = await _axios.post('/tapp/'+sp_method, {
         uuid: _uuid,
       });
 
@@ -241,7 +247,7 @@ const sync_request = async (method, param, message_cb) => {
 
       // rs = e.message;
       rs = null;
-      await utils.sleep(3000);
+      await utils.sleep(6000);
       n++;
       
       await loop2();
