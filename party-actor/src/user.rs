@@ -101,16 +101,34 @@ pub fn libp2p_msg_cb(body: &tokenstate::StateReceiverResponse) -> anyhow::Result
 
     // TODO check start string is check_user
     if uuid.len() > 46 {
-        let json = json!({
-            "session_key": "aaa".to_string(),
-        });
+        match &body.msg {
+            Some(tokenstate::state_receiver_response::Msg::GeneralQueryResponse(r)) => {
+                let query_res = tappstore::TappQueryResponse::decode(r.data.as_slice())?;
 
-        help::set_mem_cache(&body.uuid, serde_json::to_vec(&json)?)?;
+                libp2p_msg_cb_handler(&query_res)?;
+                help::set_mem_cache(&uuid, r.data.clone())?;
 
-        return Ok(true);
+                return Ok(true);
+            }
+            _ => warn!("unknown state receiver response: {:?}", body.msg),
+        }
     }
 
     Ok(false)
+}
+
+fn libp2p_msg_cb_handler(res: &tappstore::TappQueryResponse) -> anyhow::Result<()> {
+    match &res.msg {
+        Some(tappstore::tapp_query_response::Msg::CheckUserSessionResponse(r)) => {
+            let aes_key = &r.aes_key;
+            let auth_key = &r.auth_key;
+
+            // TODO save
+        }
+        _ => warn!("unknown tapp_query_response: {:?}", res.msg),
+    }
+
+    Ok(())
 }
 
 pub fn check_user_query_uuid(uuid: &str) -> String {

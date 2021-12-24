@@ -20,7 +20,7 @@ const F = {
   },
   async loginPrepare(layer1_instance, address){
     // thanks for https://github.com/polkadot-js/extension/issues/827
-    const data = 'tea-project';
+    const data = 'read_move_withdraw_consume';
 
     let sig = await layer1_instance.signWithExtension(address, data);
     sig = utils.uint8array_to_base64(hexToU8a(sig));
@@ -36,32 +36,22 @@ const F = {
     if(j.ts){
       // query check user via uuid
 
-      const r1 = await bbs.sync_request('checkUserAuth', {
-        uuid: j.uuid
-      }, null, 'checkUserAuth');
+      const r1 = await bbs.sync_request('checkUserAuth', {}, null, 'checkUserAuth', j.uuid);
 
-      console.log(111, r1);
+      if(r1.auth_key){
+        console.log('login success');
+        const user = {
+          address,
+          isLogin: true,
+          session_key: r1.auth_key,
+        };
 
+        utils.cache.put(F.getUserId(address), user);
+        await store.dispatch('init_user');
+
+        return true;
+      }
     }
-    // const rsaPublicKey = utils.forge.util.decode64(json.rsaPublicKey);
-
-    // utils.crypto.set_rsa_publickey(address, rsaPublicKey);
-    // if(json.is_login){
-    //   // login success
-    //   console.log('login success');
-
-    //   const user = {
-    //     address,
-    //     isLogin: true,
-    //     session_key: json.session_key,
-    //   };
-    //   // console.log(111, user);
-    //   utils.cache.put(F.getUserId(address), user);
-
-    //   await store.dispatch('init_user');
-
-    //   return true;
-    // }
 
     return false;
   },

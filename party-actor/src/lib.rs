@@ -75,11 +75,7 @@ fn libp2p_back_message(msg: &BrokerMessage) -> HandlerResult<Vec<u8>> {
             .ok_or(anyhow::anyhow!("failed to get runtime message"))?
             .content;
         let body = tokenstate::StateReceiverResponse::decode(content.as_slice())?;
-        info!(
-            "party actor get lib msg back => {:?}\n{:?}",
-            body,
-            body.uuid.clone().len()
-        );
+        info!("party actor get lib msg back => {:?}", body);
 
         if body.msg == None {
             info!("still need to waiting statemachine response.");
@@ -213,10 +209,13 @@ fn handle_adapter_http_request(req: rpc::AdapterHttpRequest) -> anyhow::Result<V
             if let Ok(req_bytes) = check_user_auth_rs {
                 // send query
                 state::send_tappstore_query_via_p2p(req_bytes, &new_uuid)?;
-                // TODO remove check_user_auth cache
+
+                // already send, delete flag
+                help::del_mem_cache(&help::uuid_cb_key(&uuid, &"check_user_auth"))?;
             }
 
             let res_val = help::to_json_response(&new_uuid)?;
+            info!("check user auth result => {:?}", res_val);
             Ok(serde_json::to_vec(&res_val)?)
         }
         // "login" => {

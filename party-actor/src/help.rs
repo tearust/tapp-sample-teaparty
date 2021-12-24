@@ -108,6 +108,11 @@ pub fn get_mem_cache(key: &str) -> anyhow::Result<Vec<u8>> {
     Ok(rs)
 }
 
+pub fn del_mem_cache(key: &str) -> anyhow::Result<()> {
+    actor_kvp::del(BINDING_NAME, &key);
+    Ok(())
+}
+
 pub fn to_json_response(key: &str) -> anyhow::Result<serde_json::Value> {
     let value = get_mem_cache(key)?;
     let res = tokenstate::StateReceiverResponse::decode(value.as_slice())?;
@@ -139,6 +144,13 @@ fn parse_tappstore_response(data: &[u8], uuid: &str) -> anyhow::Result<serde_jso
               "balance": u128_from_le_buffer(&balance_res.balance)?.to_string(),
               "ts": u128_from_le_buffer(&balance_res.ts)?.to_string(),
               "uuid": uuid.to_string(),
+            })
+        }
+        Some(tappstore::tapp_query_response::Msg::CheckUserSessionResponse(r)) => {
+            let auth_key = &r.auth_key;
+
+            json!({
+                "auth_key": hex::encode(auth_key),
             })
         }
         _ => json!({ "error": format!("unknown tappstore response: {:?}", tapp_query_response) }),

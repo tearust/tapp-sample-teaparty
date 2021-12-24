@@ -211,17 +211,17 @@ const F = {
   }
 };
 
-const sync_request = async (method, param, message_cb, sp_method='query_result') => {
+const sync_request = async (method, param, message_cb, sp_method='query_result', sp_uuid=null) => {
   message_cb = message_cb || ((msg) => {
     msg && console.log(msg);
   });
-  const _uuid = uuid();
+  const _uuid = sp_uuid || uuid();
 
   message_cb('start first request...');
   try{
     const step1_rs = await _axios.post('/tapp/'+method, {
-      uuid: _uuid,
       ...param,
+      uuid: _uuid,
     });
     message_cb('first step result => '+step1_rs);
   }catch(e){
