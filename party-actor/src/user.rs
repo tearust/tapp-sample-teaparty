@@ -137,4 +137,3 @@ fn libp2p_msg_cb_handler(res: &tappstore::TappQueryResponse) -> anyhow::Result<(
 pub fn check_user_query_uuid(uuid: &str) -> String {
     format!("check_user_{}", uuid)
 }
-
