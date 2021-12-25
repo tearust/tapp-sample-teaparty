@@ -174,3 +174,7 @@ pub fn uuid_cb_key(uuid: &str, stype: &str) -> String {
     let rs = format!("{}_msg_{}", uuid, stype);
     rs.to_string()
 }
+
+pub fn get_tea_id() -> anyhow::Result<Vec<u8>> {
+    Ok([0; 32].to_vec())
+}

@@ -21,7 +21,7 @@ use vmh_codec::message::{
 use crate::help;
 use crate::state;
 
-pub fn save_session_key(session_key: String, tapp_id: &u64, address: &str) -> anyhow::Result<()> {
+pub fn save_session_key(session_key: Vec<u8>, tapp_id: &u64, address: &str) -> anyhow::Result<()> {
     let key = format!("session_key_{}_{}", tapp_id, address);
 
     actor_kvp::set(BINDING_NAME, &key, &session_key, 6000 * 120)
@@ -60,6 +60,7 @@ pub fn prepare_login_request(req: &PrepareLoginRequest) -> anyhow::Result<Vec<u8
         tappstore::CheckUserSessionRequest {
             account: req.address.to_string(),
             token_id: req.tapp_id,
+            tea_id: help::get_tea_id()?,
         },
     );
     let query_bytes = tappstore::TappQueryRequest {
@@ -75,6 +76,7 @@ pub fn prepare_login_request(req: &PrepareLoginRequest) -> anyhow::Result<Vec<u8
         acct_s58: req.address.to_string(),
         data: base64::decode(&req.data)?,
         signature: base64::decode(&req.signature)?,
+        tea_id: help::get_tea_id()?,
     };
     let txn_bytes: Vec<u8> = bincode::serialize(&login_request_txn)?;
     let (sent_time, txn_hash) = state::send_tappstore_tx_via_p2p(
@@ -106,7 +108,6 @@ pub fn libp2p_msg_cb(body: &tokenstate::StateReceiverResponse) -> anyhow::Result
                 let query_res = tappstore::TappQueryResponse::decode(r.data.as_slice())?;
 
                 libp2p_msg_cb_handler(&query_res)?;
-                help::set_mem_cache(&uuid, r.data.clone())?;
 
                 return Ok(true);
             }
@@ -124,6 +125,8 @@ fn libp2p_msg_cb_handler(res: &tappstore::TappQueryResponse) -> anyhow::Result<(
             let auth_key = &r.auth_key;
 
             // TODO save
+            save_session_key(auth_key.to_vec(), &r.token_id, &r.account)?;
+            save_aes_key(aes_key.to_vec(), &r.token_id)?;
         }
         _ => warn!("unknown tapp_query_response: {:?}", res.msg),
     }
@@ -135,19 +138,3 @@ pub fn check_user_query_uuid(uuid: &str) -> String {
     format!("check_user_{}", uuid)
 }
 
-fn mock_login(uuid: &str, req: &PrepareLoginRequest) -> anyhow::Result<()> {
-    // TODO aes_key and session_key come from tappstore actor in A.
-    let aes_key: Vec<u8> = vec![8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8];
-    let session_key: String = "test_session_key".into();
-
-    save_aes_key(aes_key, &req.tapp_id)?;
-    save_session_key(session_key.clone(), &req.tapp_id, &req.address)?;
-
-    let rs_json = json!({
-      "session_key": session_key,
-      "is_login": true,
-    });
-    help::set_mem_cache(&uuid, serde_json::to_vec(&rs_json)?)?;
-
-    Ok(())
-}

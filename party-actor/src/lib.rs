@@ -77,9 +77,11 @@ fn libp2p_back_message(msg: &BrokerMessage) -> HandlerResult<Vec<u8>> {
         let body = tokenstate::StateReceiverResponse::decode(content.as_slice())?;
         info!("party actor get lib msg back => {:?}", body);
 
+				user::libp2p_msg_cb(&body)?;
         if body.msg == None {
             info!("still need to waiting statemachine response.");
-        } else if false == user::libp2p_msg_cb(&body)? {
+				} 
+				else{
             help::set_mem_cache(&body.uuid, content)?;
         }
     }
