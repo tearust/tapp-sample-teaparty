@@ -16,13 +16,14 @@ use tea_actor_utility::{
     action::reply_intercom,
     actor_enclave::get_my_tea_id,
     actor_env::{get_env_var, get_system_time},
-    actor_layer1::{fetch_miner_info_remotely, MinerClass},
+    actor_layer1::fetch_miner_info_remotely,
     actor_rpc::register_adapter_http_dispatcher,
     wascc_actor as actor,
 };
 use types::*;
 use vmh_codec::error::DISCARD_MESSAGE_ERROR;
 use vmh_codec::message::structs_proto::{layer1, libp2p, orbitdb, rpc, tokenstate};
+use vmh_codec::message::layer1::MinerClass;
 use vmh_codec::rpc::adapter::AdapterDispatchType;
 
 #[macro_use]

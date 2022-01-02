@@ -15,10 +15,10 @@ use tea_actor_utility::{
 	},
 	actor_enclave::get_my_tea_id,
 	actor_crypto::public_key_from_ss58,
-	actor_layer1::{register_layer1_event, fetch_miner_info_remotely, MinerClass},
+	actor_layer1::{register_layer1_event, fetch_miner_info_remotely},
 	actor_env::{get_system_time, get_env_var},
 };
-use vmh_codec::message::structs_proto::{layer1};
+use vmh_codec::message::{layer1::MinerClass, structs_proto::layer1};
 
 use interface::{TOKEN_ID_TEA, Balance, Tsid, Account, TOPUP_AUTH_KEY};
 use token_state::token_context::TokenContext;
@@ -29,7 +29,7 @@ mod state;
 
 actor_handlers! {
 	codec::messaging::OP_DELIVER_MESSAGE => handle_message,
-	tea_codec::OP_ACTOR_EXEC_TXN => handle_txn_exec,
+	tea_codec::ops::replica::OP_ACTOR_EXEC_TXN => handle_txn_exec,
 	codec::core::OP_HEALTH_REQUEST => health
 }
 
