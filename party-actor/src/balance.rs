@@ -67,26 +67,26 @@ use crate::state;
 // }
 
 pub(crate) fn on_top_up(event: layer1::TappTopupEvent) -> anyhow::Result<()> {
-    info!("received topup event, details: {:?}", event);
+	info!("received topup event, details: {:?}", event);
 
-    // let npc_account = event.to_account;
-    // // TODO check npc account
+	// let npc_account = event.to_account;
+	// // TODO check npc account
 
-    // let tapp_id = event.tapp_id;
-    // let amt = BigUint::from_bytes_le(&event.amount);
+	// let tapp_id = event.tapp_id;
+	// let amt = BigUint::from_bytes_le(&event.amount);
 
-    // // TODO, how to fix this unwrap
-    // let amt = amt.to_u128().unwrap();
+	// // TODO, how to fix this unwrap
+	// let amt = amt.to_u128().unwrap();
 
-    // let acct = state::parse_to_acct(&event.from_account)?;
+	// let acct = state::parse_to_acct(&event.from_account)?;
 
-    // info!("1111 => {:?}", tapp_id);
-    // info!("2222 => {:?}", amt);
-    // info!("3333 => {:?}", acct);
+	// info!("1111 => {:?}", tapp_id);
+	// info!("2222 => {:?}", amt);
+	// info!("3333 => {:?}", acct);
 
-    // state::topup(acct, amt)?;
+	// state::topup(acct, amt)?;
 
-    Ok(())
+	Ok(())
 }
 
 // pub(crate) fn on_tapp_hosted(event: layer1::TappHostedEvent) -> anyhow::Result<()> {
@@ -124,13 +124,13 @@ pub(crate) fn on_top_up(event: layer1::TappTopupEvent) -> anyhow::Result<()> {
 // }
 
 pub(crate) fn bbs_operation_account_pub_key(tapp_id: u64) -> String {
-    format!("{}-{}", BBS_OPERATION_ACCOUNT_PUB_KEY_PREFIX, tapp_id)
+	format!("{}-{}", BBS_OPERATION_ACCOUNT_PUB_KEY_PREFIX, tapp_id)
 }
 
 pub(crate) fn bbs_operation_account_key(tapp_id: u64) -> String {
-    format!("{}-{}", BBS_OPERATION_ACCOUNT_KEY_PREFIX, tapp_id)
+	format!("{}-{}", BBS_OPERATION_ACCOUNT_KEY_PREFIX, tapp_id)
 }
 
 pub(crate) fn tapp_balance_state_key(tapp_id: u64) -> String {
-    format!("{}-{}", BBS_BALANCE_STATE_PREFIX, tapp_id)
+	format!("{}-{}", BBS_BALANCE_STATE_PREFIX, tapp_id)
 }

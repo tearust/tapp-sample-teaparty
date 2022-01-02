@@ -1,28 +1,19 @@
 use bincode;
 use std::convert::TryInto;
-use tea_actor_utility::actor_env::{get_system_time, };
-use tea_actor_utility::actor_crypto::{ sha256, public_key_from_ss58};
+use tea_actor_utility::actor_crypto::{public_key_from_ss58, sha256};
+use tea_actor_utility::actor_env::get_system_time;
 
 // use tea_actor_utility::actor_enclave::generate_uuid;
 // use base64;
 use tea_codec;
 
-use vmh_codec::{
-	message::{
-		structs_proto::{replica,},
-		encode_protobuf,
-	},
-};
+use vmh_codec::message::{encode_protobuf, structs_proto::replica};
 
 // use wascc_actor::HandlerResult;
+use party_shared::TeapartyTxn;
 use wascc_actor::untyped;
-use party_shared::{TeapartyTxn};
 
-use interface::{
-  Hash, TxnSerial, Followup, Ts,
-  Account, Balance, Tsid, AuthKey,
-};
-
+use interface::{Account, AuthKey, Balance, Followup, Hash, Ts, Tsid, TxnSerial};
 
 fn get_serial_and_hash_from_txn(txn_bytes: Vec<u8>) -> anyhow::Result<(TxnSerial, Hash)> {
 	let txn_serial = TxnSerial {
@@ -52,10 +43,9 @@ pub fn send_followup_to_replica(followup_bytes: Vec<u8>) -> anyhow::Result<()> {
 	} else {
 		let tsid: Tsid = bincode::deserialize(&res)?;
 		info!("[replica provider] OP_REV_FOLLOWUP => {:?}", tsid);
+	}
 
-  }
-  
-  Ok(())
+	Ok(())
 
 	// Err(anyhow::anyhow!("{}", "No followup tsid returned."))
 }
@@ -79,14 +69,12 @@ pub fn send_tx_to_replica(txn_bytes: Vec<u8>) -> anyhow::Result<()> {
 	} else {
 		let tsid: Tsid = bincode::deserialize(&res)?;
 		info!("[replica provider] OP_REV_TXN => {:?}", tsid);
+	}
 
-  }
-  
-  Ok(())
+	Ok(())
 
 	// Err(anyhow::anyhow!("{}", "No tx tsid returned."))
 }
-
 
 fn get_current_ts() -> anyhow::Result<Ts> {
 	let ts: Ts = get_system_time()?
@@ -97,59 +85,49 @@ fn get_current_ts() -> anyhow::Result<Ts> {
 }
 
 fn send_actor_hash() -> Hash {
-  // TODO 
-	[0u8;32]
+	// TODO
+	[0u8; 32]
 }
 
+fn execute_tx_with_txn(txn: TeapartyTxn) -> anyhow::Result<()> {
+	// step 1, send tx
+	let txn_bytes = bincode::serialize(&txn)?;
 
+	send_tx_to_replica(txn_bytes.clone())?;
 
-fn execute_tx_with_txn(
-	txn: TeapartyTxn
-) -> anyhow::Result<()> {
-  // step 1, send tx
-  let txn_bytes = bincode::serialize(&txn)?;
-
-  send_tx_to_replica(txn_bytes.clone())?;
-
-  let (_, txn_hash) = get_serial_and_hash_from_txn(txn_bytes)?;
-  let sent_time = get_current_ts()?;
+	let (_, txn_hash) = get_serial_and_hash_from_txn(txn_bytes)?;
+	let sent_time = get_current_ts()?;
 
 	// step 2, send followup
 	let sender_actor_hash = send_actor_hash();
-	let req_fu: Followup = Followup{
+	let req_fu: Followup = Followup {
 		ts: sent_time,
 		hash: txn_hash,
 		sender: sender_actor_hash,
-  };
-  let fu_bytes = bincode::serialize(&req_fu)?;
-  let _ = send_followup_to_replica(fu_bytes)?;
+	};
+	let fu_bytes = bincode::serialize(&req_fu)?;
+	let _ = send_followup_to_replica(fu_bytes)?;
 
 	Ok(())
 }
 
-pub(crate) fn topup(
-  acct: Account,
-  amt: Balance,
-  block_str: String,
-) -> anyhow::Result<()> {
-  info!("begin to topup");
+pub(crate) fn topup(acct: Account, amt: Balance, block_str: String) -> anyhow::Result<()> {
+	info!("begin to topup");
 
-  let txn = TeapartyTxn::Topup{
-    acct,
+	let txn = TeapartyTxn::Topup {
+		acct,
 		amt,
 		uuid: block_str,
-  };
+	};
 
-  info!("txn => {:?}", txn);
+	info!("txn => {:?}", txn);
 
-  execute_tx_with_txn(txn)?;
+	execute_tx_with_txn(txn)?;
 
-  info!("topup success!");
+	info!("topup success!");
 
-  Ok(())
+	Ok(())
 }
-
-
 
 pub(crate) fn parse_to_acct(ss58_address: &str) -> anyhow::Result<Account> {
 	let acct = public_key_from_ss58(&ss58_address)?;

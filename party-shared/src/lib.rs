@@ -1,16 +1,16 @@
-use std::convert::{TryFrom, TryInto};
-use serde::{Serialize, Deserialize};
 use bincode;
-use thiserror::Error;
 use interface::{
-	Account, Balance, AuthKey, TokenId,
-	txn::{Txn, TxnSerial, Transferable},
+	txn::{Transferable, Txn, TxnSerial},
+	Account, AuthKey, Balance, TokenId,
 };
+use serde::{Deserialize, Serialize};
+use std::convert::{TryFrom, TryInto};
+use thiserror::Error;
 
 pub const HANDLED_BY_ACTOR_NAME: &str = "TeapartyTxn";
 
 #[derive(Debug, Error, PartialEq)]
-pub enum TeapartyTxnError{
+pub enum TeapartyTxnError {
 	#[error("TeapartyTxnExecution error:'{0}")]
 	ErrorMessage(String),
 	#[error("Unknown error")]
@@ -19,9 +19,8 @@ pub enum TeapartyTxnError{
 	ParseFailed(String),
 }
 
-
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub enum TeapartyTxn{
+pub enum TeapartyTxn {
 	Topup {
 		acct: Account,
 		amt: Balance,
@@ -34,10 +33,10 @@ pub enum TeapartyTxn{
 		auth: AuthKey,
 	},
 
-	TransferTea{
-		from: Account, 
-		to:Account, 
-		amt:Balance,
+	TransferTea {
+		from: Account,
+		to: Account,
+		amt: Balance,
 		uuid: String,
 		auth: AuthKey,
 	},
@@ -62,7 +61,7 @@ pub enum TeapartyTxn{
 		auth_b64: String,
 
 		Post_message_fee: Balance,
-	}
+	},
 }
 
 impl Transferable for TeapartyTxn {

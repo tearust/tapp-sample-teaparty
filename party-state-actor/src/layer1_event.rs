@@ -1,19 +1,21 @@
-use num_bigint::{ BigUint};
-use num_traits::cast::ToPrimitive;
-use vmh_codec::message::structs_proto::{layer1};
 use anyhow::anyhow;
+use num_bigint::BigUint;
+use num_traits::cast::ToPrimitive;
+use vmh_codec::message::structs_proto::layer1;
 
 use crate::state;
 
 pub(crate) fn on_top_up(event: layer1::TappTopupEvent) -> anyhow::Result<()> {
 	info!("received topup event, details: {:?}", event);
 
-	if false == confirm_receive_acct_is_my_app_acct(&event.to_account){
-		return Err(anyhow!("this top up is not sent to my app layer one receiving account"));
+	if false == confirm_receive_acct_is_my_app_acct(&event.to_account) {
+		return Err(anyhow!(
+			"this top up is not sent to my app layer one receiving account"
+		));
 	}
 
 	let tapp_id = event.tapp_id;
-	if false == confirm_app_id_is_myself(tapp_id){
+	if false == confirm_app_id_is_myself(tapp_id) {
 		return Err(anyhow!("This top up event is not for me"));
 	}
 	let amt = BigUint::from_bytes_le(&event.amount);
@@ -26,12 +28,12 @@ pub(crate) fn on_top_up(event: layer1::TappTopupEvent) -> anyhow::Result<()> {
 	Ok(())
 }
 
-fn confirm_app_id_is_myself(_app_id: u64) -> bool{
+fn confirm_app_id_is_myself(_app_id: u64) -> bool {
 	warn!("confirm_app_id_is_myself");
 	true
 }
 
-fn confirm_receive_acct_is_my_app_acct(_to_account: &str)-> bool{
+fn confirm_receive_acct_is_my_app_acct(_to_account: &str) -> bool {
 	warn!("todo confirm_receive_acct_is_my_app_acct");
 	true
 }

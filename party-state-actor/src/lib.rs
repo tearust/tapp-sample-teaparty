@@ -3,24 +3,22 @@
 #![allow(non_camel_case_types)]
 #[macro_use]
 extern crate log;
+use party_shared::TeapartyTxn;
+use prost::Message;
 use std::convert::TryInto;
+use tea_actor_utility::{
+	actor_crypto::public_key_from_ss58,
+	actor_enclave::get_my_tea_id,
+	actor_env::{get_env_var, get_system_time},
+	actor_layer1::{fetch_miner_info_remotely, register_layer1_event},
+	actor_statemachine::{self, query_auth_ops_bytes},
+};
+use vmh_codec::message::{layer1::MinerClass, structs_proto::layer1};
 use wascc_actor::prelude::codec::messaging::BrokerMessage;
 use wascc_actor::prelude::*;
 use wascc_actor::HandlerResult;
-use party_shared::{{TeapartyTxn}};
-use prost::Message;
-use tea_actor_utility::{
-	actor_statemachine::{
-		self, query_auth_ops_bytes,
-	},
-	actor_enclave::get_my_tea_id,
-	actor_crypto::public_key_from_ss58,
-	actor_layer1::{register_layer1_event, fetch_miner_info_remotely},
-	actor_env::{get_system_time, get_env_var},
-};
-use vmh_codec::message::{layer1::MinerClass, structs_proto::layer1};
 
-use interface::{TOKEN_ID_TEA, Balance, Tsid, Account, TOPUP_AUTH_KEY};
+use interface::{Account, Balance, Tsid, TOKEN_ID_TEA, TOPUP_AUTH_KEY};
 use token_state::token_context::TokenContext;
 use vmh_codec::message::structs_proto::tokenstate::*;
 
@@ -88,37 +86,41 @@ fn handle_layer1_event(data: &[u8]) -> HandlerResult<Vec<u8>> {
 	Ok(vec![])
 }
 
-
-fn helper_get_state_tsid()->HandlerResult<Tsid>{
+fn helper_get_state_tsid() -> HandlerResult<Tsid> {
 	let tsid_bytes: Vec<u8> = actor_statemachine::query_state_tsid()?;
 	let tsid: Tsid = bincode::deserialize(&tsid_bytes)?;
 	Ok(tsid)
 }
 fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 	info!("enter handle_txn_exec");
-	let (tsid, txn_bytes):(Tsid, Vec<u8>) = bincode::deserialize(&msg.body)?;
+	let (tsid, txn_bytes): (Tsid, Vec<u8>) = bincode::deserialize(&msg.body)?;
 	info!("before TeapartyTxn der");
 	let sample_txn: TeapartyTxn = bincode::deserialize(&txn_bytes)?;
 	info!("decode the txn {:?}", &sample_txn);
 	let base: Tsid = helper_get_state_tsid()?;
 	info!("base tsid is {:?}", &base);
 	let context_bytes = match sample_txn {
-		TeapartyTxn::Topup{acct, amt, uuid:_}=>{
+		TeapartyTxn::Topup { acct, amt, uuid: _ } => {
 			let auth = TOPUP_AUTH_KEY;
 			let auth_ops_bytes = query_auth_ops_bytes(auth)?;
 			let ctx = TokenContext::new(tsid, base, TOKEN_ID_TEA, &auth_ops_bytes);
 			let ctx_bytes = bincode::serialize(&ctx)?;
 			let to: Account = acct;
 			let amt: Vec<u8> = bincode::serialize(&amt)?;
-			actor_statemachine::topup(TopupRequest{
+			actor_statemachine::topup(TopupRequest {
 				ctx: ctx_bytes,
 				to: to.to_vec(),
 				amt,
 			})?
-		},
-		TeapartyTxn::PostMessage{from, ttl, uuid:_, auth} => {
+		}
+		TeapartyTxn::PostMessage {
+			from,
+			ttl,
+			uuid: _,
+			auth,
+		} => {
 			info!("PostMessage from ttl: {:?},{:?}", &from, &ttl);
-			
+
 			// ttl > 2000, 2 TEA, else, 1 TEA
 			let amt: Vec<u8> = {
 				let cost: Balance = match ttl > 2000 {
@@ -130,13 +132,13 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 			};
 
 			// This account could be a npc to dividend to all of tapp stakers.
-			// TODO if set acct to 0_u32, will return error 
+			// TODO if set acct to 0_u32, will return error
 			let to_acct: Account = {
 				let tmp = "5Eo1WB2ieinHgcneq6yUgeJHromqWTzfjKnnhbn43Guq4gVP";
 				let tmp = public_key_from_ss58(&tmp)?;
 				tmp.try_into().unwrap()
 			};
-			
+
 			let auth_ops_bytes: Vec<u8> = query_auth_ops_bytes(auth)?;
 			let ctx = TokenContext::new(tsid, base, TOKEN_ID_TEA, &auth_ops_bytes);
 			let ctx_bytes = bincode::serialize(&ctx)?;
@@ -148,10 +150,19 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 				amt,
 			};
 			actor_statemachine::mov(mov)?
-		},
+		}
 
-		TeapartyTxn::TransferTea{from, to, amt, uuid:_, auth} => {
-			info!("TransferTea from to amt: {:?},{:?},{:?},{}", &from, &to, &amt, auth);
+		TeapartyTxn::TransferTea {
+			from,
+			to,
+			amt,
+			uuid: _,
+			auth,
+		} => {
+			info!(
+				"TransferTea from to amt: {:?},{:?},{:?},{}",
+				&from, &to, &amt, auth
+			);
 			let auth_ops_bytes: Vec<u8> = query_auth_ops_bytes(auth)?;
 			let ctx = TokenContext::new(tsid, base, TOKEN_ID_TEA, &auth_ops_bytes);
 			let ctx_bytes = bincode::serialize(&ctx)?;
@@ -164,27 +175,28 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 				amt,
 			};
 			actor_statemachine::mov(mov)?
-		},
+		}
 
-		TeapartyTxn::UpdateProfile{
+		TeapartyTxn::UpdateProfile {
 			acct,
 			token_id,
 			auth_b64,
 			Post_message_fee,
 		} => {
-			info!("UpdateProfile => : {:?},{:?},{:?},{:?}", acct, token_id, auth_b64, Post_message_fee);
+			info!(
+				"UpdateProfile => : {:?},{:?},{:?},{:?}",
+				acct, token_id, auth_b64, Post_message_fee
+			);
 
 			// TODO save profile bytes to statemachine.
-			
+
 			b"mock".to_vec()
 		}
-		
-		_ =>Err(anyhow::anyhow!("Unhandled txn OP type"))?,
+
+		_ => Err(anyhow::anyhow!("Unhandled txn OP type"))?,
 	};
-	let res_commit_ctx_bytes = actor_statemachine::commit(CommitRequest{
-		ctx: context_bytes
-	})?;
-	if res_commit_ctx_bytes.is_empty(){
+	let res_commit_ctx_bytes = actor_statemachine::commit(CommitRequest { ctx: context_bytes })?;
+	if res_commit_ctx_bytes.is_empty() {
 		info!("*********  Commit succesfully. the ctx is empty. it is supposed to be empty");
 	}
 	Ok(())
