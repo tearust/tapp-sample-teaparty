@@ -91,6 +91,7 @@ const F = {
       postMessageFee: 100,
     };
     const rs = await sync_request('updateTappProfile', opts);
+    console.log('updateTappProfile => ', rs);
   },
   async sendMessage(address, msg, channel=default_channel){
     const user = F.getUser(address);
@@ -309,7 +310,7 @@ F.test = {
     console.log('step 1 result => ', step1_rs);
   },
   async result(_uuid){
-    return await _axios.post('/tapp/query_result', {
+    return _axios.post('/tapp/query_result', {
       uuid: _uuid,
     });
   },

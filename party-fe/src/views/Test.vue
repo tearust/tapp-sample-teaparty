@@ -20,7 +20,8 @@
     <el-button type="primary" @click="test_result()">Query result</el-button>
   </div>
 
-  <div style="margin-top: 20px; background: #111; color: #0f0; padding: 4px 8px;min-height: 40px;">{{result}}</div>
+  <div v-if="!is_error" style="margin-top: 20px; background: #111; color: #0f0; padding: 4px 8px;min-height: 40px;">{{result}}</div>
+  <div v-if="is_error" style="margin-top: 20px; background: #111; color: #f00; padding: 4px 8px;min-height: 40px;">{{result}}</div>
   
 </div>
 </template>
@@ -46,6 +47,7 @@ export default {
         uuid: '',
       },
       result: '',
+      is_error: false,
       rules: {
         action: [{required: true}],
         payload: [{required: true}],
@@ -103,6 +105,10 @@ export default {
       this.result = JSON.stringify(rs);
 
     },
+    show_result(msg, is_error=false){
+      this.result = msg;
+      this.is_error = is_error;
+    },
     async test_result(){
       const {uuid} = this.form;
       if(!uuid){
@@ -111,9 +117,9 @@ export default {
       }
       try{
         const rs = await bbs.test.result(uuid);
-        this.result = JSON.stringify(rs);
+        this.show_result(JSON.stringify(rs));
       }catch(e){
-        
+        this.show_result(e, true);
       }
       
     }
