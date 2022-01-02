@@ -41,7 +41,7 @@ pub fn send_followup_to_replica(followup_bytes: Vec<u8>) -> anyhow::Result<()> {
 	let res = untyped::default()
 		.call(
 			tea_codec::REPLICA_CAPABILITY_ID,
-			tea_codec::OP_REV_FOLLOWUP,
+			tea_codec::ops::replica::OP_REV_FOLLOWUP,
 			encode_protobuf(replica::ReceiveFollowup {
 				followup: followup_bytes,
 			})?,
@@ -70,7 +70,7 @@ pub fn send_tx_to_replica(txn_bytes: Vec<u8>) -> anyhow::Result<()> {
 	let res = untyped::default()
 		.call(
 			tea_codec::REPLICA_CAPABILITY_ID,
-			tea_codec::OP_REV_TXN,
+			tea_codec::ops::replica::OP_REV_TXN,
 			encode_protobuf(req_txn)?,
 		)
 		.unwrap_or(b"rev_txn faild".to_vec());
