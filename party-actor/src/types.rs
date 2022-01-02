@@ -1,4 +1,4 @@
-use interface::AuthKey;
+use interface::{AuthKey, Balance};
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -9,7 +9,7 @@ pub struct PostMessageRequest {
     pub encrypted_message: String,
     pub address: String,
     pub uuid: String,
-    pub auth: AuthKey,
+    pub auth_b64: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -88,6 +88,15 @@ pub struct PrepareLoginRequest {
     pub signature: String,
     pub uuid: String,
 }
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CheckLoginRequest {
+    pub tapp_id: u64,
+    pub address: String,
+    pub auth_b64: String,
+}
+
+
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -101,6 +110,7 @@ pub struct PrepareLoginResponse {
     /// Base64 encoded
     pub signature: String,
 }
+
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -127,4 +137,16 @@ pub struct LogoutRequest {
 #[serde(rename_all = "camelCase")]
 pub struct LogoutResponse {
     pub success: bool,
+}
+
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TappProfileRequest {
+    pub tapp_id: u64,
+    pub address: String, 
+    pub auth_b64: String,
+    pub uuid: String,
+
+    pub post_message_fee: Balance,
 }

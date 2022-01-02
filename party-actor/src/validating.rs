@@ -78,18 +78,6 @@ pub(crate) fn is_user_logged_in(address: &str) -> anyhow::Result<bool> {
     Ok(exist)
 }
 
-pub(crate) fn decrypt_message(message: &str, address: &str) -> anyhow::Result<String> {
-    let aes_key = actor_kvp::get(BINDING_NAME, &communication_aes_key(address))?;
-    match aes_key {
-        Some(key) => {
-            let result = aes_decrypt(key, base64::decode(message)?)?;
-            Ok(String::from_utf8(result)?)
-        }
-        None => Err(anyhow::anyhow!(
-            "failed to get aes key, can not decrypt message"
-        )),
-    }
-}
 
 fn get_aes_key_from_appstore() -> anyhow::Result<Vec<u8>> {
     warn!("todo: get Aes key from app store.");

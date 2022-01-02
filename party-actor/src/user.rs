@@ -21,7 +21,7 @@ use vmh_codec::message::{
 use crate::help;
 use crate::state;
 
-pub fn save_session_key(session_key: Vec<u8>, tapp_id: &u64, address: &str) -> anyhow::Result<()> {
+pub fn save_session_key(session_key: String, tapp_id: &u64, address: &str) -> anyhow::Result<()> {
     let key = format!("session_key_{}_{}", tapp_id, address);
 
     actor_kvp::set(BINDING_NAME, &key, &session_key, 6000 * 120)
@@ -124,8 +124,7 @@ fn libp2p_msg_cb_handler(res: &tappstore::TappQueryResponse) -> anyhow::Result<(
             let aes_key = &r.aes_key;
             let auth_key = &r.auth_key;
 
-            // TODO save
-            save_session_key(auth_key.to_vec(), &r.token_id, &r.account)?;
+            save_session_key(String::from_utf8(auth_key.to_vec())?, &r.token_id, &r.account)?;
             save_aes_key(aes_key.to_vec(), &r.token_id)?;
         }
         _ => warn!("unknown tapp_query_response: {:?}", res.msg),
@@ -136,4 +135,27 @@ fn libp2p_msg_cb_handler(res: &tappstore::TappQueryResponse) -> anyhow::Result<(
 
 pub fn check_user_query_uuid(uuid: &str) -> String {
     format!("check_user_{}", uuid)
+}
+
+pub fn check_auth(
+    tapp_id: &u64,
+    address: &str,
+    auth_b64: &str,
+) -> anyhow::Result<Vec<u8>> {
+    let auth_key = get_session_key(&tapp_id, &address);
+
+    if !auth_key.is_err() && auth_b64.to_string() == base64::encode(auth_key.unwrap()) {
+        return Ok(b"is_login".to_vec())
+    }
+
+    Err(anyhow::anyhow!("{}", "not_login"))
+}
+
+
+pub fn update_tapp_profile(req: &TappProfileRequest) -> anyhow::Result<Vec<u8>> {
+    check_auth(&req.tapp_id, &req.address, &req.auth_b64)?;
+
+    state::update_profile(&req.address, req.tapp_id, &req.auth_b64, &req.uuid, req.post_message_fee)?;
+
+    Ok(b"ok".to_vec())
 }

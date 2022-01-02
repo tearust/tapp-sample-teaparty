@@ -109,8 +109,13 @@ export default {
         alert('Invalid UUID');
         return;
       }
-      const rs = await bbs.test.result(uuid);
-      this.result = JSON.stringify(rs);
+      try{
+        const rs = await bbs.test.result(uuid);
+        this.result = JSON.stringify(rs);
+      }catch(e){
+        
+      }
+      
     }
 
     

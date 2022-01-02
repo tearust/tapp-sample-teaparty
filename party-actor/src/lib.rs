@@ -115,10 +115,13 @@ fn handle_system_init(_msg: &BrokerMessage) -> HandlerResult<()> {
     info!("tapp tea-party actor received tea.system.init");
     register_adapter_http_dispatcher(
         vec![
-            "loginPrepare",
+            "login",
             "checkUserAuth",
-            "loginResult",
+            "checkLogin",
             "logout",
+
+            "updateTappProfile",
+						
             "postMessage",
             "loadMessageList",
             "extendMessage",
@@ -195,7 +198,7 @@ fn handle_adapter_http_request(req: rpc::AdapterHttpRequest) -> anyhow::Result<V
     #[cfg(not(feature = "nitro"))]
     let uuid = get_uuid();
     match req.action.as_str() {
-        "loginPrepare" => {
+        "login" => {
             let req: PrepareLoginRequest = serde_json::from_slice(&req.payload)?;
             user::prepare_login_request(&req)
         }
@@ -219,17 +222,22 @@ fn handle_adapter_http_request(req: rpc::AdapterHttpRequest) -> anyhow::Result<V
             info!("check user auth result => {:?}", res_val);
             Ok(serde_json::to_vec(&res_val)?)
         }
-        // "login" => {
-        // 	let req: LoginRequest = serde_json::from_slice(&req.payload)?;
-        // 	login(&uuid, &req)
-        // }
+        "checkLogin" => {
+						let req: CheckLoginRequest = serde_json::from_slice(&req.payload)?;
+						user::check_auth(&req.tapp_id, &req.address, &req.auth_b64)
+				}
         "logout" => {
             let req: LogoutRequest = serde_json::from_slice(&req.payload)?;
             logout(&uuid, &req)
         }
+        "updateTappProfile" => {
+            let req: TappProfileRequest = serde_json::from_slice(&req.payload)?;
+            user::update_tapp_profile(&req)
+        }
+
         "postMessage" => {
             let req: PostMessageRequest = serde_json::from_slice(&req.payload)?;
-            post_message(&req.uuid.clone(), req.auth, req)
+            post_message(&req.uuid.clone(), &req)
         }
         "loadMessageList" => {
             let req: LoadMessageRequest = serde_json::from_slice(&req.payload)?;

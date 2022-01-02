@@ -3,7 +3,7 @@ use serde::{Serialize, Deserialize};
 use bincode;
 use thiserror::Error;
 use interface::{
-	Account, Balance, AuthKey,
+	Account, Balance, AuthKey, TokenId,
 	txn::{Txn, TxnSerial, Transferable},
 };
 
@@ -55,6 +55,14 @@ pub enum TeapartyTxn{
 		uuid: String,
 		auth: AuthKey,
 	},
+
+	UpdateProfile {
+		acct: Account,
+		token_id: TokenId,
+		auth_b64: String,
+
+		Post_message_fee: Balance,
+	}
 }
 
 impl Transferable for TeapartyTxn {

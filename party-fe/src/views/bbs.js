@@ -39,10 +39,18 @@ _axios.interceptors.response.use((res)=>{
     }
   }
 }, (error)=>{
+  if(error.response && error.response.status === 503){
+    const err = error.response.data.error.replace('Invocation failure: Failed to invoke guest call: Guest call failure: Guest call failed: ', '');
+    return Promise.reject(err);
+  }
   return Promise.reject(error);
 });
 
 const F = {
+  getUser(address){
+    const user = require('./user').default;
+    return user.current(address);
+  },
   getChannel(channel){
     // if(channel === 'default'){
     //   channel = 'default_'+store.state.bbs.id;
@@ -69,13 +77,34 @@ const F = {
     return F.formatMessageList(JSON.parse(rs));
 
   },
+  async updateTappProfile(address){
+    const user = F.getUser(address);
+    if(!user || !user.isLogin){
+      throw 'Not login';
+    }
+    // TODO if user is not owner, return;
+
+    const opts = {
+      tappId: F.getTappId(),
+      address,
+      authB64: user.session_key,
+      postMessageFee: 100,
+    };
+    const rs = await sync_request('updateTappProfile', opts);
+  },
   async sendMessage(address, msg, channel=default_channel){
-    msg = utils.forge.util.encodeUtf8(msg);
-    const encrypted_message = utils.forge.util.encode64(utils.crypto.encode(address, msg));
-    console.log(121, utils.crypto.encode(address, msg));
+    const user = F.getUser(address);
+    if(!user || !user.isLogin){
+      throw 'Not login';
+    }
     
-    const decode_msg = utils.crypto.decode(address, utils.forge.util.decode64(encrypted_message));
-    console.log('decode_msg => '+decode_msg);
+
+    msg = utils.forge.util.encodeUtf8(msg);
+    const encrypted_message = utils.forge.util.encode64(msg);
+    // console.log(121, utils.crypto.encode(address, msg));
+    
+    // const decode_msg = utils.crypto.decode(address, utils.forge.util.decode64(encrypted_message));
+    // console.log('decode_msg => '+decode_msg);
 
     const opts = {
       tappId: F.getTappId(),
@@ -83,6 +112,7 @@ const F = {
       channel: F.getChannel(channel),
       // message: msg
       encryptedMessage: encrypted_message,
+      authB64: user.session_key,
     };
     const rs = await sync_request('postMessage', opts);
 
@@ -226,10 +256,11 @@ const sync_request = async (method, param, message_cb, sp_method='query_result',
     message_cb('first step result => '+step1_rs);
   }catch(e){
     // TODO
+    console.log(111, e);
     console.log('continue request');
   }
   
-  utils.sleep(6000);
+  utils.sleep(3000);
   message_cb('start second request...');
 
   let rs = null;
@@ -247,7 +278,7 @@ const sync_request = async (method, param, message_cb, sp_method='query_result',
 
       // rs = e.message;
       rs = null;
-      await utils.sleep(6000);
+      await utils.sleep(3000);
       n++;
       
       await loop2();
@@ -276,7 +307,12 @@ F.test = {
     });
     
     console.log('step 1 result => ', step1_rs);
-  }
+  },
+  async result(_uuid){
+    return await _axios.post('/tapp/query_result', {
+      uuid: _uuid,
+    });
+  },
 };
 
 F.consts = {

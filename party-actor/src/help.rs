@@ -150,7 +150,7 @@ fn parse_tappstore_response(data: &[u8], uuid: &str) -> anyhow::Result<serde_jso
             let auth_key = &r.auth_key;
 
             json!({
-                "auth_key": hex::encode(auth_key),
+                "auth_key": base64::encode(auth_key),
             })
         }
         _ => json!({ "error": format!("unknown tappstore response: {:?}", tapp_query_response) }),

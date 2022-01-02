@@ -165,6 +165,19 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 			};
 			actor_statemachine::mov(mov)?
 		},
+
+		TeapartyTxn::UpdateProfile{
+			acct,
+			token_id,
+			auth_b64,
+			Post_message_fee,
+		} => {
+			info!("UpdateProfile => : {:?},{:?},{:?},{:?}", acct, token_id, auth_b64, Post_message_fee);
+
+			// TODO save profile bytes to statemachine.
+			
+			b"mock".to_vec()
+		}
 		
 		_ =>Err(anyhow::anyhow!("Unhandled txn OP type"))?,
 	};

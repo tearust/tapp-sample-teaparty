@@ -24,6 +24,7 @@ use wascc_actor::HandlerResult;
 use interface::{Account, AuthKey, Balance, Followup, Hash, Ts, TxnSerial};
 
 use crate::help;
+use crate::types;
 
 fn get_hash_from_txn(txn_bytes: Vec<u8>, to_actor_name: String) -> anyhow::Result<Hash> {
     let txn_serial = TxnSerial {
@@ -160,7 +161,7 @@ fn execute_tx_with_txn(txn: TeapartyTxn, uuid: String) -> anyhow::Result<()> {
 }
 
 pub fn post_message(acct: &str, ttl: u64, uuid: &str, auth: AuthKey) -> anyhow::Result<()> {
-    info!("begin to post_message");
+    info!("state begin to post_message");
     let txn = TeapartyTxn::PostMessage {
         from: parse_to_acct(acct)?,
         ttl,
@@ -169,7 +170,28 @@ pub fn post_message(acct: &str, ttl: u64, uuid: &str, auth: AuthKey) -> anyhow::
     };
 
     execute_tx_with_txn(txn, uuid.to_string())?;
-    info!("post message success");
+    info!("state post message success");
+
+    Ok(())
+}
+
+pub fn update_profile(
+    acct: &str,
+    token_id: u64,
+    auth_b64: &str,
+    uuid: &str,
+
+    post_message_fee: Balance,
+) -> anyhow::Result<()> {
+    info!("state begin to update profile");
+    let txn = TeapartyTxn::UpdateProfile {
+        acct: parse_to_acct(&acct)?,
+        token_id: token_id,
+        auth_b64: auth_b64.to_string(),
+        Post_message_fee: post_message_fee,
+    };
+    execute_tx_with_txn(txn, uuid.to_string())?;
+    info!("state update profile success");
 
     Ok(())
 }

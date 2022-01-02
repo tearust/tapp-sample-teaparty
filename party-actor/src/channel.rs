@@ -1,6 +1,6 @@
 use crate::state;
 use crate::types::*;
-use crate::validating::{aes_decrypt_local, aes_encrypt_local, decrypt_message, is_user_logged_in};
+use crate::validating::{aes_decrypt_local, aes_encrypt_local, is_user_logged_in};
 use interface::AuthKey;
 use prost::Message;
 use std::collections::{HashMap, VecDeque};
@@ -17,23 +17,12 @@ use vmh_codec::message::{encode_protobuf, structs_proto::orbitdb};
 use wascc_actor::prelude::codec::messaging::BrokerMessage;
 use wascc_actor::prelude::*;
 
+use crate::user;
+
 const MESSAGE_STORAGE_INDEX: u32 = 1;
 const MESSAGE_HISTORY_INDEX: u32 = 2;
 
 pub const MAX_HISTORY_MESSAGES_LINES: usize = 20;
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct ChannelHistoryIndex {
-    messages: VecDeque<u64>,
-}
-
-impl Default for ChannelHistoryIndex {
-    fn default() -> Self {
-        ChannelHistoryIndex {
-            messages: Default::default(),
-        }
-    }
-}
 
 pub(crate) fn check_user_login(address: &str) -> anyhow::Result<()> {
     if !is_user_logged_in(address)? {
@@ -45,34 +34,41 @@ pub(crate) fn check_user_login(address: &str) -> anyhow::Result<()> {
 
 pub(crate) fn post_message(
     uuid: &str,
-    auth: AuthKey,
-    request: PostMessageRequest,
+    req: &PostMessageRequest,
 ) -> anyhow::Result<Vec<u8>> {
-    check_user_login(&request.address)?;
+    user::check_auth(&req.tapp_id, &req.address, &req.auth_b64)?;
 
     // to orbitdb
     let message = {
-        let tmp = decrypt_message(&request.encrypted_message, &request.address)?;
-        aes_encrypt_local(&tmp)?
+        let msg = base64::decode(&req.encrypted_message)?;
+
+        let aes_key = user::get_aes_key(&req.tapp_id)?;
+        let mut data = msg.to_vec();
+        if data.len() < 8 {
+            data.extend_from_slice(&[0, 0, 0, 0, 0, 0, 0]);
+        }
+
+        let msg = aes_encrypt(aes_key, msg)?;
+        base64::encode(msg)
     };
 
     let now: u64 = current_timestamp()? as u64;
 
     let ttl: u64 = {
-        match is_global_channel(&request.channel) {
+        match is_global_channel(&req.channel) {
             true => (2 * 60 * 60) as u64,
             false => (24 * 60 * 60) as u64,
         }
     };
 
     // state
-    state::post_message(&request.address, ttl.clone(), uuid, auth)?;
+    // state::post_message(&request.address, ttl.clone(), uuid, auth)?;
 
-    let dbname = db_name(request.tapp_id, &request.channel);
+    let dbname = db_name(req.tapp_id, &req.channel);
     let add_message_data = orbitdb::AddMessageRequest {
-        tapp_id: request.tapp_id,
+        tapp_id: req.tapp_id,
         dbname,
-        sender: request.address,
+        sender: req.address.clone(),
         content: message,
         utc: now,
         utc_expired: now + ttl,
@@ -97,13 +93,6 @@ pub(crate) fn load_message_list(
     _uuid: &str,
     request: LoadMessageRequest,
 ) -> anyhow::Result<Vec<u8>> {
-    // check_user_login(&request.address)?;
-
-    // if is_host_locally(request.tapp_id) {
-    // 	return load_message_list_locally(uuid, request);
-    // }
-
-    // todo find host node and relay load message, return list asynchronously
 
     // to orbitdb
     let dbname = db_name(request.tapp_id, &request.channel);
@@ -217,88 +206,8 @@ pub(crate) fn delete_message(
     Ok(res.data.into_bytes())
 }
 
-pub(crate) fn post_message_locally(
-    uuid: &str,
-    request: PostMessageRequest,
-) -> anyhow::Result<Vec<u8>> {
-    let message = decrypt_message(&request.encrypted_message, &request.address)?;
 
-    let msg_hash = calculate_hash(&message);
-    raft_set_value(
-        &message_key(&request.channel, msg_hash),
-        message.as_bytes(),
-        MESSAGE_STORAGE_INDEX,
-        uuid,
-    )?;
 
-    let mut history = match raft_get_value(&request.channel, MESSAGE_HISTORY_INDEX, uuid) {
-        Ok(history_buf) => {
-            let mut last_history: ChannelHistoryIndex = deserialize(&history_buf)?;
-            while last_history.messages.len() >= MAX_HISTORY_MESSAGES_LINES {
-                let hash = last_history.messages.pop_front();
-                if let Some(hash) = hash {
-                    raft_delete_value(
-                        &message_key(&request.channel, hash),
-                        MESSAGE_STORAGE_INDEX,
-                        uuid,
-                    )?;
-                }
-            }
-            last_history
-        }
-        Err(e) => {
-            warn!(
-                "get channel '{}' history object failed: {}",
-                request.channel, e
-            );
-            Default::default()
-        }
-    };
-
-    history.messages.push_back(msg_hash);
-    raft_set_value(
-        &request.channel,
-        &serialize(history)?,
-        MESSAGE_HISTORY_INDEX,
-        uuid,
-    )?;
-
-    Ok(serde_json::to_string(&PostMessageResponse { success: true })?.into_bytes())
-}
-
-pub(crate) fn load_message_list_locally(
-    uuid: &str,
-    request: LoadMessageRequest,
-) -> anyhow::Result<Vec<u8>> {
-    // todo implement async logic later
-
-    let values: HashMap<String, Vec<u8>> =
-        raft_get_values(&request.channel, MESSAGE_STORAGE_INDEX, uuid)?;
-    let message_histories: ChannelHistoryIndex = deserialize(&raft_get_value(
-        &request.channel,
-        MESSAGE_HISTORY_INDEX,
-        uuid,
-    )?)?;
-
-    let mut messages: Vec<String> = Vec::new();
-    for hash in message_histories.messages.iter() {
-        match values.get(&message_key(&request.channel, *hash)) {
-            Some(msg) => {
-                messages.push(String::from_utf8(msg.clone())?);
-            }
-            None => {
-                error!("failed to get message with hash: {}", hash);
-            }
-        }
-    }
-
-    Ok(serde_json::to_string(&LoadMessageResponse { messages })?.into_bytes())
-}
-
-fn is_host_locally(_tapp_id: u64) -> bool {
-    // todo get from layer1
-    true
-}
 
 fn message_key(channel: &str, hash: u64) -> String {
     format!("{}:{}", channel, hash)

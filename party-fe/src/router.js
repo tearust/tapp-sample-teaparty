@@ -9,6 +9,7 @@ import LoginAccount from './views/LoginAccount';
 import Test from './views/Test';
 
 import bbs from './views/bbs';
+import TappProfile from './views/TappProfile';
 
 
 Vue.use(Router);
@@ -54,6 +55,11 @@ let routers = [
     path: '/test',
     name: 'test',
     component: Test,
+  },
+  {
+    path: '/tapp_profile',
+    name: 'tapp_profile',
+    component: TappProfile,
   }
   
   
