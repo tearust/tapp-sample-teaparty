@@ -51,7 +51,7 @@ pub struct HttpQueryBalanceRequest {
 	pub tapp_id: u64,
 	pub address: String,
 	pub uuid: String,
-	pub auth: AuthKey,
+	pub auth_b64: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

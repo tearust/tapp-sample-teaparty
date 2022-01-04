@@ -80,7 +80,7 @@ const F = {
   async updateTappProfile(address){
     const user = F.getUser(address);
     if(!user || !user.isLogin){
-      throw 'Not login';
+      throw 'not_login';
     }
     // TODO if user is not owner, return;
 
@@ -230,11 +230,17 @@ const F = {
   },
 
   async query_balance(param){
+    const user = F.getUser(param.address);
+    console.log(111, user);
+    if(!user || !user.isLogin){
+      throw 'not_login';
+    }
+
     param = {
       ...param,
       tappId: F.getTappId(),
+      authB64: user.session_key,
     };
-
 
     const rs = await sync_request('query_balance', param);
     console.log(1, rs);

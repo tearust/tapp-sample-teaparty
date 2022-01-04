@@ -164,3 +164,11 @@ pub fn update_tapp_profile(req: &TappProfileRequest) -> anyhow::Result<Vec<u8>> 
 
 	Ok(b"ok".to_vec())
 }
+
+pub fn query_balance(req: &HttpQueryBalanceRequest) -> anyhow::Result<Vec<u8>> {
+	check_auth(&req.tapp_id, &req.address, &req.auth_b64)?;
+
+	state::query_tea_balance(&req.address, req.tapp_id, &req.auth_b64, &req.uuid)?;
+
+	Ok(b"ok".to_vec())
+}

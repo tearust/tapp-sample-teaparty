@@ -197,16 +197,20 @@ pub fn update_profile(
 }
 
 pub(crate) fn query_tea_balance(
-	acct_str: &str,
+	acct: &str,
+	token_id: u64,
+	auth_b64: &str,
 	uuid: &str,
-	auth: AuthKey,
 ) -> anyhow::Result<Vec<u8>> {
 	info!("begin to query tea balance");
+
+	let auth_key = base64::decode(auth_b64)?;
 	let req = tappstore::TappQueryRequest {
 		msg: Some(tappstore::tapp_query_request::Msg::TeaBalanceRequest(
 			tappstore::TeaBalanceRequest {
-				account: acct_str.into(),
-				auth: auth.to_be_bytes().to_vec(),
+				account: acct.into(),
+				token_id,
+				auth_key,
 			},
 		)),
 	};

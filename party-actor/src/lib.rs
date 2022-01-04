@@ -137,7 +137,6 @@ fn handle_system_init(_msg: &BrokerMessage) -> HandlerResult<()> {
 	Ok(())
 }
 
-
 fn handle_adapter_request(data: &[u8], section: &str) -> HandlerResult<Vec<u8>> {
 	let adapter_server_request = rpc::AdapterServerRequest::decode(data)?;
 	debug!(
@@ -209,6 +208,11 @@ fn handle_adapter_http_request(req: rpc::AdapterHttpRequest) -> anyhow::Result<V
 			let req: TappProfileRequest = serde_json::from_slice(&req.payload)?;
 			user::update_tapp_profile(&req)
 		}
+		"query_balance" => {
+			let req: HttpQueryBalanceRequest = serde_json::from_slice(&req.payload)?;
+
+			user::query_balance(&req)
+		}
 
 		"postMessage" => {
 			let req: PostMessageRequest = serde_json::from_slice(&req.payload)?;
@@ -226,11 +230,7 @@ fn handle_adapter_http_request(req: rpc::AdapterHttpRequest) -> anyhow::Result<V
 			let req: DeleteMessageRequest = serde_json::from_slice(&req.payload)?;
 			delete_message(&uuid, req)
 		}
-		"query_balance" => {
-			let req: HttpQueryBalanceRequest = serde_json::from_slice(&req.payload)?;
 
-			state::query_tea_balance(&req.address, &req.uuid, req.auth)
-		}
 		"query_result" => {
 			let req: HttpQueryResultWithUuid = serde_json::from_slice(&req.payload)?;
 			let res_val = help::to_json_response(&req.uuid)?;

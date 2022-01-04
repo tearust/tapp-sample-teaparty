@@ -136,9 +136,14 @@ export default {
     },
 
     async queryTokenBalance(){
-      this.tapp_balance = await bbs.query_balance({
-        address: this.layer1_account.address,
-      });
+      try{
+        this.tapp_balance = await bbs.query_balance({
+          address: this.layer1_account.address,
+        });
+      }catch(e){
+        console.error(e);
+      }
+      
     },
 
 

@@ -138,6 +138,7 @@ pub fn to_json_response(key: &str) -> anyhow::Result<serde_json::Value> {
 
 fn parse_tappstore_response(data: &[u8], uuid: &str) -> anyhow::Result<serde_json::Value> {
 	let tapp_query_response = tappstore::TappQueryResponse::decode(data)?;
+	info!("1111 => {:?}", tapp_query_response);
 	let rtn = match tapp_query_response.msg {
 		Some(tappstore::tapp_query_response::Msg::TeaBalanceResponse(balance_res)) => {
 			json!({
