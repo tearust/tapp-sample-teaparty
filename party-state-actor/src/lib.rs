@@ -51,7 +51,7 @@ fn handle_message_inner(msg: BrokerMessage) -> HandlerResult<Vec<u8>> {
 	let channel_parts: Vec<&str> = msg.subject.split('.').collect();
 	match &channel_parts[..] {
 		["tea", "system", "init"] => handle_system_init()?,
-		["layer1", "event"] => return handle_layer1_event(&msg.body),
+		// ["layer1", "event"] => return handle_layer1_event(&msg.body),
 		_ => (),
 	};
 	Ok(vec![])
@@ -63,28 +63,6 @@ fn handle_system_init() -> anyhow::Result<()> {
 	Ok(())
 }
 
-fn handle_layer1_event(data: &[u8]) -> HandlerResult<Vec<u8>> {
-	if false == can_do()? {
-		return Ok(vec![]);
-	}
-
-	let layer_inbound = layer1::Layer1Inbound::decode(data)?;
-
-	let res = match layer_inbound.msg {
-		Some(layer1::layer1_inbound::Msg::TappTopupEvent(ev)) => layer1_event::on_top_up(ev),
-		// Some(layer1::layer1_inbound::Msg::TappHostedEvent(ev)) => balance::on_tapp_hosted(ev),
-		// Some(layer1::layer1_inbound::Msg::TappUnhostedEvent(ev)) => balance::on_tapp_unhosted(ev),
-		_ => {
-			debug!("ignored events: {:?}", layer_inbound.msg);
-			Ok(())
-		}
-	};
-	if let Err(e) = res {
-		error!("process layer1 event error: {}", e);
-	}
-
-	Ok(vec![])
-}
 
 fn helper_get_state_tsid() -> HandlerResult<Tsid> {
 	let tsid_bytes: Vec<u8> = actor_statemachine::query_state_tsid()?;

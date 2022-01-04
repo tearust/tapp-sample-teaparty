@@ -55,7 +55,6 @@ fn handle_message(msg: BrokerMessage) -> HandlerResult<Vec<u8>> {
 		["tea", "system", "init"] => handle_system_init(&msg)?,
 		["actor", "tapp_bbs", "echo", ..] => echo(&msg)?,
 		["adapter", section] => return handle_adapter_request(msg.body.as_slice(), section),
-		// ["layer1", "event"] => return handle_layer1_event(&msg.body),
 		["actor", "version"] => version(&msg)?,
 		["libp2p", "state-receiver", "back"] => return libp2p_back_message(&msg),
 		_ => {}
@@ -138,29 +137,6 @@ fn handle_system_init(_msg: &BrokerMessage) -> HandlerResult<()> {
 	Ok(())
 }
 
-fn handle_layer1_event(data: &[u8]) -> HandlerResult<Vec<u8>> {
-	// 	info!("kkkkkkkkkkkk");
-	if false == can_do()? {
-		return Ok(vec![]);
-	}
-
-	let layer_inbound = layer1::Layer1Inbound::decode(data)?;
-
-	let res = match layer_inbound.msg {
-		Some(layer1::layer1_inbound::Msg::TappTopupEvent(ev)) => balance::on_top_up(ev),
-		// Some(layer1::layer1_inbound::Msg::TappHostedEvent(ev)) => balance::on_tapp_hosted(ev),
-		// Some(layer1::layer1_inbound::Msg::TappUnhostedEvent(ev)) => balance::on_tapp_unhosted(ev),
-		_ => {
-			debug!("ignored events: {:?}", layer_inbound.msg);
-			Ok(())
-		}
-	};
-	if let Err(e) = res {
-		error!("process layer1 event error: {}", e);
-	}
-
-	Ok(vec![])
-}
 
 fn handle_adapter_request(data: &[u8], section: &str) -> HandlerResult<Vec<u8>> {
 	let adapter_server_request = rpc::AdapterServerRequest::decode(data)?;
