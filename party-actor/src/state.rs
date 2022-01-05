@@ -188,7 +188,7 @@ pub fn update_profile(
 		acct: parse_to_acct(&acct)?,
 		token_id: token_id,
 		auth_b64: auth_b64.to_string(),
-		Post_message_fee: post_message_fee,
+		post_message_fee: post_message_fee,
 	};
 	execute_tx_with_txn(txn, uuid.to_string())?;
 	info!("state update profile success");

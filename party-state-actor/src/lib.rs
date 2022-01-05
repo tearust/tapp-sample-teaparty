@@ -159,11 +159,11 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 			acct,
 			token_id,
 			auth_b64,
-			Post_message_fee,
+			post_message_fee,
 		} => {
 			info!(
 				"UpdateProfile => : {:?},{:?},{:?},{:?}",
-				acct, token_id, auth_b64, Post_message_fee
+				acct, token_id, auth_b64, post_message_fee
 			);
 
 			// TODO save profile bytes to statemachine.

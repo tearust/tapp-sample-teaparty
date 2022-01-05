@@ -60,7 +60,7 @@ pub enum TeapartyTxn {
 		token_id: TokenId,
 		auth_b64: String,
 
-		Post_message_fee: Balance,
+		post_message_fee: Balance,
 	},
 }
 
