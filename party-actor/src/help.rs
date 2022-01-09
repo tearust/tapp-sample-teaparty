@@ -42,8 +42,6 @@ pub fn p2p_send_to_receive_actor(msg: Vec<u8>) -> anyhow::Result<()> {
 		let target_key = tea_codec::ACTOR_PUBKEY_STATE_RECEIVER.to_string();
 		let target_type = libp2p::TargetType::Actor as i32;
 
-		let from_key = tea_codec::ACTOR_PUBKEY_TAPP_BBS.to_string();
-
 		// TODO, convert to send
 
 		info!("p2p send msg start...");
@@ -54,11 +52,7 @@ pub fn p2p_send_to_receive_actor(msg: Vec<u8>) -> anyhow::Result<()> {
 				target_type,
 				target_action: "libp2p.state-receiver".to_string(),
 			},
-			Some(libp2p::RuntimeAddress {
-				target_key: from_key,
-				target_type,
-				target_action: Default::default(), // not needed
-			}),
+			None,
 			msg.clone(),
 		)?;
 	}
@@ -109,7 +103,7 @@ pub fn get_mem_cache(key: &str) -> anyhow::Result<Vec<u8>> {
 }
 
 pub fn del_mem_cache(key: &str) -> anyhow::Result<()> {
-	actor_kvp::del(BINDING_NAME, &key);
+	actor_kvp::del(BINDING_NAME, &key)?;
 	Ok(())
 }
 
