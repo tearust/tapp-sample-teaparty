@@ -210,7 +210,41 @@ const F = {
   },
 
   async withdrawFromLayer2(self, succ_cb){
+    const user = F.getUser(self.layer1_account.address);
+    if(!user || !user.isLogin){
+      throw 'not_login';
+    }
 
+    const tappId = F.getTappId();
+    self.$store.commit('modal/open', {
+      key: 'common_form',
+      param: {
+        title: 'Withdraw',
+        text: `You will withdraw from tapp ${tappId} 10 TEA.`,
+        props: {
+          
+        },
+      },
+      cb: async (form, close)=>{
+        self.$root.loading(true);
+        const amount = utils.layer1.amountToBalance(100);
+        
+        const param = {
+          address: self.layer1_account.address,
+          tappId: F.getTappId(),
+          authB64: user.session_key,
+          amount,
+        };
+    
+        const rs = await sync_request('withdraw', param);
+        console.log("withdraw action =>", rs);
+        await succ_cb(rs)
+        self.$root.loading(false);
+        close();
+        self.$root.success();
+        
+      }
+    });
   },
 
   async topupFromLayer1(self, succ_cb){
@@ -223,14 +257,14 @@ const F = {
       key: 'common_form',
       param: {
         title: 'Topup',
-        text: `You will topup to tapp ${tappId} 100 TEA.`,
+        text: `You will topup to tapp ${tappId} 10 TEA.`,
         props: {
           
         },
       },
       cb: async (form, close)=>{
         self.$root.loading(true);
-        const total = utils.layer1.amountToBalance(100);
+        const total = utils.layer1.amountToBalance(10);
         const amt = numberToHex(total);
 
         const tx = api.tx.bondingCurve.topup(NPC, tappId, amt);
@@ -246,7 +280,6 @@ const F = {
 
   async query_balance(param){
     const user = F.getUser(param.address);
-    console.log(111, user);
     if(!user || !user.isLogin){
       throw 'not_login';
     }
@@ -280,7 +313,7 @@ const sync_request = async (method, param, message_cb, sp_method='query_result',
     if(e === 'not_login'){
       throw e;
     }
-    
+
     message_cb(e);
     message_cb('continue request');
   }

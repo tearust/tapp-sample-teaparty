@@ -24,9 +24,9 @@
     <el-button v-if="!user || !user.isLogin" type="primary" @click="login_action()">Login</el-button>
     <el-button v-if="user && user.isLogin" type="primary" @click="logout_action()">Logout</el-button>
     <el-divider />
-    <el-button type="primary" @click="topup_action()">Topup</el-button>
+    <el-button type="primary" @click="topup_action()">Topup 10</el-button>
     <el-button type="danger" @click="query_balance_action()">Query balance</el-button>
-    <el-button type="primary" @click="withdraw_action()">Withdraw</el-button>
+    <el-button type="primary" @click="withdraw_action()">Withdraw 10</el-button>
     <el-divider />
     <el-button type="primary" @click="update_profile_action()">Update TApp profile</el-button>
     <el-divider />
@@ -184,7 +184,15 @@ export default {
       
     },
     async withdraw_action(){
-      
+      this.setLog("start withdraw action...");
+
+      try{
+        await bbs.withdrawFromLayer2(this, async ()=>{
+          bbs.log('withdraw action success.');
+        });
+      }catch(e){
+        bbs.log(e);
+      }
     }
 
 

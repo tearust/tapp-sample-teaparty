@@ -154,5 +154,5 @@ pub struct WithdrawRequest {
 	pub address: String,
 	pub auth_b64: String,
 	pub uuid: String,
-	pub amount: Balance, 
+	pub amount: Balance,
 }

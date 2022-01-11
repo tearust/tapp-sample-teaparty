@@ -2,8 +2,8 @@ use crate::types::*;
 use crate::BINDING_NAME;
 use actor_txns::tappstore::TappstoreTxn;
 use bincode;
-use interface::{AuthKey, Followup, Ts};
 use interface::txn::QuerySerial;
+use interface::{AuthKey, Followup, Ts};
 use party_shared::TeapartyTxn;
 use prost::Message;
 use serde_json::json;
@@ -81,7 +81,7 @@ pub fn prepare_login_request(req: &PrepareLoginRequest) -> anyhow::Result<Vec<u8
 		tea_id: help::get_tea_id()?,
 	};
 	let txn_bytes: Vec<u8> = bincode::serialize(&login_request_txn)?;
-	state::execute_tx_with_txn_bytes(txn_bytes, uuid)?;
+	state::execute_tx_with_txn_bytes(txn_bytes, uuid, tea_codec::ACTOR_PUBKEY_TAPPSTORE.into())?;
 
 	Ok(b"ok".to_vec())
 }
@@ -150,7 +150,11 @@ pub fn update_tapp_profile(req: &TappProfileRequest) -> anyhow::Result<Vec<u8>> 
 		post_message_fee: req.post_message_fee,
 	};
 	let txn_bytes = bincode::serialize(&txn)?;
-	state::execute_tx_with_txn_bytes(txn_bytes, req.uuid.to_string())?;
+	state::execute_tx_with_txn_bytes(
+		txn_bytes,
+		req.uuid.to_string(),
+		tea_codec::ACTOR_PUBKEY_PARTY_CONTRACT.to_string(),
+	)?;
 	info!("state update profile success");
 
 	Ok(b"ok".to_vec())
@@ -172,20 +176,33 @@ pub fn query_balance(req: &HttpQueryBalanceRequest) -> anyhow::Result<Vec<u8>> {
 			},
 		)),
 	};
-	let serial = QuerySerial {
-		actor_name: tea_codec::ACTOR_PUBKEY_TAPPSTORE.into(),
-		bytes: encode_protobuf(req)?,
-	};
 
-	let res = state::send_query_via_p2p(serial, uuid)?;
+	state::send_query_via_p2p(
+		encode_protobuf(req)?,
+		uuid,
+		tea_codec::ACTOR_PUBKEY_TAPPSTORE.into(),
+	)?;
 
-	Ok(res)
+	Ok(b"ok".to_vec())
 }
 
 pub fn withdraw(req: &WithdrawRequest) -> anyhow::Result<Vec<u8>> {
 	check_auth(&req.tapp_id, &req.address, &req.auth_b64)?;
 
 	info!("start to withdraw action...");
+
+	let txn = TappstoreTxn::Withdraw {
+		token_id: req.tapp_id,
+		acct: state::parse_to_acct(&req.address)?,
+		amount: req.amount,
+		auth_b64: req.auth_b64.to_string(),
+	};
+	let txn_bytes: Vec<u8> = bincode::serialize(&txn)?;
+	state::execute_tx_with_txn_bytes(
+		txn_bytes,
+		req.uuid.to_string(),
+		tea_codec::ACTOR_PUBKEY_TAPPSTORE.into(),
+	)?;
 
 	Ok(b"ok".to_vec())
 }
