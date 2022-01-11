@@ -3,6 +3,8 @@ use crate::BINDING_NAME;
 use actor_txns::tappstore::TappstoreTxn;
 use bincode;
 use interface::{AuthKey, Followup, Ts};
+use interface::txn::QuerySerial;
+use party_shared::TeapartyTxn;
 use prost::Message;
 use serde_json::json;
 use tea_actor_utility::{
@@ -79,22 +81,8 @@ pub fn prepare_login_request(req: &PrepareLoginRequest) -> anyhow::Result<Vec<u8
 		tea_id: help::get_tea_id()?,
 	};
 	let txn_bytes: Vec<u8> = bincode::serialize(&login_request_txn)?;
-	let (sent_time, txn_hash) = state::send_tappstore_tx_via_p2p(
-		txn_bytes,
-		uuid.clone(),
-		tea_codec::ACTOR_PUBKEY_TAPPSTORE.to_string(),
-	)?;
+	state::execute_tx_with_txn_bytes(txn_bytes, uuid)?;
 
-	let sender_actor_hash = state::send_actor_hash()?;
-	let req_fu: Followup = Followup {
-		ts: sent_time,
-		hash: txn_hash,
-		sender: sender_actor_hash,
-	};
-	state::send_followup_via_p2p(req_fu, uuid.clone())?;
-
-	// mock
-	// mock_login(&uuid, &req)?;
 	Ok(b"ok".to_vec())
 }
 
@@ -154,13 +142,16 @@ pub fn check_auth(tapp_id: &u64, address: &str, auth_b64: &str) -> anyhow::Resul
 pub fn update_tapp_profile(req: &TappProfileRequest) -> anyhow::Result<Vec<u8>> {
 	check_auth(&req.tapp_id, &req.address, &req.auth_b64)?;
 
-	state::update_profile(
-		&req.address,
-		req.tapp_id,
-		&req.auth_b64,
-		&req.uuid,
-		req.post_message_fee,
-	)?;
+	info!("state begin to update profile");
+	let txn = TeapartyTxn::UpdateProfile {
+		acct: state::parse_to_acct(&req.address)?,
+		token_id: req.tapp_id,
+		auth_b64: req.auth_b64.to_string(),
+		post_message_fee: req.post_message_fee,
+	};
+	let txn_bytes = bincode::serialize(&txn)?;
+	state::execute_tx_with_txn_bytes(txn_bytes, req.uuid.to_string())?;
+	info!("state update profile success");
 
 	Ok(b"ok".to_vec())
 }
@@ -168,7 +159,33 @@ pub fn update_tapp_profile(req: &TappProfileRequest) -> anyhow::Result<Vec<u8>> 
 pub fn query_balance(req: &HttpQueryBalanceRequest) -> anyhow::Result<Vec<u8>> {
 	check_auth(&req.tapp_id, &req.address, &req.auth_b64)?;
 
-	state::query_tea_balance(&req.address, req.tapp_id, &req.auth_b64, &req.uuid)?;
+	info!("begin to query tea balance");
+
+	let auth_key = base64::decode(&req.auth_b64)?;
+	let uuid = &req.uuid;
+	let req = tappstore::TappQueryRequest {
+		msg: Some(tappstore::tapp_query_request::Msg::TeaBalanceRequest(
+			tappstore::TeaBalanceRequest {
+				account: req.address.to_string(),
+				token_id: req.tapp_id,
+				auth_key,
+			},
+		)),
+	};
+	let serial = QuerySerial {
+		actor_name: tea_codec::ACTOR_PUBKEY_TAPPSTORE.into(),
+		bytes: encode_protobuf(req)?,
+	};
+
+	let res = state::send_query_via_p2p(serial, uuid)?;
+
+	Ok(res)
+}
+
+pub fn withdraw(req: &WithdrawRequest) -> anyhow::Result<Vec<u8>> {
+	check_auth(&req.tapp_id, &req.address, &req.auth_b64)?;
+
+	info!("start to withdraw action...");
 
 	Ok(b"ok".to_vec())
 }

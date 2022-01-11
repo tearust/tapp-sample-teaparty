@@ -5,7 +5,9 @@ import store from '../store';
 import {stringToHex, hexToU8a, stringToU8a} from 'tearust_layer1';
 
 
+
 const F = {
+
   getUserId(address){
     return `profile__${address}`;
   },
@@ -51,7 +53,7 @@ const F = {
         const r1 = await bbs.sync_request('checkUserAuth', {}, null, 'checkUserAuth', j.uuid);
   
         if(r1.auth_key){
-          console.log('login success');
+          bbs.log('login success');
           const user = {
             address,
             isLogin: true,
@@ -84,6 +86,8 @@ const F = {
     if(json.success){
       utils.cache.remove(F.getUserId(address));
       store.dispatch('init_user');
+
+      bbs.log('logout success.');
     }
 
   

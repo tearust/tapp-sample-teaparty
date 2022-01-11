@@ -59,28 +59,7 @@ pub fn send_tx_via_p2p(
 	Ok((sent_time, txn_hash))
 }
 
-pub fn send_tappstore_tx_via_p2p(
-	txn_bytes: Vec<u8>,
-	uuid: String,
-	to_actor_name: String,
-) -> anyhow::Result<(Ts, Hash)> {
-	let txn_hash = get_hash_from_txn(txn_bytes.clone(), to_actor_name)?;
-
-	let payload = encode_protobuf(tokenstate::StateReceiverMessage {
-		uuid,
-		msg: Some(tokenstate::state_receiver_message::Msg::TappStoreCommand(
-			tokenstate::TappStoreCommand { data: txn_bytes },
-		)),
-	})?;
-	info!("txn payload => {:?}", payload);
-
-	help::p2p_send_to_receive_actor(payload)?;
-
-	let sent_time = get_current_ts()?;
-	Ok((sent_time, txn_hash))
-}
-
-fn send_query_via_p2p(serial: QuerySerial, uuid: &str) -> anyhow::Result<Vec<u8>> {
+pub fn send_query_via_p2p(serial: QuerySerial, uuid: &str) -> anyhow::Result<Vec<u8>> {
 	let payload = encode_protobuf(tokenstate::StateReceiverMessage {
 		uuid: uuid.to_string(),
 		msg: Some(tokenstate::state_receiver_message::Msg::StateQuery(
@@ -96,19 +75,6 @@ fn send_query_via_p2p(serial: QuerySerial, uuid: &str) -> anyhow::Result<Vec<u8>
 	Ok(b"ok".to_vec())
 }
 
-pub fn send_tappstore_query_via_p2p(query_bytes: Vec<u8>, uuid: &str) -> anyhow::Result<Vec<u8>> {
-	let payload = encode_protobuf(tokenstate::StateReceiverMessage {
-		uuid: uuid.to_string(),
-		msg: Some(tokenstate::state_receiver_message::Msg::TappStoreQuery(
-			tokenstate::TappStoreQuery { data: query_bytes },
-		)),
-	})?;
-	info!("tappstore query payload => {:?}", payload);
-
-	help::p2p_send_to_receive_actor(payload)?;
-
-	Ok(b"ok".to_vec())
-}
 
 pub fn get_current_ts() -> anyhow::Result<Ts> {
 	let ts: Ts = get_system_time()?
@@ -139,9 +105,12 @@ pub fn send_followup_via_p2p(fu: Followup, uuid: String) -> anyhow::Result<()> {
 	Ok(())
 }
 
-fn execute_tx_with_txn(txn: TeapartyTxn, uuid: String) -> anyhow::Result<()> {
+pub fn execute_tx_with_txn_bytes(
+	txn_bytes: Vec<u8>, 
+	uuid: String,
+) -> anyhow::Result<()> {
+
 	// step 1, send tx
-	let txn_bytes = bincode::serialize(&txn)?;
 	let (sent_time, txn_hash) = send_tx_via_p2p(
 		txn_bytes,
 		uuid.clone(),
@@ -168,8 +137,8 @@ pub fn post_message(acct: &str, ttl: u64, uuid: &str, auth: AuthKey) -> anyhow::
 		uuid: uuid.to_string(),
 		auth,
 	};
-
-	execute_tx_with_txn(txn, uuid.to_string())?;
+	let txn_bytes = bincode::serialize(&txn)?;
+	execute_tx_with_txn_bytes(txn_bytes, uuid.to_string())?;
 	info!("state post message success");
 
 	Ok(())
@@ -190,19 +159,22 @@ pub fn update_profile(
 		auth_b64: auth_b64.to_string(),
 		post_message_fee: post_message_fee,
 	};
-	execute_tx_with_txn(txn, uuid.to_string())?;
+	let txn_bytes = bincode::serialize(&txn)?;
+	execute_tx_with_txn_bytes(txn_bytes, uuid.to_string())?;
 	info!("state update profile success");
 
 	Ok(())
 }
 
-pub(crate) fn query_tea_balance(
+
+
+pub(crate) fn action_withdraw(
 	acct: &str,
 	token_id: u64,
 	auth_b64: &str,
 	uuid: &str,
 ) -> anyhow::Result<Vec<u8>> {
-	info!("begin to query tea balance");
+	info!("begin to withdraw action...");
 
 	let auth_key = base64::decode(auth_b64)?;
 	let req = tappstore::TappQueryRequest {

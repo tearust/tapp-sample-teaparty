@@ -1,6 +1,6 @@
 <template>
 <div class="tea-page">
-  <el-form :model="form" :rules="rules">
+  <!-- <el-form :model="form" :rules="rules">
     <el-form-item label="Action" prop="action">
       <el-input v-model="form.action"></el-input>
     </el-form-item>
@@ -18,10 +18,23 @@
 
     <el-button type="primary" @click="test_action()">Request action</el-button>
     <el-button type="primary" @click="test_result()">Query result</el-button>
+  </div> -->
+
+  <div style="text-align:left;">
+    <el-button v-if="!user || !user.isLogin" type="primary" @click="login_action()">Login</el-button>
+    <el-button v-if="user && user.isLogin" type="primary" @click="logout_action()">Logout</el-button>
+    <el-divider />
+    <el-button type="primary" @click="topup_action()">Topup</el-button>
+    <el-button type="danger" @click="query_balance_action()">Query balance</el-button>
+    <el-button type="primary" @click="withdraw_action()">Withdraw</el-button>
+    <el-divider />
+    <el-button type="primary" @click="update_profile_action()">Update TApp profile</el-button>
+    <el-divider />
+  
   </div>
 
-  <div v-if="!is_error" style="margin-top: 20px; background: #111; color: #0f0; padding: 4px 8px;min-height: 40px;">{{result}}</div>
-  <div v-if="is_error" style="margin-top: 20px; background: #111; color: #f00; padding: 4px 8px;min-height: 40px;">{{result}}</div>
+  <div v-if="!is_error" v-html="result" style="margin-top: 20px; background: #111; color: #0f0; padding: 4px 8px;min-height: 40px; line-height:20px; word-break:break-all;"></div>
+  <div v-if="is_error" v-html="result" style="margin-top: 20px; background: #111; color: #f00; padding: 4px 8px;min-height: 40px; line-height:20px; word-break:break-all;">{{result}}</div>
   
 </div>
 </template>
@@ -36,6 +49,7 @@ import { mapGetters, mapState } from 'vuex';
 import PubSub from 'pubsub-js';
 import request from '../request';
 import bbs from './bbs';
+import user from './user';
 
 export default {
 
@@ -57,6 +71,9 @@ export default {
   },
 
   computed: {
+    ...mapState([
+      'user', 'bbs',
+    ]),
     ...mapGetters([
       'layer1_account'
     ]),
@@ -122,7 +139,54 @@ export default {
         this.show_result(e, true);
       }
       
+    },
+
+    setLog(init_msg){
+      this.show_result(init_msg);
+      bbs.setLog((msg)=>{
+        this.show_result(msg+'<br/>'+this.result);
+      })
+    },
+    
+
+    async login_action(){
+      this.setLog('start login action...');
+      await user.showLoginModal(this);
+
+    },
+    async logout_action(){
+      this.setLog('start logout action...');
+      await user.logout(this.layer1_account.address);
+    },
+    async topup_action(){
+      this.setLog('start topup action...');
+      await bbs.topupFromLayer1(this, async ()=>{
+        bbs.log('layer1 topup success.')
+      });
+    },
+    async query_balance_action(){
+      this.setLog("query balance action...");
+      try{
+        const balance = await bbs.query_balance({
+          address: this.layer1_account.address,
+        });
+      }catch(e){
+        bbs.log(e);
+      }
+    },
+    async update_profile_action(){
+      this.setLog("start update tapp profile action...");
+      try{
+        const rs = await bbs.updateTappProfile(this.layer1_account.address);
+      }catch(e){
+        bbs.log(e);
+      }
+      
+    },
+    async withdraw_action(){
+      
     }
+
 
     
     

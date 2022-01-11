@@ -46,7 +46,17 @@ _axios.interceptors.response.use((res)=>{
   return Promise.reject(error);
 });
 
+
+let _log = console.log;
 const F = {
+
+  setLog(log_fn){
+    _log = log_fn;
+  },
+  log(msg){
+    _log(msg);
+  },
+
   getUser(address){
     const user = require('./user').default;
     return user.current(address);
@@ -92,6 +102,7 @@ const F = {
     };
     const rs = await sync_request('updateTappProfile', opts);
     console.log('updateTappProfile => ', rs);
+    return rs;
   },
   async sendMessage(address, msg, channel=default_channel){
     const user = F.getUser(address);
@@ -198,6 +209,10 @@ const F = {
     });
   },
 
+  async withdrawFromLayer2(self, succ_cb){
+
+  },
+
   async topupFromLayer1(self, succ_cb){
     const layer1_instance = self.wf.getLayer1Instance();
     const api = layer1_instance.getApi();
@@ -250,7 +265,7 @@ const F = {
 
 const sync_request = async (method, param, message_cb, sp_method='query_result', sp_uuid=null) => {
   message_cb = message_cb || ((msg) => {
-    msg && console.log(msg);
+    msg && _log(msg);
   });
   const _uuid = sp_uuid || uuid();
 
@@ -262,9 +277,12 @@ const sync_request = async (method, param, message_cb, sp_method='query_result',
     });
     message_cb('first step result => '+step1_rs);
   }catch(e){
-    // TODO
-    console.log(111, e);
-    console.log('continue request');
+    if(e === 'not_login'){
+      throw e;
+    }
+    
+    message_cb(e);
+    message_cb('continue request');
   }
   
   utils.sleep(3000);
@@ -296,7 +314,7 @@ const sync_request = async (method, param, message_cb, sp_method='query_result',
   await loop2();
 
   if(rs){
-    message_cb();
+    message_cb(rs);
     return JSON.parse(rs);
   }
 

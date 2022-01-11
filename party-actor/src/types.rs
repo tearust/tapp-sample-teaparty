@@ -146,3 +146,13 @@ pub struct TappProfileRequest {
 
 	pub post_message_fee: Balance,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WithdrawRequest {
+	pub tapp_id: u64,
+	pub address: String,
+	pub auth_b64: String,
+	pub uuid: String,
+	pub amount: Balance, 
+}

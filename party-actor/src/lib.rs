@@ -23,8 +23,11 @@ use tea_actor_utility::{
 use types::*;
 use vmh_codec::error::DISCARD_MESSAGE_ERROR;
 use vmh_codec::message::layer1::MinerClass;
+use vmh_codec::message::encode_protobuf;
 use vmh_codec::message::structs_proto::{layer1, libp2p, orbitdb, rpc, tokenstate};
 use vmh_codec::rpc::adapter::AdapterDispatchType;
+
+use interface::txn::QuerySerial;
 
 #[macro_use]
 extern crate log;
@@ -120,6 +123,7 @@ fn handle_system_init(_msg: &BrokerMessage) -> HandlerResult<()> {
 			"checkLogin",
 			"logout",
 			"updateTappProfile",
+			"withdraw",
 			"postMessage",
 			"loadMessageList",
 			"extendMessage",
@@ -186,7 +190,12 @@ fn handle_adapter_http_request(req: rpc::AdapterHttpRequest) -> anyhow::Result<V
 			let new_uuid = user::check_user_query_uuid(&uuid);
 			if let Ok(req_bytes) = check_user_auth_rs {
 				// send query
-				state::send_tappstore_query_via_p2p(req_bytes, &new_uuid)?;
+
+				let serial = QuerySerial {
+					actor_name: tea_codec::ACTOR_PUBKEY_TAPPSTORE.into(),
+					bytes: req_bytes,
+				};
+				state::send_query_via_p2p(serial, &new_uuid)?;
 
 				// already send, delete flag
 				help::del_mem_cache(&help::uuid_cb_key(&uuid, &"check_user_auth"))?;
@@ -213,6 +222,10 @@ fn handle_adapter_http_request(req: rpc::AdapterHttpRequest) -> anyhow::Result<V
 
 			user::query_balance(&req)
 		}
+		"withdraw" => {
+			let req: WithdrawRequest = serde_json::from_slice(&req.payload)?;
+			user::withdraw(&req)
+		},
 
 		"postMessage" => {
 			let req: PostMessageRequest = serde_json::from_slice(&req.payload)?;
