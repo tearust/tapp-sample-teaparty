@@ -119,7 +119,7 @@ pub fn to_json_response(key: &str) -> anyhow::Result<serde_json::Value> {
 			  "ts": u128_from_le_buffer(&cf_res.ts)?.to_string(),
 			  "hash": hex::encode(&cf_res.hash),
 			  "sender": hex::encode(&cf_res.sender),
-					  "uuid": res.uuid.clone(),
+				"uuid": res.uuid.clone(),
 			})
 		}
 		Some(tokenstate::state_receiver_response::Msg::DirectResponse(_)) => {
@@ -140,6 +140,18 @@ fn parse_tappstore_response(data: &[u8], uuid: &str) -> anyhow::Result<serde_jso
 			  "ts": u128_from_le_buffer(&balance_res.ts)?.to_string(),
 			  "uuid": uuid.to_string(),
 			})
+		}
+		Some(tappstore::tapp_query_response::Msg::FindExecutedTxnResponse(r)) => {
+			if let Some(res) = r.executed_txn {
+				json!({
+					// "tsid": hex::encode(&res.tsid),
+					"status": true,
+				})
+			} else {
+				json!({
+					"status": false,
+				})
+			}
 		}
 		Some(tappstore::tapp_query_response::Msg::CheckUserSessionResponse(r)) => {
 			let auth_key = &r.auth_key;

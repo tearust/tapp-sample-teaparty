@@ -124,6 +124,7 @@ fn handle_system_init(_msg: &BrokerMessage) -> HandlerResult<()> {
 			"logout",
 			"updateTappProfile",
 			"withdraw",
+			"queryHashResult",
 			"postMessage",
 			"loadMessageList",
 			"extendMessage",
@@ -224,6 +225,12 @@ fn handle_adapter_http_request(req: rpc::AdapterHttpRequest) -> anyhow::Result<V
 		"withdraw" => {
 			let req: WithdrawRequest = serde_json::from_slice(&req.payload)?;
 			user::withdraw(&req)
+		}
+		"queryHashResult" => {
+			let req: QueryHashRequest = serde_json::from_slice(&req.payload)?;
+			state::query_txn_hash_result(hex::decode(req.hash)?, req.uuid.to_string())?;
+
+			Ok(b"ok".to_vec())
 		}
 
 		"postMessage" => {

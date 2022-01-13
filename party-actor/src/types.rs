@@ -156,3 +156,10 @@ pub struct WithdrawRequest {
 	pub uuid: String,
 	pub amount: Balance,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct QueryHashRequest {
+	pub uuid: String,
+	pub hash: String,
+}

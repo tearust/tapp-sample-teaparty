@@ -293,7 +293,17 @@ const F = {
     const rs = await sync_request('query_balance', param);
     console.log(1, rs);
     return rs ? utils.layer1.balanceToAmount(rs.balance) : null;
-  }
+  },
+
+  async query_hash_result(hash){
+    const param = {
+      hash,
+    };
+
+    const rs = await sync_request('queryHashResult', param);
+    console.log(1, rs);
+    return rs;
+  },
 };
 
 const sync_request = async (method, param, message_cb, sp_method='query_result', sp_uuid=null) => {

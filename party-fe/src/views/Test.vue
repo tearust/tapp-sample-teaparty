@@ -31,6 +31,9 @@
     <el-button type="primary" @click="update_profile_action()">Update TApp profile</el-button>
     <el-divider />
   
+
+    <b style="display:block">Hash: {{latest_hash}}</b>
+    <el-button type="danger" :disabled="!latest_hash" @click="query_hash_result()">Query hash result</el-button>
   </div>
 
   <div v-if="!is_error" v-html="result" style="margin-top: 20px; background: #111; color: #0f0; padding: 4px 8px;min-height: 40px; line-height:20px; word-break:break-all;"></div>
@@ -66,7 +69,9 @@ export default {
         action: [{required: true}],
         payload: [{required: true}],
         uuid: [{required: true}],
-      }
+      },
+
+      latest_hash: null,
     };
   },
 
@@ -178,6 +183,7 @@ export default {
       this.setLog("start update tapp profile action...");
       try{
         const rs = await bbs.updateTappProfile(this.layer1_account.address);
+        this.latest_hash = rs.hash;
       }catch(e){
         bbs.log(e);
       }
@@ -193,10 +199,22 @@ export default {
       }catch(e){
         bbs.log(e);
       }
-    }
+    },
+
 
 
     
+    async query_hash_result(){
+      const hash = this.latest_hash;
+
+      this.setLog("start query hash result...");
+      try{
+        const rs = await bbs.query_hash_result(hash);
+
+      }catch(e){
+        bbs.log(e);
+      }
+    }
     
   }
 

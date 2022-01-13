@@ -15,7 +15,7 @@ use tea_codec;
 
 use vmh_codec::message::{
 	encode_protobuf,
-	structs_proto::{tappstore, tokenstate},
+	structs_proto::{replica, tappstore, tokenstate},
 };
 
 use party_shared::TeapartyTxn;
@@ -151,6 +151,24 @@ pub fn post_message(acct: &str, ttl: u64, uuid: &str, auth: AuthKey) -> anyhow::
 		tea_codec::ACTOR_PUBKEY_PARTY_CONTRACT.to_string(),
 	)?;
 	info!("state post message success");
+
+	Ok(())
+}
+
+pub fn query_txn_hash_result(txn_hash: Vec<u8>, uuid: String) -> anyhow::Result<()> {
+	info!("begin to query hash result...");
+
+	let req = tappstore::TappQueryRequest {
+		msg: Some(tappstore::tapp_query_request::Msg::FindExecutedTxnRequest(
+			replica::FindExecutedTxnRequest { txn_hash },
+		)),
+	};
+
+	send_query_via_p2p(
+		encode_protobuf(req)?,
+		&uuid,
+		tea_codec::ACTOR_PUBKEY_TAPPSTORE.into(),
+	)?;
 
 	Ok(())
 }
