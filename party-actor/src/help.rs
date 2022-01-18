@@ -14,7 +14,7 @@ use serde_json::json;
 use tea_codec;
 use vmh_codec::message::{
 	encode_protobuf,
-	structs_proto::{layer1, libp2p, tappstore, tokenstate},
+	structs_proto::{layer1, libp2p, tappstore, tokenstate, orbitdb},
 };
 use wascc_actor::untyped;
 
@@ -109,25 +109,35 @@ pub fn del_mem_cache(key: &str) -> anyhow::Result<()> {
 
 pub fn to_json_response(key: &str) -> anyhow::Result<serde_json::Value> {
 	let value = get_mem_cache(key)?;
-	let res = tokenstate::StateReceiverResponse::decode(value.as_slice())?;
-	let rtn = match res.msg.as_ref() {
-		Some(tokenstate::state_receiver_response::Msg::GeneralQueryResponse(r)) => {
-			parse_tappstore_response(&r.data, &res.uuid)?
-		}
-		Some(tokenstate::state_receiver_response::Msg::CommandFollowupResponse(cf_res)) => {
-			json!({
-			  "ts": u128_from_le_buffer(&cf_res.ts)?.to_string(),
-			  "hash": hex::encode(&cf_res.hash),
-			  "sender": hex::encode(&cf_res.sender),
-				"uuid": res.uuid.clone(),
-			})
-		}
-		Some(tokenstate::state_receiver_response::Msg::DirectResponse(_)) => {
-			json!({"status": "pending"})
-		}
-		_ => json!({ "error": format!("unknown response: {:?}", res) }),
-	};
-	Ok(rtn)
+	
+	if let Ok(res) = tokenstate::StateReceiverResponse::decode(value.as_slice()) {
+		let rtn = match res.msg.as_ref() {
+			Some(tokenstate::state_receiver_response::Msg::GeneralQueryResponse(r)) => {
+				parse_tappstore_response(&r.data, &res.uuid)?
+			}
+			Some(tokenstate::state_receiver_response::Msg::CommandFollowupResponse(cf_res)) => {
+				json!({
+					"ts": u128_from_le_buffer(&cf_res.ts)?.to_string(),
+					"hash": hex::encode(&cf_res.hash),
+					"sender": hex::encode(&cf_res.sender),
+					"uuid": res.uuid.clone(),
+				})
+			}
+			Some(tokenstate::state_receiver_response::Msg::DirectResponse(_)) => {
+				json!({"status": "pending"})
+			}
+			_ => json!({ "error": format!("unknown response: {:?}", res) }),
+		};
+		return Ok(rtn);
+	}
+	else if let Ok(res) = orbitdb::OrbitBbsResponse::decode(value.as_slice()) {
+		return Ok(json!({
+			// "data": res.data.to_string(),
+			"status": "ok".to_string()
+		}));
+	}
+
+	Ok(json!({"error": format!("unknown value for key : {}", key)}))	
 }
 
 fn parse_tappstore_response(data: &[u8], uuid: &str) -> anyhow::Result<serde_json::Value> {
@@ -178,7 +188,12 @@ fn u128_from_le_buffer(data: &[u8]) -> anyhow::Result<u128> {
 }
 
 pub fn uuid_cb_key(uuid: &str, stype: &str) -> String {
-	let rs = format!("{}_msg_{}", uuid, stype);
+	let rs = format!("{}_msg_{}", stype, uuid);
+	rs.to_string()
+}
+pub fn cb_key_to_uuid(key: &str, stype: &str) -> String {
+	let ss = format!("{}_msg_", stype);
+	let rs = str::replace(key, &ss, "");
 	rs.to_string()
 }
 

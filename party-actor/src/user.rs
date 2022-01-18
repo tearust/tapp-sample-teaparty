@@ -1,4 +1,5 @@
 use crate::types::*;
+use str_utils::*;
 use crate::BINDING_NAME;
 use actor_txns::tappstore::TappstoreTxn;
 use bincode;
@@ -55,6 +56,7 @@ pub fn get_aes_key(tapp_id: &u64) -> anyhow::Result<Vec<u8>> {
 }
 
 pub fn prepare_login_request(req: &PrepareLoginRequest) -> anyhow::Result<Vec<u8>> {
+
 	// send to state receive actor
 	let uuid = req.uuid.to_string();
 
@@ -89,8 +91,7 @@ pub fn prepare_login_request(req: &PrepareLoginRequest) -> anyhow::Result<Vec<u8
 pub fn libp2p_msg_cb(body: &tokenstate::StateReceiverResponse) -> anyhow::Result<bool> {
 	let uuid = &body.uuid;
 
-	// TODO check start string is check_user
-	if uuid.len() > 46 {
+	if uuid.starts_with_ignore_ascii_case("check_user") {
 		match &body.msg {
 			Some(tokenstate::state_receiver_response::Msg::GeneralQueryResponse(r)) => {
 				let query_res = tappstore::TappQueryResponse::decode(r.data.as_slice())?;

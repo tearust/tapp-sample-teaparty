@@ -136,24 +136,6 @@ pub fn execute_tx_with_txn_bytes(
 	Ok(())
 }
 
-pub fn post_message(acct: &str, ttl: u64, uuid: &str, auth: AuthKey) -> anyhow::Result<()> {
-	info!("state begin to post_message");
-	let txn = TeapartyTxn::PostMessage {
-		from: parse_to_acct(acct)?,
-		ttl,
-		uuid: uuid.to_string(),
-		auth,
-	};
-	let txn_bytes = bincode::serialize(&txn)?;
-	execute_tx_with_txn_bytes(
-		txn_bytes,
-		uuid.to_string(),
-		tea_codec::ACTOR_PUBKEY_PARTY_CONTRACT.to_string(),
-	)?;
-	info!("state post message success");
-
-	Ok(())
-}
 
 pub fn query_txn_hash_result(txn_hash: Vec<u8>, uuid: String) -> anyhow::Result<()> {
 	info!("begin to query hash result...");

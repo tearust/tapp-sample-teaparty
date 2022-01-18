@@ -19,6 +19,7 @@ base58 = "0.1.0"
 hex = "0.4.2"
 anyhow = "1.0.34"
 num-traits = "0.2"
+str-utils = "0.1.5"
 num-bigint = {version = "0.2", features = ["serde"]}
 wascc-actor = { git = "https://github.com/tearust/wascc-actor", branch = "nitro" }
 

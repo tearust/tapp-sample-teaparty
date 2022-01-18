@@ -22,7 +22,6 @@ use interface::{Account, Balance, Tsid, TOKEN_ID_TEA, TOPUP_AUTH_KEY};
 use token_state::token_context::TokenContext;
 use vmh_codec::message::structs_proto::tokenstate::*;
 
-mod layer1_event;
 mod state;
 
 actor_handlers! {
@@ -51,7 +50,6 @@ fn handle_message_inner(msg: BrokerMessage) -> HandlerResult<Vec<u8>> {
 	let channel_parts: Vec<&str> = msg.subject.split('.').collect();
 	match &channel_parts[..] {
 		["tea", "system", "init"] => handle_system_init()?,
-		// ["layer1", "event"] => return handle_layer1_event(&msg.body),
 		_ => (),
 	};
 	Ok(vec![])
@@ -78,24 +76,12 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 	let base: Tsid = helper_get_state_tsid()?;
 	info!("base tsid is {:?}", &base);
 	let context_bytes = match sample_txn {
-		TeapartyTxn::Topup { acct, amt, uuid: _ } => {
-			let auth = TOPUP_AUTH_KEY;
-			let auth_ops_bytes = query_auth_ops_bytes(auth)?;
-			let ctx = TokenContext::new(tsid, base, TOKEN_ID_TEA, &auth_ops_bytes);
-			let ctx_bytes = bincode::serialize(&ctx)?;
-			let to: Account = acct;
-			let amt: Vec<u8> = bincode::serialize(&amt)?;
-			actor_statemachine::topup(TopupRequest {
-				ctx: ctx_bytes,
-				to: to.to_vec(),
-				amt,
-			})?
-		}
+		
 		TeapartyTxn::PostMessage {
+			token_id,
 			from,
 			ttl,
-			uuid: _,
-			auth,
+			auth_b64,
 		} => {
 			info!("PostMessage from ttl: {:?},{:?}", &from, &ttl);
 
@@ -117,7 +103,9 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 				tmp.try_into().unwrap()
 			};
 
-			let auth_ops_bytes: Vec<u8> = query_auth_ops_bytes(auth)?;
+			// let auth_ops_bytes: Vec<u8> = query_auth_ops_bytes(auth)?;
+			warn!("todo: get auth_opts_bytes from auth_b64");
+			let auth_ops_bytes = b"1".to_vec();
 			let ctx = TokenContext::new(tsid, base, TOKEN_ID_TEA, &auth_ops_bytes);
 			let ctx_bytes = bincode::serialize(&ctx)?;
 
@@ -165,10 +153,10 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 				"UpdateProfile => : {:?},{:?},{:?},{:?}",
 				acct, token_id, auth_b64, post_message_fee
 			);
-
 			// TODO save profile bytes to statemachine.
+			warn!("todo: save profile to statemachine");
 
-			b"mock".to_vec()
+			b"ok".to_vec()
 		}
 
 		_ => Err(anyhow::anyhow!("Unhandled txn OP type"))?,

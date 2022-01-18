@@ -3,7 +3,7 @@
 #![allow(non_camel_case_types)]
 
 use crate::channel::{delete_message, extend_message, load_message_list, post_message};
-use crate::validating::{login, logout, prepare_login};
+use crate::validating::{login, logout};
 use actor::prelude::*;
 use codec::messaging::BrokerMessage;
 use prost::Message;
@@ -81,6 +81,7 @@ fn libp2p_back_message(msg: &BrokerMessage) -> HandlerResult<Vec<u8>> {
 		info!("party actor get lib msg back => {:?}", body);
 
 		user::libp2p_msg_cb(&body)?;
+		channel::libp2p_msg_cb(&body)?;
 		if body.msg == None {
 			info!("still need to waiting statemachine response.");
 		} else {

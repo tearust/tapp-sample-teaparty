@@ -21,18 +21,6 @@ pub enum TeapartyTxnError {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum TeapartyTxn {
-	Topup {
-		acct: Account,
-		amt: Balance,
-		uuid: String,
-	},
-	Withdraw {
-		acct: Account,
-		amt: Balance,
-		uuid: String,
-		auth: AuthKey,
-	},
-
 	TransferTea {
 		from: Account,
 		to: Account,
@@ -42,10 +30,10 @@ pub enum TeapartyTxn {
 	},
 
 	PostMessage {
+		token_id: TokenId,
 		from: Account,
 		ttl: u64,
-		uuid: String,
-		auth: AuthKey,
+		auth_b64: String,
 	},
 
 	ExtendMessage {

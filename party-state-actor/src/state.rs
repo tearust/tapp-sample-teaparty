@@ -111,23 +111,6 @@ fn execute_tx_with_txn(txn: TeapartyTxn) -> anyhow::Result<()> {
 	Ok(())
 }
 
-pub(crate) fn topup(acct: Account, amt: Balance, block_str: String) -> anyhow::Result<()> {
-	info!("begin to topup");
-
-	let txn = TeapartyTxn::Topup {
-		acct,
-		amt,
-		uuid: block_str,
-	};
-
-	info!("txn => {:?}", txn);
-
-	execute_tx_with_txn(txn)?;
-
-	info!("topup success!");
-
-	Ok(())
-}
 
 pub(crate) fn parse_to_acct(ss58_address: &str) -> anyhow::Result<Account> {
 	let acct = public_key_from_ss58(&ss58_address)?;

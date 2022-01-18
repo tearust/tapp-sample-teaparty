@@ -28,8 +28,13 @@
     <el-button type="danger" @click="query_balance_action()">Query balance</el-button>
     <el-button type="primary" @click="withdraw_action()">Withdraw 10</el-button>
     <el-divider />
+
     <el-button type="primary" @click="update_profile_action()">Update TApp profile</el-button>
+    <el-button type="danger" @click="query_msg_list()">Query message list</el-button>
+    <el-button type="primary" @click="post_msg_action()">Post message</el-button>
+
     <el-divider />
+
   
 
     <b style="display:block">Hash: {{latest_hash}}</b>
@@ -196,6 +201,29 @@ export default {
         await bbs.withdrawFromLayer2(this, async ()=>{
           bbs.log('withdraw action success.');
         });
+      }catch(e){
+        bbs.log(e);
+      }
+    },
+
+    async post_msg_action(){
+      this.setLog("start post msg action...");
+      
+      try{
+        const rs = await bbs.sendMessage(this.layer1_account.address, "hello world");
+        
+      }catch(e){
+        bbs.log(e);
+      }
+    },
+
+    async query_msg_list(){
+      this.setLog("start query msg list...");
+
+      try{
+        const list = await bbs.loadMessageList(this.layer1_account.address);
+        console.log(111, list);
+        bbs.log(JSON.stringify(list));
       }catch(e){
         bbs.log(e);
       }

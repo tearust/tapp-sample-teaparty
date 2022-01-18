@@ -12,46 +12,7 @@ use tea_actor_utility::{
 const COMMUNICATION_AES_KEY_PREFIX: &str = "tapp_bbs_aes";
 const COMMUNICATION_RSA_KEY_PREFIX: &str = "tapp_bbs_rsa";
 
-pub(crate) fn prepare_login(_uuid: &str, request: &PrepareLoginRequest) -> anyhow::Result<Vec<u8>> {
-	let sr25519_pubkey = public_key_from_ss58(&request.address)?;
 
-	if !verify(
-		"sr25519".into(),
-		sr25519_pubkey.clone(),
-		base64::decode(&request.data)?,
-		base64::decode(&request.signature)?,
-	)? {
-		return Err(anyhow::anyhow!("Validate account signature failed"));
-	}
-
-	let aes_key = communication_aes_key(&request.address);
-	if actor_kvp::exists(BINDING_NAME, &aes_key)
-		.map_err(|e| anyhow::anyhow!("actor_kvp exists aes_key error:{}", e))?
-	{
-		actor_kvp::del(BINDING_NAME, &aes_key)
-			.map_err(|e| anyhow::anyhow!("actor_kvp del aes_key error: {}", e))?;
-	}
-
-	let (rsa_pub, rsa_pri) = generate_rsa_keypair(512)?;
-	actor_kvp::set(
-		BINDING_NAME,
-		&communication_rsa_key(&request.address),
-		&rsa_pri,
-		6000,
-	)
-	.map_err(|e| anyhow::anyhow!("actor_kvp set ras_pri error:{}", e))?;
-
-	let sign_data = sr25519_pubkey;
-	let signature = sign("ed25519".into(), get_my_ephemeral_key()?, sign_data.clone())?;
-
-	let response = PrepareLoginResponse {
-		ephemeral_public_key: base64::encode(get_my_ephemeral_id()?),
-		rsa_public_key: base64::encode(rsa_pub),
-		sign_data: base64::encode(sign_data),
-		signature: base64::encode(signature),
-	};
-	Ok(serde_json::to_string(&response)?.into_bytes())
-}
 
 pub(crate) fn login(_uuid: &str, request: &LoginRequest) -> anyhow::Result<Vec<u8>> {
 	let rsa_key: String = actor_kvp::get(BINDING_NAME, &communication_rsa_key(&request.address))?
@@ -67,6 +28,7 @@ pub(crate) fn login(_uuid: &str, request: &LoginRequest) -> anyhow::Result<Vec<u
 }
 
 pub(crate) fn logout(_uuid: &str, request: &LogoutRequest) -> anyhow::Result<Vec<u8>> {
+
 	actor_kvp::del(BINDING_NAME, &communication_aes_key(&request.address))
 		.map_err(|e| anyhow::anyhow!("{}", e))?;
 	Ok(serde_json::to_string(&LogoutResponse { success: true })?.into_bytes())
