@@ -1,5 +1,4 @@
 use crate::types::*;
-use str_utils::*;
 use crate::BINDING_NAME;
 use actor_txns::tappstore::TappstoreTxn;
 use bincode;
@@ -8,6 +7,7 @@ use interface::{AuthKey, Followup, Ts};
 use party_shared::TeapartyTxn;
 use prost::Message;
 use serde_json::json;
+use str_utils::*;
 use tea_actor_utility::{
 	actor_crypto::{
 		aes_decrypt, aes_encrypt, generate_aes_key, generate_rsa_keypair, public_key_from_ss58,
@@ -56,7 +56,6 @@ pub fn get_aes_key(tapp_id: &u64) -> anyhow::Result<Vec<u8>> {
 }
 
 pub fn prepare_login_request(req: &PrepareLoginRequest) -> anyhow::Result<Vec<u8>> {
-
 	// send to state receive actor
 	let uuid = req.uuid.to_string();
 

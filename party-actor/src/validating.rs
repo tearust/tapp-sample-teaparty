@@ -12,8 +12,6 @@ use tea_actor_utility::{
 const COMMUNICATION_AES_KEY_PREFIX: &str = "tapp_bbs_aes";
 const COMMUNICATION_RSA_KEY_PREFIX: &str = "tapp_bbs_rsa";
 
-
-
 pub(crate) fn login(_uuid: &str, request: &LoginRequest) -> anyhow::Result<Vec<u8>> {
 	let rsa_key: String = actor_kvp::get(BINDING_NAME, &communication_rsa_key(&request.address))?
 		.ok_or(anyhow::anyhow!("failed to get rsa key"))?;
@@ -28,7 +26,6 @@ pub(crate) fn login(_uuid: &str, request: &LoginRequest) -> anyhow::Result<Vec<u
 }
 
 pub(crate) fn logout(_uuid: &str, request: &LogoutRequest) -> anyhow::Result<Vec<u8>> {
-
 	actor_kvp::del(BINDING_NAME, &communication_aes_key(&request.address))
 		.map_err(|e| anyhow::anyhow!("{}", e))?;
 	Ok(serde_json::to_string(&LogoutResponse { success: true })?.into_bytes())

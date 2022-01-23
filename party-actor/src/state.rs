@@ -136,7 +136,6 @@ pub fn execute_tx_with_txn_bytes(
 	Ok(())
 }
 
-
 pub fn query_txn_hash_result(txn_hash: Vec<u8>, uuid: String) -> anyhow::Result<()> {
 	info!("begin to query hash result...");
 

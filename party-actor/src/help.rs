@@ -14,7 +14,7 @@ use serde_json::json;
 use tea_codec;
 use vmh_codec::message::{
 	encode_protobuf,
-	structs_proto::{layer1, libp2p, tappstore, tokenstate, orbitdb},
+	structs_proto::{layer1, libp2p, orbitdb, tappstore, tokenstate},
 };
 use wascc_actor::untyped;
 
@@ -109,7 +109,7 @@ pub fn del_mem_cache(key: &str) -> anyhow::Result<()> {
 
 pub fn to_json_response(key: &str) -> anyhow::Result<serde_json::Value> {
 	let value = get_mem_cache(key)?;
-	
+
 	if let Ok(res) = tokenstate::StateReceiverResponse::decode(value.as_slice()) {
 		let rtn = match res.msg.as_ref() {
 			Some(tokenstate::state_receiver_response::Msg::GeneralQueryResponse(r)) => {
@@ -129,15 +129,16 @@ pub fn to_json_response(key: &str) -> anyhow::Result<serde_json::Value> {
 			_ => json!({ "error": format!("unknown response: {:?}", res) }),
 		};
 		return Ok(rtn);
-	}
-	else if let Ok(res) = orbitdb::OrbitBbsResponse::decode(value.as_slice()) {
+	} else if let Ok(res) = orbitdb::OrbitBbsResponse::decode(value.as_slice()) {
 		return Ok(json!({
 			// "data": res.data.to_string(),
 			"status": "ok".to_string()
 		}));
 	}
 
-	Ok(json!({"error": format!("unknown value for key : {}", key)}))	
+	Ok(json!({
+		"error": format!("unknown value for key : {}", key)
+	}))
 }
 
 fn parse_tappstore_response(data: &[u8], uuid: &str) -> anyhow::Result<serde_json::Value> {

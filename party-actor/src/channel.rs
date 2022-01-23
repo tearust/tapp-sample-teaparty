@@ -1,11 +1,11 @@
 use crate::state;
 use crate::types::*;
-use str_utils::*;
-use serde_json::json;
 use crate::validating::{aes_decrypt_local, aes_encrypt_local, is_user_logged_in};
 use interface::AuthKey;
 use prost::Message;
+use serde_json::json;
 use std::collections::{HashMap, VecDeque};
+use str_utils::*;
 use tea_actor_utility::actor_crypto::{aes_decrypt, aes_encrypt};
 use tea_actor_utility::actor_env::current_timestamp;
 use tea_actor_utility::actor_raft::{
@@ -15,18 +15,16 @@ use tea_actor_utility::common::calculate_hash;
 use tea_codec;
 use tea_codec::{deserialize, serialize};
 
+use party_shared::TeapartyTxn;
 use vmh_codec::message::{
-	encode_protobuf, 
-	structs_proto::{
-		orbitdb, tokenstate,
-	},
+	encode_protobuf,
+	structs_proto::{orbitdb, tokenstate},
 };
 use wascc_actor::prelude::codec::messaging::BrokerMessage;
 use wascc_actor::prelude::*;
-use party_shared::TeapartyTxn;
 
-use crate::user;
 use crate::help;
+use crate::user;
 
 pub fn post_message(uuid: &str, req: &PostMessageRequest) -> anyhow::Result<Vec<u8>> {
 	user::check_auth(&req.tapp_id, &req.address, &req.auth_b64)?;
@@ -40,8 +38,7 @@ pub fn post_message(uuid: &str, req: &PostMessageRequest) -> anyhow::Result<Vec<
 		if data.len() < 8 {
 			data.extend_from_slice(&[0, 0, 0, 0, 0, 0, 0]);
 		}
-
-		let msg = aes_encrypt(aes_key, msg)?;
+		let msg = aes_encrypt(aes_key, data)?;
 		base64::encode(msg)
 	};
 
@@ -79,18 +76,14 @@ pub fn post_message(uuid: &str, req: &PostMessageRequest) -> anyhow::Result<Vec<
 		utc: now,
 		utc_expired: now + ttl,
 	};
-	help::set_mem_cache(
-		&can_post_uuid,
-		encode_protobuf(add_message_data)?,
-	)?;
+	help::set_mem_cache(&can_post_uuid, encode_protobuf(add_message_data)?)?;
 
 	Ok(b"ok".to_vec())
 }
 
 // fn post_message_cb() -> anyhow::Result<()> {
-	
 
-	// Ok(res.data.into_bytes())
+// Ok(res.data.into_bytes())
 // }
 
 pub fn libp2p_msg_cb(body: &tokenstate::StateReceiverResponse) -> anyhow::Result<bool> {
@@ -120,8 +113,6 @@ pub fn libp2p_msg_cb(body: &tokenstate::StateReceiverResponse) -> anyhow::Result
 				return Ok(true);
 			}
 		}
-	
-
 	}
 
 	Ok(false)
