@@ -129,7 +129,7 @@ pub fn to_json_response(key: &str) -> anyhow::Result<serde_json::Value> {
 			_ => json!({ "error": format!("unknown response: {:?}", res) }),
 		};
 		return Ok(rtn);
-	} else if let Ok(res) = orbitdb::OrbitBbsResponse::decode(value.as_slice()) {
+	} else if let Ok(_res) = orbitdb::OrbitBbsResponse::decode(value.as_slice()) {
 		return Ok(json!({
 			// "data": res.data.to_string(),
 			"status": "ok".to_string()
@@ -153,7 +153,7 @@ fn parse_tappstore_response(data: &[u8], uuid: &str) -> anyhow::Result<serde_jso
 			})
 		}
 		Some(tappstore::tapp_query_response::Msg::FindExecutedTxnResponse(r)) => {
-			if let Some(res) = r.executed_txn {
+			if let Some(_res) = r.executed_txn {
 				json!({
 					// "tsid": hex::encode(&res.tsid),
 					"status": true,
