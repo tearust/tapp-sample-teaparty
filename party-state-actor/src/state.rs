@@ -111,7 +111,6 @@ fn execute_tx_with_txn(txn: TeapartyTxn) -> anyhow::Result<()> {
 	Ok(())
 }
 
-
 pub(crate) fn parse_to_acct(ss58_address: &str) -> anyhow::Result<Account> {
 	let acct = public_key_from_ss58(&ss58_address)?;
 	if acct.len() != 32 {

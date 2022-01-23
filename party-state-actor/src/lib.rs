@@ -18,7 +18,7 @@ use wascc_actor::prelude::codec::messaging::BrokerMessage;
 use wascc_actor::prelude::*;
 use wascc_actor::HandlerResult;
 
-use interface::{Account, Balance, Tsid, TOKEN_ID_TEA, TOPUP_AUTH_KEY};
+use interface::{Account, AuthKey, Balance, Tsid, TOKEN_ID_TEA, TOPUP_AUTH_KEY};
 use token_state::token_context::TokenContext;
 use vmh_codec::message::structs_proto::tokenstate::*;
 
@@ -61,7 +61,6 @@ fn handle_system_init() -> anyhow::Result<()> {
 	Ok(())
 }
 
-
 fn helper_get_state_tsid() -> HandlerResult<Tsid> {
 	let tsid_bytes: Vec<u8> = actor_statemachine::query_state_tsid()?;
 	let tsid: Tsid = bincode::deserialize(&tsid_bytes)?;
@@ -75,10 +74,10 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 	info!("decode the txn {:?}", &sample_txn);
 	let base: Tsid = helper_get_state_tsid()?;
 	info!("base tsid is {:?}", &base);
+	let mut auth_key: AuthKey = TOPUP_AUTH_KEY;
 	let context_bytes = match sample_txn {
-		
 		TeapartyTxn::PostMessage {
-			token_id,
+			token_id: _,
 			from,
 			ttl,
 			auth_b64,
@@ -103,11 +102,9 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 				tmp.try_into().unwrap()
 			};
 
-			// let auth_ops_bytes: Vec<u8> = query_auth_ops_bytes(auth)?;
-			warn!("todo: get auth_opts_bytes from auth_b64");
-			let auth_ops_bytes = base64::decode(auth_b64)?;
-			// let auth_ops_bytes = b"1".to_vec();
-			info!("auth_key_from_auth_b64 => {:?}", auth_ops_bytes);
+			auth_key = bincode::deserialize(&base64::decode(auth_b64)?)?;
+			let auth_ops_bytes = actor_statemachine::query_auth_ops_bytes(auth_key)?;
+			info!("auth_key => {:?}", auth_key);
 
 			let ctx = TokenContext::new(tsid, base, TOKEN_ID_TEA, &auth_ops_bytes);
 			let ctx_bytes = bincode::serialize(&ctx)?;
@@ -132,6 +129,7 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 				"TransferTea from to amt: {:?},{:?},{:?},{}",
 				&from, &to, &amt, auth
 			);
+			auth_key = auth;
 			let auth_ops_bytes: Vec<u8> = query_auth_ops_bytes(auth)?;
 			let ctx = TokenContext::new(tsid, base, TOKEN_ID_TEA, &auth_ops_bytes);
 			let ctx_bytes = bincode::serialize(&ctx)?;
@@ -159,12 +157,17 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 			// TODO save profile bytes to statemachine.
 			warn!("todo: save profile to statemachine");
 
+			auth_key = bincode::deserialize(&base64::decode(auth_b64)?)?;
+			let _auth_ops_bytes = actor_statemachine::query_auth_ops_bytes(auth_key)?;
 			b"ok".to_vec()
 		}
 
 		_ => Err(anyhow::anyhow!("Unhandled txn OP type"))?,
 	};
-	let res_commit_ctx_bytes = actor_statemachine::commit(CommitRequest { ctx: context_bytes })?;
+	let res_commit_ctx_bytes = actor_statemachine::commit(CommitRequest {
+		ctx: context_bytes,
+		auth_key: bincode::serialize(&auth_key)?,
+	})?;
 	if res_commit_ctx_bytes.is_empty() {
 		info!("*********  Commit succesfully. the ctx is empty. it is supposed to be empty");
 	}
