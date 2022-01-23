@@ -7,11 +7,13 @@ use crate::validating::{login, logout};
 use actor::prelude::*;
 use codec::messaging::BrokerMessage;
 use prost::Message;
+use std::convert::TryInto;
 #[cfg(not(feature = "nitro"))]
 use tea_actor_utility::action::get_uuid;
 #[cfg(feature = "nitro")]
 use tea_actor_utility::actor_enclave::generate_uuid;
 use tea_actor_utility::actor_layer1::register_layer1_event;
+
 use tea_actor_utility::{
 	action::reply_intercom,
 	actor_enclave::get_my_tea_id,
@@ -59,10 +61,26 @@ fn handle_message(msg: BrokerMessage) -> HandlerResult<Vec<u8>> {
 		["actor", "tapp_bbs", "echo", ..] => echo(&msg)?,
 		["adapter", section] => return handle_adapter_request(msg.body.as_slice(), section),
 		["actor", "version"] => version(&msg)?,
+		["layer1", "event"] => handle_layer1_event(msg.body.as_slice())?,
 		["libp2p", "state-receiver", "back"] => return libp2p_back_message(&msg),
 		_ => {}
 	}
 	Ok(vec![])
+}
+
+fn handle_layer1_event(data: &[u8]) -> HandlerResult<()> {
+	let layer_inbound = layer1::Layer1Inbound::decode(data)?;
+
+	match layer_inbound.msg {
+		Some(layer1::layer1_inbound::Msg::NewBlockEvent(ev)) => {
+			help::persist_current_block(&ev)?;
+		}
+		_ => {
+			debug!("unknown layer1 general event: {:?}", &layer_inbound.msg);
+		}
+	};
+
+	Ok(())
 }
 
 pub fn can_do() -> anyhow::Result<bool> {
@@ -139,7 +157,7 @@ fn handle_system_init(_msg: &BrokerMessage) -> HandlerResult<()> {
 		.map(|v| v.to_string())
 		.collect(),
 	)?;
-	// register_layer1_event()?;
+	register_layer1_event()?;
 	Ok(())
 }
 

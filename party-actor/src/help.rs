@@ -201,3 +201,19 @@ pub fn cb_key_to_uuid(key: &str, stype: &str) -> String {
 pub fn get_tea_id() -> anyhow::Result<Vec<u8>> {
 	Ok([0; 32].to_vec())
 }
+
+const CURRENT_BLOCK_NUMBER_KEY: &str = "tea_tapp_party_actor";
+pub(crate) fn persist_current_block(event: &layer1::NewBlockEvent) -> anyhow::Result<()> {
+	actor_kvp::set_forever(
+		crate::BINDING_NAME,
+		CURRENT_BLOCK_NUMBER_KEY,
+		&event.block_number,
+	)?;
+	Ok(())
+}
+
+pub(crate) fn current_block_number() -> anyhow::Result<u32> {
+	let block_number: u32 =
+		actor_kvp::get(crate::BINDING_NAME, CURRENT_BLOCK_NUMBER_KEY)?.unwrap_or_default();
+	Ok(block_number)
+}

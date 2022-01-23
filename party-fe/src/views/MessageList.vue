@@ -8,13 +8,13 @@
       <p style="font-size: 18px; margin: 0; margin-top: 4px; padding-right: 70px;">{{item.content}}</p>
 
       <div class="t-action" v-if="user && user.address === item.sender">
-        <el-tooltip content="Extend expired time" placement="top" effect="light">
+        <!-- <el-tooltip content="Extend expired time" placement="top" effect="light">
           <el-button size="mini" circle type="primary" plain icon="el-icon-check" @click="clickExtendMessage(item)"></el-button>
         </el-tooltip>
 
         <el-tooltip content="Delete message" placement="top" effect="light">
           <el-button size="mini" circle type="danger" plain icon="el-icon-delete" @click="clickDeleteMessage(item)"></el-button>
-        </el-tooltip>
+        </el-tooltip> -->
         
       </div>
     </div>

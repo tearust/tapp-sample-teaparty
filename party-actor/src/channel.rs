@@ -42,10 +42,13 @@ pub fn post_message(uuid: &str, req: &PostMessageRequest) -> anyhow::Result<Vec<
 		base64::encode(msg)
 	};
 
-	let now: u64 = current_timestamp()? as u64;
+	// let block = help::current_block_number()? as u64;
+	let block: u64 = current_timestamp()? as u64;
 
 	let ttl: u64 = {
 		match is_global_channel(&req.channel) {
+			// true => (1 * 100) as u64,
+			// false => (30 * 100) as u64,
 			true => (2 * 60 * 60) as u64,
 			false => (24 * 60 * 60) as u64,
 		}
@@ -73,8 +76,8 @@ pub fn post_message(uuid: &str, req: &PostMessageRequest) -> anyhow::Result<Vec<
 		dbname,
 		sender: req.address.clone(),
 		content: message,
-		utc: now,
-		utc_expired: now + ttl,
+		utc: block,
+		utc_expired: block + ttl,
 	};
 	help::set_mem_cache(&can_post_uuid, encode_protobuf(add_message_data)?)?;
 

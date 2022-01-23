@@ -105,7 +105,10 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 
 			// let auth_ops_bytes: Vec<u8> = query_auth_ops_bytes(auth)?;
 			warn!("todo: get auth_opts_bytes from auth_b64");
-			let auth_ops_bytes = b"1".to_vec();
+			let auth_ops_bytes = base64::decode(auth_b64)?;
+			// let auth_ops_bytes = b"1".to_vec();
+			info!("auth_key_from_auth_b64 => {:?}", auth_ops_bytes);
+
 			let ctx = TokenContext::new(tsid, base, TOKEN_ID_TEA, &auth_ops_bytes);
 			let ctx_bytes = bincode::serialize(&ctx)?;
 
