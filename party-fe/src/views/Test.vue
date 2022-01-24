@@ -198,7 +198,7 @@ export default {
       this.setLog("start withdraw action...");
 
       try{
-        await bbs.withdrawFromLayer2(this, async ()=>{
+        await bbs.withdrawFromLayer2(this, 10, async ()=>{
           bbs.log('withdraw action success.');
         });
       }catch(e){

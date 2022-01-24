@@ -209,7 +209,7 @@ const F = {
     });
   },
 
-  async withdrawFromLayer2(self, succ_cb){
+  async withdrawFromLayer2(self, amt, succ_cb){
     const user = F.getUser(self.layer1_account.address);
     if(!user || !user.isLogin){
       throw 'not_login';
@@ -220,14 +220,14 @@ const F = {
       key: 'common_form',
       param: {
         title: 'Withdraw',
-        text: `You will withdraw from tapp ${tappId} 10 TEA.`,
+        text: `You will withdraw from tapp ${tappId} ${amt} TEA.`,
         props: {
           
         },
       },
       cb: async (form, close)=>{
         self.$root.loading(true);
-        const amount = utils.layer1.amountToBalance(100);
+        const amount = utils.layer1.amountToBalance(amt);
         
         const param = {
           address: self.layer1_account.address,

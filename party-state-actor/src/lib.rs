@@ -7,12 +7,13 @@ use party_shared::TeapartyTxn;
 use prost::Message;
 use std::convert::TryInto;
 use tea_actor_utility::{
-	actor_crypto::public_key_from_ss58,
+	actor_crypto::{public_key_from_ss58, public_from_private_key},
 	actor_enclave::get_my_tea_id,
 	actor_env::{get_env_var, get_system_time},
 	actor_layer1::{fetch_miner_info_remotely, register_layer1_event},
 	actor_statemachine::{self, query_auth_ops_bytes},
 };
+use tea_codec::ops::crypto::KEY_TYPE_SR25519;
 use vmh_codec::message::{layer1::MinerClass, structs_proto::layer1};
 use wascc_actor::prelude::codec::messaging::BrokerMessage;
 use wascc_actor::prelude::*;
@@ -20,6 +21,7 @@ use wascc_actor::HandlerResult;
 
 use interface::{Account, AuthKey, Balance, Tsid, TOKEN_ID_TEA, TOPUP_AUTH_KEY};
 use token_state::token_context::TokenContext;
+use vmh_codec::message::structs_proto::tokenstate;
 use vmh_codec::message::structs_proto::tokenstate::*;
 
 mod state;
@@ -86,7 +88,7 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 
 			// ttl > 2000, 2 TEA, else, 1 TEA
 			let amt: Vec<u8> = {
-				let cost: Balance = match ttl > 2000 {
+				let cost: Balance = match ttl > 5000 {
 					true => 2 as Balance,
 					false => 1 as Balance,
 				};
@@ -101,6 +103,13 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 				let tmp = public_key_from_ss58(&tmp)?;
 				tmp.try_into().unwrap()
 			};
+
+			// let key = fetch_consume_account(token_id)?;
+			// info!("aaa => {:?}", key);
+			// let public_key = public_from_private_key(KEY_TYPE_SR25519.into(), key)?;
+			// let address = public_key_to_ss58(&public_key)?;
+			// let address = tmp.try_into().unwrap();
+			// info!("ccc => {:?}", address);
 
 			auth_key = bincode::deserialize(&base64::decode(auth_b64)?)?;
 			let auth_ops_bytes = actor_statemachine::query_auth_ops_bytes(auth_key)?;
@@ -178,3 +187,15 @@ fn health(_req: codec::core::HealthRequest) -> HandlerResult<()> {
 	info!("health call from simple actor");
 	Ok(())
 }
+
+
+// fn fetch_consume_account(token_id: u64) -> anyhow::Result<Vec<u8>> {
+// 	let key = untyped::default()
+// 		.call(
+// 			tea_codec::TOKENSTATE_CAPABILITY_ID,
+// 			OP_GET_APP_CONSUME_ACCT,
+// 			encode_protobuf(tokenstate::GetConsumeAccountRequest { token_id })?,
+// 		)
+// 		.map_err(|e| anyhow::anyhow!("{}", e))?;
+// 	Ok(key)
+// }
