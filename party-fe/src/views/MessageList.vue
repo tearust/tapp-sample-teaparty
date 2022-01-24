@@ -3,18 +3,18 @@
 
     <div class="t-item" v-for="item of (list||[])" :key="item.id">
       <span style="font-size: 13px; font-weight:bold; color:#8c8c8c;">
-        {{item.sender}} - {{item.utc}} (Expired at {{item.utc_expired}})
+        {{item.sender}} - <b style="color:#35a696;">{{item.utc}}</b> (Expired at <b style="color:#35a696;">{{item.utc_expired}}</b>)
       </span>
       <p style="font-size: 18px; margin: 0; margin-top: 4px; padding-right: 70px;">{{item.content}}</p>
 
       <div class="t-action" v-if="user && user.address === item.sender">
         <!-- <el-tooltip content="Extend expired time" placement="top" effect="light">
           <el-button size="mini" circle type="primary" plain icon="el-icon-check" @click="clickExtendMessage(item)"></el-button>
-        </el-tooltip>
+        </el-tooltip> -->
 
         <el-tooltip content="Delete message" placement="top" effect="light">
           <el-button size="mini" circle type="danger" plain icon="el-icon-delete" @click="clickDeleteMessage(item)"></el-button>
-        </el-tooltip> -->
+        </el-tooltip>
         
       </div>
     </div>

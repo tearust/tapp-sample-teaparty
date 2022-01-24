@@ -42,15 +42,15 @@ pub fn post_message(uuid: &str, req: &PostMessageRequest) -> anyhow::Result<Vec<
 		base64::encode(msg)
 	};
 
-	// let block = help::current_block_number()? as u64;
-	let block: u64 = current_timestamp()? as u64;
+	let block = help::current_block_number()? as u64;
+	// let block: u64 = current_timestamp()? as u64;
 
 	let ttl: u64 = {
 		match is_global_channel(&req.channel) {
-			// true => (1 * 100) as u64,
-			// false => (30 * 100) as u64,
-			true => (2 * 60 * 60) as u64,
-			false => (24 * 60 * 60) as u64,
+			true => (2 * 1440) as u64,
+			false => (10 * 1440) as u64,
+			// true => (2 * 60 * 60) as u64,
+			// false => (24 * 60 * 60) as u64,
 		}
 	};
 
@@ -79,6 +79,7 @@ pub fn post_message(uuid: &str, req: &PostMessageRequest) -> anyhow::Result<Vec<
 		utc: block,
 		utc_expired: block + ttl,
 	};
+	info!("aaa => {:?}", &add_message_data);
 	help::set_mem_cache(&can_post_uuid, encode_protobuf(add_message_data)?)?;
 
 	Ok(b"ok".to_vec())
@@ -125,6 +126,8 @@ pub(crate) fn load_message_list(
 	_uuid: &str,
 	request: LoadMessageRequest,
 ) -> anyhow::Result<Vec<u8>> {
+	let block = help::current_block_number()? as u64;
+
 	// to orbitdb
 	let dbname = db_name(request.tapp_id, &request.channel);
 	let get_message_data = orbitdb::GetMessageRequest {
@@ -134,9 +137,9 @@ pub(crate) fn load_message_list(
 			true => "".to_string(),
 			false => request.address,
 		},
-		utc: current_timestamp()? as u64,
+		utc: block - 2,
 	};
-
+	info!("bbb => {:?}", &get_message_data);
 	let res = orbitdb::OrbitBbsResponse::decode(
 		untyped::default()
 			.call(

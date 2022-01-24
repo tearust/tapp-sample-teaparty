@@ -104,6 +104,7 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 
 			auth_key = bincode::deserialize(&base64::decode(auth_b64)?)?;
 			let auth_ops_bytes = actor_statemachine::query_auth_ops_bytes(auth_key)?;
+			
 			info!("auth_key => {:?}", auth_key);
 
 			let ctx = TokenContext::new(tsid, base, TOKEN_ID_TEA, &auth_ops_bytes);

@@ -166,10 +166,10 @@ const F = {
   },
 
   formatMessageList(list){
-    const formatter = 'YYYY-MM-DD HH:mm';
+    // const formatter = 'YYYY-MM-DD HH:mm';
     return _.map(list, (item)=>{
-      item.utc = moment(item.utc*1000).format(formatter);
-      item.utc_expired = moment(item.utcExpired*1000).format(formatter);
+      // item.utc = moment(item.utc*1000).format(formatter);
+      item.utc_expired = item.utcExpired;
       
       return item;
     });

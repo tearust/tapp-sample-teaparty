@@ -100,7 +100,9 @@ fn libp2p_back_message(msg: &BrokerMessage) -> HandlerResult<Vec<u8>> {
 
 		user::libp2p_msg_cb(&body)?;
 		channel::libp2p_msg_cb(&body)?;
-		if body.msg == None {
+
+		// TODO handle it when return real validator.
+		if body.msg == None || body.error_message == "i am not a validator" {
 			info!("still need to waiting statemachine response.");
 		} else {
 			help::set_mem_cache(&body.uuid, content)?;

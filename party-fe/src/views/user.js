@@ -49,6 +49,7 @@ const F = {
       const j = rs;
       if(j.ts){
         // query check user via uuid
+        await utils.sleep(10000);
   
         const r1 = await bbs.sync_request('checkUserAuth', {}, null, 'checkUserAuth', j.uuid);
   
