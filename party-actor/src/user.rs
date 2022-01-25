@@ -112,8 +112,12 @@ fn libp2p_msg_cb_handler(res: &tappstore::TappQueryResponse) -> anyhow::Result<(
 			let aes_key = &r.aes_key;
 			let auth_key = &r.auth_key;
 
+			let auth_b64 = base64::encode(auth_key);
+			info!("save auth_b64 => {:?}", auth_b64);
+			info!("save aes_key => {:?}", aes_key);
+
 			save_session_key(
-				String::from_utf8(auth_key.to_vec())?,
+				auth_b64,
 				&r.token_id,
 				&r.account,
 			)?;
@@ -132,7 +136,7 @@ pub fn check_user_query_uuid(uuid: &str) -> String {
 pub fn check_auth(tapp_id: &u64, address: &str, auth_b64: &str) -> anyhow::Result<Vec<u8>> {
 	let auth_key = get_session_key(&tapp_id, &address);
 
-	if !auth_key.is_err() && auth_b64.to_string() == base64::encode(auth_key.unwrap()) {
+	if !auth_key.is_err() && auth_b64.to_string() == auth_key.unwrap() {
 		return Ok(b"is_login".to_vec());
 	}
 
