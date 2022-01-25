@@ -163,3 +163,10 @@ pub struct QueryHashRequest {
 	pub uuid: String,
 	pub hash: String,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct QueryTappAccountRequest {
+	pub tapp_id: u64,
+	pub uuid: String,
+}

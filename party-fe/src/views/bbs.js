@@ -71,7 +71,7 @@ const F = {
   getTappId(){
     let id = store.state.bbs.id;
     if(!id){
-      id = utils.get_env('tapp_id');
+      id = utils.urlParam('id');
     }
 
     return _.toNumber(id);
@@ -293,6 +293,15 @@ const F = {
     const rs = await sync_request('query_balance', param);
     console.log(1, rs);
     return rs ? utils.layer1.balanceToAmount(rs.balance) : null;
+  },
+
+  async query_tapp_account(){
+    const param = {
+      tappId: F.getTappId(),
+    };
+    const rs = await sync_request('queryTappAccount', param);
+    console.log(1, rs);
+    return rs;
   },
 
   async query_hash_result(hash){

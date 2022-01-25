@@ -26,6 +26,7 @@
     <el-divider />
     <el-button type="primary" @click="topup_action()">Topup 10</el-button>
     <el-button type="danger" @click="query_balance_action()">Query balance</el-button>
+    <el-button type="danger" @click="query_consume_account_action()">Query consume account</el-button>
     <el-button type="primary" @click="withdraw_action()">Withdraw 10</el-button>
     <el-divider />
 
@@ -179,6 +180,15 @@ export default {
       try{
         const balance = await bbs.query_balance({
           address: this.layer1_account.address,
+        });
+      }catch(e){
+        bbs.log(e);
+      }
+    },
+    async query_consume_account_action(){
+      this.setLog("query balance tapp account...");
+      try{
+        const balance = await bbs.query_tapp_account({
         });
       }catch(e){
         bbs.log(e);
