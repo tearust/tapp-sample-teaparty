@@ -12,6 +12,8 @@ use tea_actor_utility::{
 const COMMUNICATION_AES_KEY_PREFIX: &str = "tapp_bbs_aes";
 const COMMUNICATION_RSA_KEY_PREFIX: &str = "tapp_bbs_rsa";
 
+use crate::user;
+
 pub(crate) fn login(_uuid: &str, request: &LoginRequest) -> anyhow::Result<Vec<u8>> {
 	let rsa_key: String = actor_kvp::get(BINDING_NAME, &communication_rsa_key(&request.address))?
 		.ok_or(anyhow::anyhow!("failed to get rsa key"))?;
@@ -39,6 +41,7 @@ pub(crate) fn is_user_logged_in(address: &str) -> anyhow::Result<bool> {
 
 fn get_aes_key_from_appstore() -> anyhow::Result<Vec<u8>> {
 	warn!("todo: get Aes key from app store.");
+
 
 	let aes_key: Vec<u8> = vec![8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8];
 	// let aes_key = generate_aes_key()?;

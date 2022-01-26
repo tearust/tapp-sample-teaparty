@@ -159,8 +159,12 @@ pub(crate) fn load_message_list(
 		None => (arr = vec![]),
 	}
 
+	
 	for item in arr.iter() {
 		let text = item["content"].as_str().unwrap().to_string();
+
+		let aes_key = user::get_aes_key(&request.tapp_id)?;
+		let content = aes_decrypt(aes_key, base64::decode(text)?)?;
 
 		let message_item: MessageItem = MessageItem {
 			tapp_id: item["tapp_id"].as_u64().unwrap_or(0 as u64),
@@ -168,7 +172,7 @@ pub(crate) fn load_message_list(
 			sender: item["sender"].as_str().unwrap().to_string(),
 			utc: item["utc"].as_u64().unwrap(),
 			utc_expired: item["utc_expired"].as_u64().unwrap(),
-			content: aes_decrypt_local(&text)?,
+			content: String::from_utf8(content)?,
 		};
 
 		// info!("222222=====> {:?}", message_item);
