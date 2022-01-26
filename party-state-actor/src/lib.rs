@@ -114,17 +114,18 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 			auth_key = bincode::deserialize(&base64::decode(auth_b64)?)?;
 			let auth_ops_bytes = actor_statemachine::query_auth_ops_bytes(auth_key)?;
 			
-			info!("auth_key => {:?}", auth_key);
+			info!("auth_key received {} len of auth ops bytes {}", auth_key, auth_ops_bytes.len());
 
-			let ctx = TokenContext::new(tsid, base, TOKEN_ID_TEA, &auth_ops_bytes);
+			let ctx = TokenContext::new(tsid, base, TOKEN_ID_TEA, &auth_ops_bytes)?;
 			let ctx_bytes = bincode::serialize(&ctx)?;
 
 			let mov = MoveRequest {
 				ctx: ctx_bytes,
-				from: from.to_vec(),
-				to: to_acct.to_vec(),
+				from: bincode::serialize(&from)?,//.to_vec(),
+				to: bincode::serialize(&to_acct)?,//to_acct.to_vec(),
 				amt,
 			};
+			info!("before actor_statemachine::mov {:?}", &mov);
 			actor_statemachine::mov(mov)?
 		}
 
@@ -141,7 +142,7 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 			);
 			auth_key = auth;
 			let auth_ops_bytes: Vec<u8> = query_auth_ops_bytes(auth)?;
-			let ctx = TokenContext::new(tsid, base, TOKEN_ID_TEA, &auth_ops_bytes);
+			let ctx = TokenContext::new(tsid, base, TOKEN_ID_TEA, &auth_ops_bytes)?;
 			let ctx_bytes = bincode::serialize(&ctx)?;
 			let amt: Vec<u8> = bincode::serialize(&amt)?;
 
