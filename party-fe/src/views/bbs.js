@@ -55,6 +55,14 @@ const F = {
   },
   log(msg){
     _log(msg);
+
+  },
+
+  top_log(html, level='warning'){
+    utils.publish('top_log', {
+      top_log: html,
+      top_log_level: level,
+    });
   },
 
   getUser(address){
@@ -77,13 +85,17 @@ const F = {
     return _.toNumber(id);
   },
   async loadMessageList(address, channel=default_channel){
+    // F.top_log("Query message list...");
     const rs = await _axios.post('/tapp/loadMessageList', {
       tappId: F.getTappId(),
       channel: F.getChannel(channel),
       address: '',
     });
 
+    // F.top_log(null);
+
     if(!rs) return [];
+
     return F.formatMessageList(JSON.parse(rs));
 
   },
@@ -110,7 +122,7 @@ const F = {
       throw 'Not login';
     }
     
-
+    F.top_log("Send message txn...");
     msg = utils.forge.util.encodeUtf8(msg);
     const encrypted_message = utils.forge.util.encode64(msg);
     // console.log(121, utils.crypto.encode(address, msg));
@@ -128,6 +140,7 @@ const F = {
     };
     const rs = await sync_request('postMessage', opts);
 
+    F.top_log(null);
     console.log(11, rs);
     
     return rs;
@@ -215,19 +228,24 @@ const F = {
       throw 'not_login';
     }
 
+    F.top_log("Send withdraw txn...");
     const tappId = F.getTappId();
     self.$store.commit('modal/open', {
       key: 'common_form',
       param: {
         title: 'Withdraw',
-        text: `You will withdraw from tapp ${tappId} ${amt} TEA.`,
+        // text: `You will withdraw from tapp ${tappId} ${amt} TEA.`,
         props: {
-          
+          amount: {
+            type: 'number',
+            default: amt,
+            label: 'Amount (TEA)'
+          }
         },
       },
       cb: async (form, close)=>{
         self.$root.loading(true);
-        const amount = utils.layer1.amountToBalance(amt);
+        const amount = utils.layer1.amountToBalance(form.amount);
         
         const param = {
           address: self.layer1_account.address,
@@ -257,23 +275,27 @@ const F = {
       key: 'common_form',
       param: {
         title: 'Topup',
-        text: `You will topup to tapp ${tappId} 10 TEA.`,
+        // text: `You will topup to tapp ${tappId} 10 TEA.`,
         props: {
-          
+          amount: {
+            type: "number",
+            default: 10,
+            label: "Amount (TEA)"
+          }
         },
       },
       cb: async (form, close)=>{
         self.$root.loading(true);
-        const total = utils.layer1.amountToBalance(10);
+        const total = utils.layer1.amountToBalance(form.amount);
         const amt = numberToHex(total);
 
         const tx = api.tx.bondingCurve.topup(NPC, tappId, amt);
         await layer1_instance.sendTx(self.layer1_account.address, tx);
+        
+        close();
+
         await succ_cb()
         self.$root.loading(false);
-        close();
-        self.$root.success();
-        
       }
     });
   },
@@ -290,8 +312,10 @@ const F = {
       authB64: user.session_key,
     };
 
+    F.top_log("Query balance...");
     const rs = await sync_request('query_balance', param);
     console.log(1, rs);
+    F.top_log(null);
     return rs ? utils.layer1.balanceToAmount(rs.balance) : null;
   },
 
@@ -317,7 +341,7 @@ const F = {
 
 const sync_request = async (method, param, message_cb, sp_method='query_result', sp_uuid=null) => {
   message_cb = message_cb || ((msg) => {
-    msg && _log(msg);
+    msg && F.log(msg);
   });
   const _uuid = sp_uuid || uuid();
 

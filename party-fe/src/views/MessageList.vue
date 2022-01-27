@@ -5,7 +5,7 @@
       <span style="font-size: 13px; font-weight:bold; color:#8c8c8c;">
         {{item.sender}} - <b style="color:#35a696;">{{item.utc}}</b> (Expired at <b style="color:#35a696;">{{item.utc_expired}}</b>)
       </span>
-      <p style="font-size: 18px; margin: 0; margin-top: 4px; padding-right: 70px;">{{item.content}}</p>
+      <p style="font-size: 18px; margin: 0; margin-top: 4px; padding-right: 70px; white-space: pre-line;">{{item.content}}</p>
 
       <div class="t-action" v-if="user && user.address === item.sender">
         <!-- <el-tooltip content="Extend expired time" placement="top" effect="light">

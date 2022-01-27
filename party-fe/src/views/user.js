@@ -32,6 +32,8 @@ const F = {
     console.log(111, rs);
   },
   async loginPrepare(layer1_instance, address){
+    bbs.top_log('Send login txn...');
+
     // thanks for https://github.com/polkadot-js/extension/issues/827
     const data = 'read_move_withdraw_consume';
 
@@ -48,9 +50,12 @@ const F = {
   
       const j = rs;
       if(j.ts){
+        bbs.top_log('Waiting for txn result...');
+
         // query check user via uuid
         await utils.sleep(10000);
   
+        bbs.top_log("Send login query...");
         const r1 = await bbs.sync_request('checkUserAuth', {}, null, 'checkUserAuth', j.uuid);
   
         if(r1.auth_key){
@@ -64,6 +69,7 @@ const F = {
           utils.cache.put(F.getUserId(address), user);
           await store.dispatch('init_user');
   
+          bbs.top_log(null);
           return true;
         }
       }

@@ -37,8 +37,12 @@
 
       <div class="x-bottom">
 
+        <el-button :disabled="!tapp_balance" @click="withdrawHandler()">Withdraw</el-button>
 
-        <el-button v-if="layer1_account" @click="rechargeHandler()">Recharge with TEA</el-button>
+
+        <el-button v-if="layer1_account" @click="rechargeHandler()">Topup</el-button>
+
+        
 
 
       </div>
@@ -119,6 +123,20 @@ export default {
 
     async rechargeHandler(){
       bbs.topupFromLayer1(this, async ()=>{
+        this.$root.success("Topup success.");
+
+        bbs.top_log("Waiting for query balance...");
+        await utils.sleep(10000);
+        await this.refreshAccount(true);
+
+      });
+    },
+
+    async withdrawHandler(){
+      bbs.withdrawFromLayer2(this, 1, async ()=>{
+        
+        bbs.top_log("Waiting for query balance...");
+        await utils.sleep(10000);
         await this.refreshAccount(true);
       });
     },
@@ -142,6 +160,8 @@ export default {
         });
       }catch(e){
         console.error(e);
+
+        bbs.top_log('Not login', 'error');
       }
       
     },

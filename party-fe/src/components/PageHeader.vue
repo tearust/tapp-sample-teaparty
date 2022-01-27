@@ -31,11 +31,11 @@
   </div>
   
 
-  <el-menu-item index="/test">{{'TEST'}}</el-menu-item>
+  <!-- <el-menu-item index="/test">{{'TEST'}}</el-menu-item> -->
   
   <el-menu-item index="/log">{{'Log'}}</el-menu-item>
 
-  <el-menu-item index="/tapp_profile">{{'Profile'}}</el-menu-item>
+  <!-- <el-menu-item index="/tapp_profile">{{'Profile'}}</el-menu-item> -->
   <el-menu-item index="/profile">{{'My assets'}}</el-menu-item>
 
 
@@ -46,6 +46,19 @@
 </el-menu>
 
 <div class="t-state" :class="'x_'+connected"></div>
+
+<div v-if="top_log" style="height: 36px; width: 1080px; margin: 0 auto;">
+  <el-alert
+    effect="dark"
+    @close="top_log=null"
+    show-icon
+    center
+    :closable="true"
+    :title="top_log"
+    :type="top_log_level">
+  </el-alert>
+</div>
+
 </div>
   
 
@@ -65,6 +78,9 @@ export default {
 
       all_account: [],
       no_plugin_account: false,
+
+      top_log: null,
+      top_log_level: 'error',
     };
   },
   watch: {
@@ -206,6 +222,11 @@ export default {
       // }
     });
 
+    utils.register('top_log', (key, param)=>{
+      this.top_log = param.top_log;
+      this.top_log_level = param.top_log_level;
+    });
+
 
   }
 }
@@ -215,7 +236,6 @@ export default {
   position: sticky;
   top: 0;
   display: block;
-  border-bottom: 1px solid #eee;
   background: #fff;
   z-index: 99;
   text-align: center;
