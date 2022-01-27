@@ -19,7 +19,7 @@ use wascc_actor::prelude::codec::messaging::BrokerMessage;
 use wascc_actor::prelude::*;
 use wascc_actor::HandlerResult;
 
-use interface::{Account, AuthKey, Balance, Tsid, TOKEN_ID_TEA, TOPUP_AUTH_KEY};
+use interface::{Account, AuthKey, Balance, Tsid, TOKEN_ID_TEA, GOD_MODE_AUTH_KEY};
 use token_state::token_context::TokenContext;
 use vmh_codec::message::structs_proto::tokenstate;
 use vmh_codec::message::structs_proto::tokenstate::*;
@@ -76,7 +76,7 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 	info!("decode the txn {:?}", &sample_txn);
 	let base: Tsid = helper_get_state_tsid()?;
 	info!("base tsid is {:?}", &base);
-	let mut auth_key: AuthKey = TOPUP_AUTH_KEY;
+	let mut auth_key: AuthKey = GOD_MODE_AUTH_KEY;
 	let context_bytes = match sample_txn {
 		TeapartyTxn::PostMessage {
 			token_id: _,
