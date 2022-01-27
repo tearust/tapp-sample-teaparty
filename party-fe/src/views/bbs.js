@@ -8,9 +8,9 @@ const default_channel = utils.urlParam('c') || 'test';
 console.log('channel => '+default_channel);
 let layer2_url = utils.get_env('layer2_url');
 
-// if(!_.includes(['127.0.0.1', 'localhost'], location.hostname)){
-//   layer2_url = `http://${location.hostname}:8000`;
-// }
+if(!_.includes(['127.0.0.1', 'localhost'], location.hostname)){
+  layer2_url = `http://${location.hostname}:8000`;
+}
 
 const NPC = '5D2od84fg3GScGR139Li56raDWNQQhzgYbV7QsEJKS4KfTGv';
 
