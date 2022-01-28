@@ -376,15 +376,21 @@ const F = {
           contentB64: text,
           authB64: user.session_key,
         };
-        const rs = await sync_request('notificationAddMessage', opts);
-    
-        F.top_log(null);
-        console.log(11, rs);
+
+        let rs = null;
+        try{
+          rs = await sync_request('notificationAddMessage', opts);
+          F.top_log(null);
+
+          succ_cb(rs)
+        }catch(e){
+          F.top_log(e, 'error');
+        }
         
         close();
         self.$root.loading(false);
 
-        await succ_cb(rs)
+        
       }
     });
   },
