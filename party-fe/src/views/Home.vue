@@ -63,7 +63,6 @@ export default {
     this.wf = new Base();
     await this.wf.init();
 
-    this.initParam();
     this.ch = bbs.getChannel(this.channel);
     
     await this.refreshList(true);
@@ -77,18 +76,7 @@ export default {
   },
 
   methods: {
-    initParam(){
-      const id = _.toNumber(utils.urlParam('id'));
-      const channel = decodeURIComponent(utils.urlParam('v'));
 
-      console.log('tapp id => '+id);
-      console.log('main channel => '+channel);
-
-      this.$store.commit('set_bbs', {
-        id,
-        channel,
-      });
-    },
     async getDataList(){
       // if(!this.user){
       //   return [];

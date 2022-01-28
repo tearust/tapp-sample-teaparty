@@ -41,16 +41,22 @@ pub fn get_session_key(tapp_id: &u64, address: &str) -> anyhow::Result<String> {
 	Ok(session_key)
 }
 
-pub fn save_aes_key(aes_key: Vec<u8>, tapp_id: &u64) -> anyhow::Result<()> {
+pub fn save_aes_key(_aes_key: Vec<u8>, tapp_id: &u64) -> anyhow::Result<()> {
 	let key = format!("aes_key_{}", tapp_id);
+
+	// TODO use real aes_key
+	let aes_key: Vec<u8> = vec![8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8];
 	actor_kvp::set_forever(BINDING_NAME, &key, &aes_key).map_err(|e| anyhow::anyhow!("{}", e))?;
 
 	Ok(())
 }
 pub fn get_aes_key(tapp_id: &u64) -> anyhow::Result<Vec<u8>> {
 	let key = format!("aes_key_{}", tapp_id);
-	let aes_key: Vec<u8> =
-		actor_kvp::get(BINDING_NAME, &key)?.ok_or(anyhow::anyhow!("failed to get aes key"))?;
+
+	// TODO use real
+	// let aes_key: Vec<u8> =
+	// 	actor_kvp::get(BINDING_NAME, &key)?.ok_or(anyhow::anyhow!("failed to get aes key"))?;
+	let aes_key: Vec<u8> = vec![8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8];
 
 	Ok(aes_key)
 }

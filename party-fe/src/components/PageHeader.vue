@@ -181,6 +181,18 @@ export default {
     
   },
   async mounted(){
+    const id = _.toNumber(utils.urlParam('id'));
+    const channel = decodeURIComponent(utils.urlParam('v'));
+
+    console.log('tapp id => '+id);
+    console.log('main channel => '+channel);
+
+    this.$store.commit('set_bbs', {
+      id,
+      channel,
+    });
+
+
     await (new Base()).init()
     let time = 500;
 
