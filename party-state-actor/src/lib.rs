@@ -71,15 +71,14 @@ fn helper_get_state_tsid() -> HandlerResult<Tsid> {
 fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 	info!("enter handle_txn_exec");
 	let (tsid, txn_bytes): (Tsid, Vec<u8>) = bincode::deserialize(&msg.body)?;
-	info!("before TeapartyTxn der");
+	// info!("before TeapartyTxn der");
 	let sample_txn: TeapartyTxn = bincode::deserialize(&txn_bytes)?;
-	info!("decode the txn {:?}", &sample_txn);
+	// info!("decode the txn {:?}", &sample_txn);
 	let base: Tsid = helper_get_state_tsid()?;
-	info!("base tsid is {:?}", &base);
-	let mut auth_key: AuthKey = GOD_MODE_AUTH_KEY;
-	let context_bytes = match sample_txn {
+	// info!("base tsid is {:?}", &base);
+	let (context_bytes, auth_key): (Vec<u8>, AuthKey) = match sample_txn {
 		TeapartyTxn::PostMessage {
-			token_id: _,
+			token_id,
 			from,
 			ttl,
 			auth_b64,
@@ -87,43 +86,21 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 			info!("PostMessage from ttl: {:?},{:?}", &from, &ttl);
 
 			// ttl > 2000, 2 TEA, else, 1 TEA
-			let amt: Vec<u8> = {
-				let cost: Balance = match ttl > 5000 {
-					true => 2 as Balance,
-					false => 1 as Balance,
-				};
-
-				bincode::serialize(&cost)?
+			let amt: Balance = if ttl > 5000 {
+				2 as Balance
+			}else{
+				1 as Balance
 			};
 
-			// This account could be a npc to dividend to all of tapp stakers.
-			// TODO if set acct to 0_u32, will return error
-			let to_acct: Account = {
-				let tmp = "5Eo1WB2ieinHgcneq6yUgeJHromqWTzfjKnnhbn43Guq4gVP";
-				let tmp = public_key_from_ss58(&tmp)?;
-				tmp.try_into().unwrap()
-			};
-
-			// let key = fetch_consume_account(token_id)?;
-			// info!("aaa => {:?}", key);
-			// let public_key = public_from_private_key(KEY_TYPE_SR25519.into(), key)?;
-			// let address = public_key_to_ss58(&public_key)?;
-			// let address = tmp.try_into().unwrap();
-			// info!("ccc => {:?}", address);
-
-			auth_key = bincode::deserialize(&base64::decode(auth_b64)?)?;
+			let auth_key: AuthKey = bincode::deserialize(&base64::decode(auth_b64)?)?;
 			let auth_ops_bytes = actor_statemachine::query_auth_ops_bytes(auth_key)?;
-			
-			let ctx = TokenContext::new(tsid, base, TOKEN_ID_TEA, &auth_ops_bytes)?;
-			let ctx_bytes = bincode::serialize(&ctx)?;
-
-			let mov = MoveRequest {
-				ctx: ctx_bytes,
-				from: bincode::serialize(&from)?,//.to_vec(),
-				to: bincode::serialize(&to_acct)?,//to_acct.to_vec(),
-				amt,
+			let ctx = TokenContext::new(tsid, base, token_id, &auth_ops_bytes)?;
+			let req = ConsumeFromAccountRequest{
+				ctx: bincode::serialize(&ctx)?,
+				acct:bincode::serialize(&from)?,
+				amt: bincode::serialize(&amt)?,
 			};
-			actor_statemachine::mov(mov)?
+			(actor_statemachine::consume_from_account(req)?, auth_key)
 		}
 
 		TeapartyTxn::TransferTea {
@@ -133,11 +110,12 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 			uuid: _,
 			auth,
 		} => {
+			todo!("this TransferTea has not complted");
 			info!(
 				"TransferTea from to amt: {:?},{:?},{:?},{}",
 				&from, &to, &amt, auth
 			);
-			auth_key = auth;
+			let auth_key: AuthKey = auth;
 			let auth_ops_bytes: Vec<u8> = query_auth_ops_bytes(auth)?;
 			let ctx = TokenContext::new(tsid, base, TOKEN_ID_TEA, &auth_ops_bytes)?;
 			let ctx_bytes = bincode::serialize(&ctx)?;
@@ -149,7 +127,7 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 				to: to.to_vec(),
 				amt,
 			};
-			actor_statemachine::mov(mov)?
+			(actor_statemachine::mov(mov)?, auth_key)
 		}
 
 		TeapartyTxn::UpdateProfile {
@@ -165,9 +143,10 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 			// TODO save profile bytes to statemachine.
 			warn!("todo: save profile to statemachine");
 
-			auth_key = bincode::deserialize(&base64::decode(auth_b64)?)?;
+			let auth_key: AuthKey = bincode::deserialize(&base64::decode(auth_b64)?)?;
 			let _auth_ops_bytes = actor_statemachine::query_auth_ops_bytes(auth_key)?;
-			b"ok".to_vec()
+			todo!();
+			(b"ok".to_vec(), auth_key)
 		}
 
 		_ => Err(anyhow::anyhow!("Unhandled txn OP type"))?,
