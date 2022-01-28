@@ -197,6 +197,7 @@ pub struct NotificationMessageItem {
 	pub tapp_id: u64,
 	pub content: String,
 	pub utc: u64,
+	pub utc_expired: u64,
 	pub id: String,
 	pub sender: String,
 	pub to: String,

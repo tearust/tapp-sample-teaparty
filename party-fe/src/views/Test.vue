@@ -36,7 +36,9 @@
 
     <el-divider />
 
-  
+    <el-button type="primary" @click="add_notification_action()">Add Notification</el-button>
+    <el-button type="danger" @click="query_notification_list()">Query Notification list</el-button>
+    <el-divider />
 
     <b style="display:block">Hash: {{latest_hash}}</b>
     <el-button type="danger" :disabled="!latest_hash" @click="query_hash_result()">Query hash result</el-button>
@@ -239,6 +241,27 @@ export default {
       }
     },
 
+    async add_notification_action(){
+      this.setLog("start add notification action...");
+      try{
+        const rs = await bbs.send_notification(this, '', async (rs)=>{
+          this.$root.success("Send success");
+        });
+      }catch(e){
+        bbs.log(e);
+      }
+    },
+    async query_notification_list(){
+      this.setLog("start query notification list...");
+
+      try{
+        const list = await bbs.getNotificationList(this.layer1_account.address);
+        console.log(111, list);
+        bbs.log(JSON.stringify(list));
+      }catch(e){
+        bbs.log(e);
+      }
+    },
 
 
     
@@ -252,7 +275,7 @@ export default {
       }catch(e){
         bbs.log(e);
       }
-    }
+    },
     
   }
 

@@ -337,6 +337,72 @@ const F = {
     console.log(1, rs);
     return rs;
   },
+
+  // notification
+  send_notification(self, to='', succ_cb){
+    const from = self.layer1_account.address;
+    const user = F.getUser(from);
+    if(!user || !user.isLogin){
+      throw 'not_login';
+    }
+
+    self.$store.commit('modal/open', {
+      key: 'common_form',
+      param: {
+        title: 'Send notification',
+        props: {
+          target: {
+            type: "Input",
+            default: to,
+            label: "Target address",
+            required: true,
+          },
+          content: {
+            type: "textarea",
+            label: 'Content',
+            required: true,
+          }
+        },
+      },
+      cb: async (form, close)=>{
+        self.$root.loading(true);
+        const to = form.target;
+        const text = utils.forge.util.encode64(form.content);
+
+        const opts = {
+          tappId: F.getTappId(),
+          from,
+          to,
+          contentB64: text,
+          authB64: user.session_key,
+        };
+        const rs = await sync_request('notificationAddMessage', opts);
+    
+        F.top_log(null);
+        console.log(11, rs);
+        
+        close();
+        self.$root.loading(false);
+
+        await succ_cb(rs)
+      }
+    });
+  },
+  async getNotificationList(from=null, to=null){
+    F.top_log("Query notification list...");
+    const rs = await _axios.post('/tapp/notificationGetMessageList', {
+      tappId: F.getTappId(),
+      from, 
+      to,
+    });
+
+    F.top_log(null);
+
+    if(!rs) return [];
+
+    return F.formatMessageList(JSON.parse(rs));
+
+  },
 };
 
 const sync_request = async (method, param, message_cb, sp_method='query_result', sp_uuid=null) => {

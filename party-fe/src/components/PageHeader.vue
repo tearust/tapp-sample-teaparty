@@ -31,7 +31,7 @@
   </div>
   
 
-  <!-- <el-menu-item index="/test">{{'TEST'}}</el-menu-item> -->
+  <el-menu-item index="/test">{{'TEST'}}</el-menu-item>
   
   <el-menu-item index="/log">{{'Log'}}</el-menu-item>
 
