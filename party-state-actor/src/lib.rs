@@ -87,9 +87,9 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 
 			// ttl > 2000, 2 TEA, else, 1 TEA
 			let amt: Balance = if ttl > 5000 {
-				2 as Balance
+				2000000000000 as Balance
 			}else{
-				1 as Balance
+				1000000000000 as Balance
 			};
 
 			let auth_key: AuthKey = bincode::deserialize(&base64::decode(auth_b64)?)?;
