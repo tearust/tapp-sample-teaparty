@@ -10,6 +10,7 @@ import Test from './views/Test';
 
 import bbs from './views/bbs';
 import TappProfile from './views/TappProfile';
+import MyNotification from './views/MyNotification';
 
 
 Vue.use(Router);
@@ -60,6 +61,11 @@ let routers = [
     path: '/tapp_profile',
     name: 'tapp_profile',
     component: TappProfile,
+  },
+  {
+    path: '/my_notification',
+    name: 'my_notification',
+    component: MyNotification,
   }
   
   

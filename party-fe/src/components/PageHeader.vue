@@ -32,6 +32,8 @@
   
 
   <el-menu-item index="/test">{{'TEST'}}</el-menu-item>
+
+  <el-menu-item index="/my_notification">{{'Notifications'}}</el-menu-item>
   
   <el-menu-item index="/log">{{'Log'}}</el-menu-item>
 
@@ -51,7 +53,6 @@
   <el-alert
     effect="dark"
     @close="top_log=null"
-    show-icon
     center
     :closable="true"
     :title="top_log"

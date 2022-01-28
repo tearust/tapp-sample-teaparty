@@ -92,7 +92,6 @@ export default {
     ]),
   },
 
-
   async mounted(){
     this.$root.loading(true);
 
