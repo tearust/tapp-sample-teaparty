@@ -50,6 +50,14 @@ pub enum TeapartyTxn {
 
 		post_message_fee: Balance,
 	},
+
+	AddNotificationMessage {
+		token_id: TokenId,
+		from: Account,
+		to: Account,
+		auth_b64: String,
+		ttl: u64,
+	}
 }
 
 impl Transferable for TeapartyTxn {

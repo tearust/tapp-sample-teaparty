@@ -7,7 +7,7 @@ use party_shared::TeapartyTxn;
 use prost::Message;
 use std::convert::TryInto;
 use tea_actor_utility::{
-	actor_crypto::{public_key_from_ss58, public_from_private_key},
+	actor_crypto::{public_from_private_key, public_key_from_ss58},
 	actor_enclave::get_my_tea_id,
 	actor_env::{get_env_var, get_system_time},
 	actor_layer1::{fetch_miner_info_remotely, register_layer1_event},
@@ -19,7 +19,7 @@ use wascc_actor::prelude::codec::messaging::BrokerMessage;
 use wascc_actor::prelude::*;
 use wascc_actor::HandlerResult;
 
-use interface::{Account, AuthKey, Balance, Tsid, TOKEN_ID_TEA, GOD_MODE_AUTH_KEY};
+use interface::{Account, AuthKey, Balance, Tsid, GOD_MODE_AUTH_KEY, TOKEN_ID_TEA};
 use token_state::token_context::TokenContext;
 use vmh_codec::message::structs_proto::tokenstate;
 use vmh_codec::message::structs_proto::tokenstate::*;
@@ -88,16 +88,16 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 			// ttl > 2000, 2 TEA, else, 1 TEA
 			let amt: Balance = if ttl > 5000 {
 				2000000000000 as Balance
-			}else{
+			} else {
 				1000000000000 as Balance
 			};
 
 			let auth_key: AuthKey = bincode::deserialize(&base64::decode(auth_b64)?)?;
 			let auth_ops_bytes = actor_statemachine::query_auth_ops_bytes(auth_key)?;
 			let ctx = TokenContext::new(tsid, base, token_id, &auth_ops_bytes)?;
-			let req = ConsumeFromAccountRequest{
+			let req = ConsumeFromAccountRequest {
 				ctx: bincode::serialize(&ctx)?,
-				acct:bincode::serialize(&from)?,
+				acct: bincode::serialize(&from)?,
 				amt: bincode::serialize(&amt)?,
 			};
 			(actor_statemachine::consume_from_account(req)?, auth_key)
@@ -149,6 +149,25 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 			(b"ok".to_vec(), auth_key)
 		}
 
+		TeapartyTxn::AddNotificationMessage {
+			token_id,
+			from,
+			to,
+			auth_b64,
+			ttl,
+		} => {
+			info!(
+				"AddNotificationMessage => : {:?}\n{:?}\n{:?}\n{:?}\n{:?}",
+				token_id, from, to, auth_b64, ttl
+			);
+
+			warn!("todo: complete the txn");
+			todo!();
+
+			let auth_key: AuthKey = bincode::deserialize(&base64::decode(auth_b64)?)?;
+			(b"ok".to_vec(), auth_key)
+		}
+
 		_ => Err(anyhow::anyhow!("Unhandled txn OP type"))?,
 	};
 	let res_commit_ctx_bytes = actor_statemachine::commit(CommitRequest {
@@ -164,7 +183,6 @@ fn health(_req: codec::core::HealthRequest) -> HandlerResult<()> {
 	info!("health call from simple actor");
 	Ok(())
 }
-
 
 // fn fetch_consume_account(token_id: u64) -> anyhow::Result<Vec<u8>> {
 // 	let key = untyped::default()

@@ -39,6 +39,7 @@ extern crate serde_derive;
 mod balance;
 mod channel;
 mod help;
+mod notification;
 mod state;
 mod types;
 mod user;
@@ -100,6 +101,7 @@ fn libp2p_back_message(msg: &BrokerMessage) -> HandlerResult<Vec<u8>> {
 
 		user::libp2p_msg_cb(&body)?;
 		channel::libp2p_msg_cb(&body)?;
+		notification::libp2p_msg_cb(&body)?;
 
 		// TODO handle it when return real validator.
 		if body.msg == None || body.error_message == "i am not a validator" {
@@ -155,6 +157,8 @@ fn handle_system_init(_msg: &BrokerMessage) -> HandlerResult<()> {
 			"query_result",
 			"test_action",
 			"test_result",
+			"notificationAddMessage",
+			"notificationGetMessageList",
 		]
 		.iter()
 		.map(|v| v.to_string())
@@ -259,7 +263,7 @@ fn handle_adapter_http_request(req: rpc::AdapterHttpRequest) -> anyhow::Result<V
 			state::query_tapp_account(req.tapp_id, req.uuid.to_string())?;
 
 			Ok(b"ok".to_vec())
-		},
+		}
 
 		"postMessage" => {
 			let req: PostMessageRequest = serde_json::from_slice(&req.payload)?;
@@ -301,6 +305,17 @@ fn handle_adapter_http_request(req: rpc::AdapterHttpRequest) -> anyhow::Result<V
 
 			Ok(rs)
 		}
+
+		// notification
+		"notificationAddMessage" => {
+			let req: NotificationAddMessageRequest = serde_json::from_slice(&req.payload)?;
+			notification::add_message(&req)
+		}
+		"notificationGetMessageList" => {
+			let req: NotificationGetMessageRequest = serde_json::from_slice(&req.payload)?;
+			notification::get_message_list(&req)
+		}
+
 		_ => {
 			debug!("unknown action: {}", req.action);
 			Err(anyhow::anyhow!("{}", DISCARD_MESSAGE_ERROR))

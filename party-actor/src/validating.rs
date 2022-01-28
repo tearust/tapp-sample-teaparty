@@ -42,7 +42,6 @@ pub(crate) fn is_user_logged_in(address: &str) -> anyhow::Result<bool> {
 fn get_aes_key_from_appstore() -> anyhow::Result<Vec<u8>> {
 	warn!("todo: get Aes key from app store.");
 
-
 	let aes_key: Vec<u8> = vec![8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8];
 	// let aes_key = generate_aes_key()?;
 	Ok(aes_key)

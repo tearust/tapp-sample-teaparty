@@ -159,7 +159,6 @@ pub(crate) fn load_message_list(
 		None => (arr = vec![]),
 	}
 
-	
 	for item in arr.iter() {
 		let text = item["content"].as_str().unwrap().to_string();
 

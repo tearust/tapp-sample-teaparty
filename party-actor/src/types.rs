@@ -170,3 +170,34 @@ pub struct QueryTappAccountRequest {
 	pub tapp_id: u64,
 	pub uuid: String,
 }
+
+// notification
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NotificationAddMessageRequest {
+	pub tapp_id: u64,
+	pub content_b64: String,
+	pub from: String,
+	pub to: String,
+	pub uuid: String,
+	pub auth_b64: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NotificationGetMessageRequest {
+	pub tapp_id: u64,
+	pub from: Option<String>,
+	pub to: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NotificationMessageItem {
+	pub tapp_id: u64,
+	pub content: String,
+	pub utc: u64,
+	pub id: String,
+	pub sender: String,
+	pub to: String,
+}

@@ -116,11 +116,7 @@ fn libp2p_msg_cb_handler(res: &tappstore::TappQueryResponse) -> anyhow::Result<(
 			info!("save auth_b64 => {:?}", auth_b64);
 			info!("save aes_key => {:?}", aes_key);
 
-			save_session_key(
-				auth_b64,
-				&r.token_id,
-				&r.account,
-			)?;
+			save_session_key(auth_b64, &r.token_id, &r.account)?;
 			save_aes_key(aes_key.to_vec(), &r.token_id)?;
 		}
 		_ => warn!("unknown tapp_query_response: {:?}", res.msg),

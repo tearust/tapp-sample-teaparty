@@ -158,11 +158,11 @@ pub fn query_tapp_account(tapp_id: u64, uuid: String) -> anyhow::Result<()> {
 	info!("begin to query tapp account...");
 
 	let req = tappstore::TappQueryRequest {
-		msg: Some(tappstore::tapp_query_request::Msg::GetConsumeAccountPubkeyRequest(
-			tappstore::GetConsumeAccountPubkeyRequest {
-				token_id: tapp_id,
-			},
-		)),
+		msg: Some(
+			tappstore::tapp_query_request::Msg::GetConsumeAccountPubkeyRequest(
+				tappstore::GetConsumeAccountPubkeyRequest { token_id: tapp_id },
+			),
+		),
 	};
 
 	send_query_via_p2p(
