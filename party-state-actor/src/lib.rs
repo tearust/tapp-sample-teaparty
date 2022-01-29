@@ -7,23 +7,29 @@ use party_shared::TeapartyTxn;
 use prost::Message;
 use std::convert::TryInto;
 use tea_actor_utility::{
-	actor_crypto::{public_from_private_key, public_key_from_ss58},
+	action::post_intercom,
+	actor_crypto::{public_from_private_key, public_key_from_ss58, public_key_to_ss58},
 	actor_enclave::get_my_tea_id,
 	actor_env::{get_env_var, get_system_time},
 	actor_layer1::{fetch_miner_info_remotely, register_layer1_event},
 	actor_statemachine::{self, query_auth_ops_bytes},
 };
 use tea_codec::ops::crypto::KEY_TYPE_SR25519;
-use vmh_codec::message::{layer1::MinerClass, structs_proto::layer1};
+use tea_codec::{
+	ACTOR_PUBKEY_TOKENSTATE_SERVICE,ACTOR_PUBKEY_PARTY_CONTRACT,
+};
+use vmh_codec::message::{encode_protobuf, layer1::MinerClass, structs_proto::layer1};
 use wascc_actor::prelude::codec::messaging::BrokerMessage;
 use wascc_actor::prelude::*;
 use wascc_actor::HandlerResult;
-
 use interface::{Account, AuthKey, Balance, Tsid, GOD_MODE_AUTH_KEY, TOKEN_ID_TEA};
 use token_state::token_context::TokenContext;
-use vmh_codec::message::structs_proto::tokenstate;
+use vmh_codec::message::structs_proto::{
+	tokenstate, tappstore
+};
 use vmh_codec::message::structs_proto::tokenstate::*;
 
+const BINDING_NAME: &str = ACTOR_PUBKEY_PARTY_CONTRACT;
 mod state;
 
 actor_handlers! {
@@ -160,16 +166,83 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 				"AddNotificationMessage => : {:?}\n{:?}\n{:?}\n{:?}\n{:?}",
 				token_id, from, to, auth_b64, ttl
 			);
-
-			warn!("todo: complete the txn");
-			todo!();
-
+			let pushnotifications_inner_request = tappstore::PushNotificationsInnerRequest{
+				token_id,
+				accounts: vec!(public_key_to_ss58(&to)?),
+				expired_heights: vec!(ttl),
+				uuid: "ok".to_string(),
+			};
+			info!("req: {:?}", &pushnotifications_inner_request);
+			post_intercom(
+				tea_codec::ACTOR_PUBKEY_TAPPSTORE,
+				&BrokerMessage {
+					subject: "actor.tappstore.push_notifications".into(),
+					reply_to: "".into(),
+					body: encode_protobuf(pushnotifications_inner_request).unwrap(),
+				},
+			)?;
+			let amt: Balance = if ttl > 5000 {
+				2000000000000 as Balance
+			} else {
+				1000000000000 as Balance
+			};
 			let auth_key: AuthKey = bincode::deserialize(&base64::decode(auth_b64)?)?;
-			(b"ok".to_vec(), auth_key)
+			let auth_ops_bytes = actor_statemachine::query_auth_ops_bytes(auth_key)?;
+			let ctx = TokenContext::new(tsid, base, token_id, &auth_ops_bytes)?;
+			let req = ConsumeFromAccountRequest {
+				ctx: bincode::serialize(&ctx)?,
+				acct: bincode::serialize(&from)?,
+				amt: bincode::serialize(&amt)?,
+			};
+			(actor_statemachine::consume_from_account(req)?, auth_key)
+			// Ok(())
+			// if let Err(e) = tea_actor_utility::action::call_async_intercom(
+			// 	ACTOR_PUBKEY_TOKENSTATE_SERVICE,
+			// 	BINDING_NAME,
+			// 	BrokerMessage {
+			// 		subject: "actor.tokenstate.last_block_height".into(),
+			// 		reply_to: Default::default(),
+			// 		body: Default::default(),
+			// 	},
+			// 	move |msg|{
+			// 		let height: u32 = bincode::deserialize(&msg.body)?;
+			// 		// .map_err(|e|{
+			// 		// 		error!("fetch last block height failed: {}", e);
+			// 		// 	}
+			// 		// );
+			// 		info!("party state actor received height : {}", &height);
+			// 		warn!("todo: complete the txn");
+			// 		let expired_height = height + ttl;
+			// 		let pushnotifications_inner_request = tappstore::PushNotificationsInnerRequest{
+			// 			token_id,
+			// 			accounts: vec!(public_key_to_ss58(&to)?),
+			// 			expired_heights: vec!(expired_height),
+			// 			uuid: "ok".to_string(),
+			// 		};
+
+			// 		// let msg_body: Vec<u8> = serialize(&pushnotifications_inner_request)
+			// 		// .map_err(|e| error!("line195");)?;
+			// 		post_intercom(
+			// 			tea_codec::ACTOR_PUBKEY_TAPPSTORE,
+			// 			&BrokerMessage {
+			// 				subject: "actor.tappstore.push_notifications".into(),
+			// 				reply_to: "".into(),
+			// 				body: encode_protobuf(pushnotifications_inner_request).unwrap(),
+			// 			},
+			// 		)?;
+			// 		Ok(())
+			// 	},
+			// ){
+			// 	error!("call async get last blockheight intercom failed {}", e);
+			// };
 		}
 
 		_ => Err(anyhow::anyhow!("Unhandled txn OP type"))?,
 	};
+	if context_bytes.is_empty() {
+		error!("######### party state actor txn handle returns empty ctx. Cannot commit ######");
+		return Ok(())
+	}
 	let res_commit_ctx_bytes = actor_statemachine::commit(CommitRequest {
 		ctx: context_bytes,
 		auth_key: bincode::serialize(&auth_key)?,
