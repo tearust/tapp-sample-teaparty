@@ -243,12 +243,14 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 		error!("######### party state actor txn handle returns empty ctx. Cannot commit ######");
 		return Ok(())
 	}
-	let res_commit_ctx_bytes = actor_statemachine::commit(CommitRequest {
+	let hidden_acct_balance_change_after_commit = actor_statemachine::commit(CommitRequest {
 		ctx: context_bytes,
 		auth_key: bincode::serialize(&auth_key)?,
 	})?;
-	if res_commit_ctx_bytes.is_empty() {
-		info!("*********  Commit succesfully. the ctx is empty. it is supposed to be empty");
+	if hidden_acct_balance_change_after_commit != (0,0) {
+		warn!("********* party state actor commit succesfully but the hidden account balance changed. make sure a follow up tx is trigger to keey the balance sheet balance. {:?}", &hidden_acct_balance_change_after_commit);
+	}else{
+		info!("*********  party state actor commit succesfully.");
 	}
 	Ok(())
 }

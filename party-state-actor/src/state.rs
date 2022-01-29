@@ -28,7 +28,7 @@ fn get_serial_and_hash_from_txn(txn_bytes: Vec<u8>) -> anyhow::Result<(TxnSerial
 }
 
 pub fn send_followup_to_replica(followup_bytes: Vec<u8>) -> anyhow::Result<()> {
-	info!("begin to send followup to replica");
+	// info!("begin to send followup to replica");
 	let res = untyped::default()
 		.call(
 			tea_codec::REPLICA_CAPABILITY_ID,
@@ -56,7 +56,7 @@ pub fn send_tx_to_replica(txn_bytes: Vec<u8>) -> anyhow::Result<()> {
 		txn_bytes: bincode::serialize(&txn_serial)?,
 	};
 
-	info!("begin to send rev_txn => {:?}", req_txn);
+	// info!("begin to send rev_txn => {:?}", req_txn);
 	let res = untyped::default()
 		.call(
 			tea_codec::REPLICA_CAPABILITY_ID,
