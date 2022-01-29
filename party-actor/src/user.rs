@@ -51,7 +51,7 @@ pub fn save_aes_key(_aes_key: Vec<u8>, tapp_id: &u64) -> anyhow::Result<()> {
 	Ok(())
 }
 pub fn get_aes_key(tapp_id: &u64) -> anyhow::Result<Vec<u8>> {
-	let key = format!("aes_key_{}", tapp_id);
+	let _key = format!("aes_key_{}", tapp_id);
 
 	// TODO use real
 	// let aes_key: Vec<u8> =

@@ -56,7 +56,7 @@ pub enum TeapartyTxn {
 		from: Account,
 		to: Account,
 		auth_b64: String,
-		ttl: u64,
+		ttl: u32,
 	}
 }
 

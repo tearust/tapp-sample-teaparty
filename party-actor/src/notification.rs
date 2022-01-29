@@ -40,8 +40,8 @@ pub fn add_message(req: &NotificationAddMessageRequest) -> anyhow::Result<Vec<u8
 		base64::encode(msg)
 	};
 
-	let block = help::current_block_number()? as u64;
-	let ttl: u64 = 1440 * 2;
+	let block:u32 = help::current_block_number()?;
+	let ttl: u32 = 1440 * 2;
 
 	let can_post_uuid = help::uuid_cb_key(&uuid, &"notification_add_message");
 
@@ -50,8 +50,8 @@ pub fn add_message(req: &NotificationAddMessageRequest) -> anyhow::Result<Vec<u8
 		sender: req.from.clone(),
 		to: req.to.clone(),
 		content: message,
-		utc: block,
-		utc_expired: block + ttl,
+		height_sent: block,
+		height_expired: block + ttl,
 	};
 	info!("notification add_message_data => {:?}", &add_message_data);
 	help::set_mem_cache(&can_post_uuid, encode_protobuf(add_message_data)?)?;
@@ -109,11 +109,11 @@ pub fn libp2p_msg_cb(body: &tokenstate::StateReceiverResponse) -> anyhow::Result
 }
 
 pub fn get_message_list(req: &NotificationGetMessageRequest) -> anyhow::Result<Vec<u8>> {
-	let block = help::current_block_number()? as u64;
+	let block = help::current_block_number()?;
 
 	// to orbitdb
 	let get_message_req = orbitdb::NotificationGetMessageRequest {
-		utc: block - 1,
+		block_height: block - 1,
 		sender: match &req.from {
 			Some(v) => v.to_string(),
 			None => "".to_string(),
