@@ -50,8 +50,8 @@ pub fn add_message(req: &NotificationAddMessageRequest) -> anyhow::Result<Vec<u8
 		sender: req.from.clone(),
 		to: req.to.clone(),
 		content: message,
-		height_sent: block,
-		height_expired: block + ttl,
+		utc: block,
+		utc_expired: block + ttl,
 	};
 	info!("notification add_message_data => {:?}", &add_message_data);
 	help::set_mem_cache(&can_post_uuid, encode_protobuf(add_message_data)?)?;
