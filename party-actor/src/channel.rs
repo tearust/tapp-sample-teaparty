@@ -163,7 +163,8 @@ pub(crate) fn load_message_list(
 		let text = item["content"].as_str().unwrap().to_string();
 
 		let aes_key = user::get_aes_key(&request.tapp_id)?;
-		let content = aes_decrypt(aes_key, base64::decode(text)?).unwrap_or(b"Failed to decrypt.".to_vec());
+		let content =
+			aes_decrypt(aes_key, base64::decode(text)?).unwrap_or(b"Failed to decrypt.".to_vec());
 
 		let message_item: MessageItem = MessageItem {
 			tapp_id: item["tapp_id"].as_u64().unwrap_or(0 as u64),

@@ -40,7 +40,7 @@ pub fn add_message(req: &NotificationAddMessageRequest) -> anyhow::Result<Vec<u8
 		base64::encode(msg)
 	};
 
-	let block:u32 = help::current_block_number()?;
+	let block: u32 = help::current_block_number()?;
 	let ttl: u32 = 1440 * 2;
 
 	let can_post_uuid = help::uuid_cb_key(&uuid, &"notification_add_message");
@@ -155,8 +155,8 @@ pub fn get_message_list(req: &NotificationGetMessageRequest) -> anyhow::Result<V
 			id: item["_id"].as_str().unwrap_or("").to_string(),
 			sender: item["sender"].as_str().unwrap().to_string(),
 			to: item["to"].as_str().unwrap().to_string(),
-      utc: item["utc"].as_u64().unwrap(),
-      utc_expired: item["utc_expired"].as_u64().unwrap(),
+			utc: item["utc"].as_u64().unwrap(),
+			utc_expired: item["utc_expired"].as_u64().unwrap(),
 			content: String::from_utf8(content)?,
 		};
 

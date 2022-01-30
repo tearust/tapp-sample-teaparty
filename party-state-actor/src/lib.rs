@@ -3,6 +3,7 @@
 #![allow(non_camel_case_types)]
 #[macro_use]
 extern crate log;
+use interface::{Account, AuthKey, Balance, Tsid, GOD_MODE_AUTH_KEY, TOKEN_ID_TEA};
 use party_shared::TeapartyTxn;
 use prost::Message;
 use std::convert::TryInto;
@@ -15,19 +16,14 @@ use tea_actor_utility::{
 	actor_statemachine::{self, query_auth_ops_bytes},
 };
 use tea_codec::ops::crypto::KEY_TYPE_SR25519;
-use tea_codec::{
-	ACTOR_PUBKEY_TOKENSTATE_SERVICE,ACTOR_PUBKEY_PARTY_CONTRACT,
-};
+use tea_codec::{ACTOR_PUBKEY_PARTY_CONTRACT, ACTOR_PUBKEY_TOKENSTATE_SERVICE};
+use token_state::token_context::TokenContext;
+use vmh_codec::message::structs_proto::tokenstate::*;
+use vmh_codec::message::structs_proto::{tappstore, tokenstate};
 use vmh_codec::message::{encode_protobuf, layer1::MinerClass, structs_proto::layer1};
 use wascc_actor::prelude::codec::messaging::BrokerMessage;
 use wascc_actor::prelude::*;
 use wascc_actor::HandlerResult;
-use interface::{Account, AuthKey, Balance, Tsid, GOD_MODE_AUTH_KEY, TOKEN_ID_TEA};
-use token_state::token_context::TokenContext;
-use vmh_codec::message::structs_proto::{
-	tokenstate, tappstore
-};
-use vmh_codec::message::structs_proto::tokenstate::*;
 
 const BINDING_NAME: &str = ACTOR_PUBKEY_PARTY_CONTRACT;
 mod state;
@@ -166,10 +162,10 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 				"AddNotificationMessage => : {:?}\n{:?}\n{:?}\n{:?}\n{:?}",
 				token_id, from, to, auth_b64, ttl
 			);
-			let pushnotifications_inner_request = tappstore::PushNotificationsInnerRequest{
+			let pushnotifications_inner_request = tappstore::PushNotificationsInnerRequest {
 				token_id,
-				accounts: vec!(public_key_to_ss58(&to)?),
-				expired_heights: vec!(ttl),
+				accounts: vec![public_key_to_ss58(&to)?],
+				expired_heights: vec![ttl],
 				uuid: "ok".to_string(),
 			};
 			info!("req: {:?}", &pushnotifications_inner_request);
@@ -241,15 +237,15 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 	};
 	if context_bytes.is_empty() {
 		error!("######### party state actor txn handle returns empty ctx. Cannot commit ######");
-		return Ok(())
+		return Ok(());
 	}
 	let hidden_acct_balance_change_after_commit = actor_statemachine::commit(CommitRequest {
 		ctx: context_bytes,
 		auth_key: bincode::serialize(&auth_key)?,
 	})?;
-	if hidden_acct_balance_change_after_commit != (0,0) {
+	if hidden_acct_balance_change_after_commit != (0, 0) {
 		warn!("********* party state actor commit succesfully but the hidden account balance changed. make sure a follow up tx is trigger to keey the balance sheet balance. {:?}", &hidden_acct_balance_change_after_commit);
-	}else{
+	} else {
 		info!("*********  party state actor commit succesfully.");
 	}
 	Ok(())
