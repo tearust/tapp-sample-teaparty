@@ -50,8 +50,8 @@ pub fn add_message(req: &NotificationAddMessageRequest) -> anyhow::Result<Vec<u8
 		sender: req.from.clone(),
 		to: req.to.clone(),
 		content: message,
-		utc: block,
-		utc_expired: block + ttl,
+		utc: block as u64,
+		utc_expired: (block + ttl) as u64,
 	};
 	info!("notification add_message_data => {:?}", &add_message_data);
 	help::set_mem_cache(&can_post_uuid, encode_protobuf(add_message_data)?)?;
@@ -113,7 +113,7 @@ pub fn get_message_list(req: &NotificationGetMessageRequest) -> anyhow::Result<V
 
 	// to orbitdb
 	let get_message_req = orbitdb::NotificationGetMessageRequest {
-		block_height: block - 1,
+		utc: (block - 1) as u64,
 		sender: match &req.from {
 			Some(v) => v.to_string(),
 			None => "".to_string(),
