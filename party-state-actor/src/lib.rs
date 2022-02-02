@@ -167,6 +167,7 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 				accounts: vec![public_key_to_ss58(&to)?],
 				expired_heights: vec![ttl],
 				uuid: "ok".to_string(),
+				tsid: bincode::serialize(&tsid)?,
 			};
 			info!("req: {:?}", &pushnotifications_inner_request);
 			post_intercom(
