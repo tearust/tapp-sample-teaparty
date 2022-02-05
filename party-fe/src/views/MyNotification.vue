@@ -97,6 +97,8 @@ export default {
       try{
         const rs = await bbs.send_notification(this, to, async (rs)=>{
           this.$root.success("Send success");
+
+          await this.refrersh_list();
         });
       }catch(e){
         this.$root.showError(e);

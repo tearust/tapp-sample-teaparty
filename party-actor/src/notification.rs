@@ -47,11 +47,13 @@ pub fn add_message(req: &NotificationAddMessageRequest) -> anyhow::Result<Vec<u8
 
 	let add_message_data = orbitdb::NotificationAddMessageRequest {
 		tapp_id: req.tapp_id,
+		from_tapp_id: req.from_tapp_id,
 		sender: req.from.clone(),
 		to: req.to.clone(),
 		content: message,
 		utc: block as u64,
 		utc_expired: (block + ttl) as u64,
+		from_tapp_url: req.from_tapp_url.clone(),
 	};
 	info!("notification add_message_data => {:?}", &add_message_data);
 	help::set_mem_cache(&can_post_uuid, encode_protobuf(add_message_data)?)?;
@@ -152,12 +154,14 @@ pub fn get_message_list(req: &NotificationGetMessageRequest) -> anyhow::Result<V
 
 		let message_item: NotificationMessageItem = NotificationMessageItem {
 			tapp_id: item["tapp_id"].as_u64().unwrap_or(0 as u64),
+			from_tapp_id: item["from_tapp_id"].as_u64().unwrap_or(0 as u64),
 			id: item["_id"].as_str().unwrap_or("").to_string(),
 			sender: item["sender"].as_str().unwrap().to_string(),
 			to: item["to"].as_str().unwrap().to_string(),
 			utc: item["utc"].as_u64().unwrap(),
 			utc_expired: item["utc_expired"].as_u64().unwrap(),
 			content: String::from_utf8(content)?,
+			from_tapp_url: item["from_tapp_url"].as_str().unwrap().to_string(),
 		};
 
 		rs.push(message_item);

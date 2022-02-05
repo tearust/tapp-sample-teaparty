@@ -19,7 +19,7 @@
       <el-form-item v-for="(item) in props" :key="item.name" :label="labels[item.name]" :prop="item.name" :class="(props[item.name] && props[item.name].class) || ''">
         <el-input v-if="types[item.name]==='Input'" :disabled="props[item.name].disabled||false" v-model="form[item.name]"></el-input>
 
-        <el-input v-if="types[item.name]==='textarea'" :rows="5" type="textarea" :disabled="props[item.name].disabled||false" v-model="form[item.name]"></el-input>
+        <el-input v-if="types[item.name]==='textarea'" :rows="3" type="textarea" :disabled="props[item.name].disabled||false" v-model="form[item.name]"></el-input>
 
         <el-select v-if="types[item.name]==='select'" v-model="form[item.name]" placeholder="Please select.">
           <el-option

@@ -181,6 +181,8 @@ pub struct NotificationAddMessageRequest {
 	pub to: String,
 	pub uuid: String,
 	pub auth_b64: String,
+	pub from_tapp_id: u64,
+	pub from_tapp_url: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -201,4 +203,6 @@ pub struct NotificationMessageItem {
 	pub id: String,
 	pub sender: String,
 	pub to: String,
+	pub from_tapp_id: u64,
+	pub from_tapp_url: String,
 }

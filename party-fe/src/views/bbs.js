@@ -361,6 +361,10 @@ const F = {
             type: "textarea",
             label: 'Content',
             required: true,
+          },
+          tapp_url: {
+            type: "Input",
+            label: 'TApp url',
           }
         },
       },
@@ -371,6 +375,8 @@ const F = {
 
         const opts = {
           tappId: F.getTappId(),
+          fromTappId: F.getTappId(),
+          fromTappUrl: encodeURIComponent(form.tapp_url),
           from,
           to,
           contentB64: text,
