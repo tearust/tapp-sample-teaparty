@@ -187,7 +187,7 @@ export default {
       }
     },
     async query_consume_account_action(){
-      this.setLog("query balance tapp account...");
+      this.setLog("query contract tapp account...");
       try{
         const balance = await bbs.query_tapp_account({
         });

@@ -275,8 +275,13 @@ const F = {
       key: 'common_form',
       param: {
         title: 'Topup',
-        // text: `You will topup to tapp ${tappId} 10 TEA.`,
+        text: '',
         props: {
+          target: {
+            type: "Input",
+            disabled: true,
+            label: "Contact address",
+          },
           amount: {
             type: "number",
             default: 10,
@@ -289,13 +294,25 @@ const F = {
         const total = utils.layer1.amountToBalance(form.amount);
         const amt = numberToHex(total);
 
-        const tx = api.tx.bondingCurve.topup(NPC, tappId, amt);
+        const tx = api.tx.bondingCurve.topup(form.target, tappId, amt);
         await layer1_instance.sendTx(self.layer1_account.address, tx);
         
         close();
 
         await succ_cb()
         self.$root.loading(false);
+      },
+      open_cb: async (opts)=>{
+        const rs = await F.query_tapp_account({});
+        
+        if(rs.address){
+          const top_acct = rs.address;
+          opts.props.target.default = top_acct;
+          // opts.text = `Contract address: ${top_acct}`;
+        }
+
+        // TODO handle error.
+        
       }
     });
   },
