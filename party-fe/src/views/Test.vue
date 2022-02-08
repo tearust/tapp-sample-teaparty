@@ -28,6 +28,7 @@
     <el-button type="danger" @click="query_balance_action()">Query balance</el-button>
     <el-button type="danger" @click="query_consume_account_action()">Query consume account</el-button>
     <el-button type="primary" @click="withdraw_action()">Withdraw 10</el-button>
+
     <el-divider />
 
     <el-button type="primary" @click="update_profile_action()">Update TApp profile</el-button>
@@ -38,6 +39,11 @@
 
     <el-button type="primary" @click="add_notification_action()">Add Notification</el-button>
     <el-button type="danger" @click="query_notification_list()">Query Notification list</el-button>
+    <el-divider />
+
+
+    <el-button type="danger" @click="query_balance_action('5C4hrfjw9DjXZTzV3MwzrrAr9P1MJhSrvWGWqi1eSuyUpnhM')">HIDDEN_SYSTEM_ACCOUNT balance</el-button>
+    <el-button type="danger" @click="query_balance_action('5HrN7fHLXWcFiXPwwtq2EkSGns9eMt5P7SpeTPewumZy6ftb')">HIDDEN_CONSUME_ACCOUNT balance</el-button>
     <el-divider />
 
     <b style="display:block">Hash: {{latest_hash}}</b>
@@ -176,11 +182,12 @@ export default {
         bbs.log('layer1 topup success.')
       });
     },
-    async query_balance_action(){
-      this.setLog("query balance action...");
+    async query_balance_action(address){
+      address = address || this.layer1_account.address;
+      this.setLog("query balance action => "+address);
       try{
         const balance = await bbs.query_balance({
-          address: this.layer1_account.address,
+          address,
         });
       }catch(e){
         bbs.log(e);
