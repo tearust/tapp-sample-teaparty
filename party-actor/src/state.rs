@@ -174,6 +174,26 @@ pub fn query_tapp_account(tapp_id: u64, uuid: String) -> anyhow::Result<()> {
 	Ok(())
 }
 
+pub fn query_tappstore_account(uuid: String) -> anyhow::Result<()> {
+	info!("begin to query tappstore account...");
+
+	let req = tappstore::TappQueryRequest {
+		msg: Some(
+			tappstore::tapp_query_request::Msg::GetTappstoreAccountPubkeyRequest(
+				tappstore::GetTappstoreAccountPubkeyRequest {},
+			),
+		),
+	};
+
+	send_query_via_p2p(
+		encode_protobuf(req)?,
+		&uuid,
+		tea_codec::ACTOR_PUBKEY_TAPPSTORE.into(),
+	)?;
+
+	Ok(())
+}
+
 pub(crate) fn parse_to_acct(ss58_address: &str) -> anyhow::Result<Account> {
 	let acct = public_key_from_ss58(&ss58_address)?;
 	if acct.len() != 32 {

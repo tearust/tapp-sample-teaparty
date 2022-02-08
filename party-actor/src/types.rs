@@ -171,6 +171,13 @@ pub struct QueryTappAccountRequest {
 	pub uuid: String,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct QueryTappStoreAccountRequest {
+	pub uuid: String,
+}
+
+
 // notification
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

@@ -149,6 +149,7 @@ fn handle_system_init(_msg: &BrokerMessage) -> HandlerResult<()> {
 			"withdraw",
 			"queryHashResult",
 			"queryTappAccount",
+			"queryTappStoreAccount",
 			"postMessage",
 			"loadMessageList",
 			"extendMessage",
@@ -261,6 +262,12 @@ fn handle_adapter_http_request(req: rpc::AdapterHttpRequest) -> anyhow::Result<V
 		"queryTappAccount" => {
 			let req: QueryTappAccountRequest = serde_json::from_slice(&req.payload)?;
 			state::query_tapp_account(req.tapp_id, req.uuid.to_string())?;
+
+			Ok(b"ok".to_vec())
+		}
+		"queryTappStoreAccount" => {
+			let req: QueryTappStoreAccountRequest = serde_json::from_slice(&req.payload)?;
+			state::query_tappstore_account(req.uuid.to_string())?;
 
 			Ok(b"ok".to_vec())
 		}
