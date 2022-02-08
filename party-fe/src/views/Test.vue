@@ -28,6 +28,7 @@
     <el-button type="danger" @click="query_balance_action()">Query balance</el-button>
     <el-button type="danger" @click="query_consume_account_action()">Query consume account</el-button>
     <el-button type="primary" @click="withdraw_action()">Withdraw 10</el-button>
+    <el-button type="danger" @click="query_tappstore_account_action()">Query tappstore account</el-button>
 
     <el-divider />
 
@@ -197,6 +198,15 @@ export default {
       this.setLog("query contract tapp account...");
       try{
         const balance = await bbs.query_tapp_account({
+        });
+      }catch(e){
+        bbs.log(e);
+      }
+    },
+    async query_tappstore_account_action(){
+      this.setLog("query tappstore account...");
+      try{
+        const balance = await bbs.query_tappstore_account({
         });
       }catch(e){
         bbs.log(e);

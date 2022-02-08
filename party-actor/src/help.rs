@@ -176,6 +176,12 @@ fn parse_tappstore_response(data: &[u8], uuid: &str) -> anyhow::Result<serde_jso
 				"address": address,
 			})
 		}
+		Some(tappstore::tapp_query_response::Msg::GetTappstoreAccountPubkeyResponse(r)) => {
+			let address = &r.address;
+			json!({
+				"address": address,
+			})
+		}
 		_ => json!({ "error": format!("unknown tappstore response: {:?}", tapp_query_response) }),
 	};
 	Ok(rtn)

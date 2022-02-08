@@ -344,6 +344,12 @@ const F = {
     console.log(1, rs);
     return rs;
   },
+  async query_tappstore_account(){
+    const param = {};
+    const rs = await sync_request('queryTappStoreAccount', param);
+    console.log(1, rs);
+    return rs;
+  },
 
   async query_hash_result(hash){
     const param = {
