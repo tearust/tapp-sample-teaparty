@@ -167,18 +167,18 @@ pub fn update_tapp_profile(req: &TappProfileRequest) -> anyhow::Result<Vec<u8>> 
 }
 
 pub fn query_balance(req: &HttpQueryBalanceRequest) -> anyhow::Result<Vec<u8>> {
-	check_auth(&req.tapp_id, &req.address, &req.auth_b64)?;
+	// check_auth(&req.tapp_id, &req.address, &req.auth_b64)?;
 
 	info!("begin to query tea balance");
 
-	let auth_key = base64::decode(&req.auth_b64)?;
+	// let auth_key = base64::decode(&req.auth_b64)?;
 	let uuid = &req.uuid;
 	let req = tappstore::TappQueryRequest {
 		msg: Some(tappstore::tapp_query_request::Msg::TeaBalanceRequest(
 			tappstore::TeaBalanceRequest {
 				account: req.address.to_string(),
 				token_id: req.tapp_id,
-				auth_key,
+				auth_key: [0;8].to_vec(),
 			},
 		)),
 	};
