@@ -146,6 +146,13 @@ pub fn check_auth(tapp_id: &u64, address: &str, auth_b64: &str) -> anyhow::Resul
 }
 
 pub fn update_tapp_profile(req: &TappProfileRequest) -> anyhow::Result<Vec<u8>> {
+	let a = [0u8; 32];
+	let b = [255u8; 32];
+
+	info!("aaaa => {:?}", public_key_to_ss58(&a));
+	info!("bbbb => {:?}", public_key_to_ss58(&b));
+
+
 	check_auth(&req.tapp_id, &req.address, &req.auth_b64)?;
 
 	info!("state begin to update profile");
