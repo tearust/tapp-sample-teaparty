@@ -285,7 +285,13 @@ export default {
 
     async send_sql_action(){
       this.setLog("start sql test...");
-      
+      try{
+        const rs = await bbs.sendSqlRequest(this, async (rs)=>{
+          this.$root.success("Send sql success");
+        });
+      }catch(e){
+        bbs.log(e);
+      }
     },
 
 

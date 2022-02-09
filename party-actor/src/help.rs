@@ -182,6 +182,11 @@ fn parse_tappstore_response(data: &[u8], uuid: &str) -> anyhow::Result<serde_jso
 				"address": address,
 			})
 		}
+		Some(tappstore::tapp_query_response::Msg::CommonSqlQueryResponse(r)) => {
+			json!({
+				"data": r.data,
+			})
+		}
 		_ => json!({ "error": format!("unknown tappstore response: {:?}", tapp_query_response) }),
 	};
 	Ok(rtn)

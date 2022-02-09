@@ -317,6 +317,56 @@ const F = {
     });
   },
 
+  async sendSqlRequest(self, succ_cb){
+    const tappId = F.getTappId();
+
+    self.$store.commit('modal/open', {
+      key: 'common_form',
+      param: {
+        title: 'Sql test',
+        text: '',
+        props: {
+          tid: {
+            type: "Input",
+            default: tappId,
+            label: "Tapp id",
+          },
+          sql: {
+            type: "textarea",
+            label: "Sql"
+          },
+          is_txn: {
+            type: 'checkbox',
+            label: 'Txn?',
+            default: true,
+          }
+        },
+      },
+      cb: async (form, close)=>{
+        self.$root.loading(true);
+       
+        const opts = {
+          tappId: form.tid,
+          sql: form.sql,
+          isTxn: form.is_txn,
+        };
+console.log(111, opts);
+        let rs = null;
+        try{
+          rs = await sync_request('testForSql', opts);
+          F.top_log(null);
+
+          succ_cb(rs)
+        }catch(e){
+          F.top_log(e, 'error');
+        }
+        
+        close();
+        self.$root.loading(false);
+      }
+    });
+  },
+
   async query_balance(param){
     // const user = F.getUser(param.address);
     // if(!user || !user.isLogin){
