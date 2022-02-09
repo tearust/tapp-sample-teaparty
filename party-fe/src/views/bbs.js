@@ -346,7 +346,7 @@ const F = {
         self.$root.loading(true);
        
         const opts = {
-          tappId: form.tid,
+          tappId: parseInt(form.tid),
           sql: form.sql,
           isTxn: form.is_txn,
         };

@@ -334,3 +334,4 @@ fn handle_adapter_http_request(req: rpc::AdapterHttpRequest) -> anyhow::Result<V
 		}
 	}
 }
+ 

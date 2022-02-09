@@ -209,7 +209,7 @@ pub fn send_sql_for_test(req: &types::TestForSqlRequest) -> anyhow::Result<Vec<u
 	let uuid = &req.uuid;
 
 	if req.is_txn {
-		info!("start to send sql txn...");
+		info!("start to send sql txn...req is {:?}", req);
 		let txn = TappstoreTxn::SqlTest {
 			token_id: req.tapp_id,
 			sql: req.sql.clone(),
@@ -222,7 +222,7 @@ pub fn send_sql_for_test(req: &types::TestForSqlRequest) -> anyhow::Result<Vec<u
 		)?;
 	}
 	else {
-		info!("start to send sql query...");
+		info!("start to send sql query...req is {:?}", &req);
 
 		let req = tappstore::TappQueryRequest {
 			msg: Some(tappstore::tapp_query_request::Msg::CommonSqlQueryRequest(
