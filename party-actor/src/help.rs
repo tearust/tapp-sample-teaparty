@@ -8,7 +8,7 @@ use tea_actor_utility::{
 	actor_layer1::general_remote_request,
 	actor_libp2p,
 };
-
+use interface::{sql::Payload};
 use base64;
 use serde_json::json;
 use tea_codec;
@@ -183,8 +183,31 @@ fn parse_tappstore_response(data: &[u8], uuid: &str) -> anyhow::Result<serde_jso
 			})
 		}
 		Some(tappstore::tapp_query_response::Msg::CommonSqlQueryResponse(r)) => {
+			let result_payload: Vec<Payload> =
+				bincode::deserialize(&r.data)?;
+			info!(
+				"deser result_payload is {:?}",
+				&result_payload
+			);
+			let mut rows: Vec<String> = Vec::new();
+			for p in result_payload {
+				let line = match p {
+					Payload::Select { labels: _, rows } => {
+						format!("{:?}", &rows)
+					},
+					_ => format!("Query error: {:?}", p),
+				};
+				rows.push(line);
+				// info!("rows {:?}", &rows);
+				// let first_row = &rows[0];
+				// let first_value = &first_row[0];
+
+				// info!("11 => {:?}", first_row);
+				// info!("22 => {:?}", first_value);
+			}
+			info!("rows {:?}", &rows);
 			json!({
-				"data": r.data,
+				"sql_query_result": rows
 			})
 		}
 		_ => json!({ "error": format!("unknown tappstore response: {:?}", tapp_query_response) }),
