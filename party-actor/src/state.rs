@@ -13,6 +13,7 @@ use serde_json::json;
 use tea_actor_utility::actor_enclave::{generate_uuid, get_my_tea_id};
 use tea_codec;
 
+use actor_txns::tappstore::TappstoreTxn;
 use vmh_codec::message::{
 	encode_protobuf,
 	structs_proto::{replica, tappstore, tokenstate},
@@ -202,4 +203,27 @@ pub(crate) fn parse_to_acct(ss58_address: &str) -> anyhow::Result<Account> {
 	let acct: Account = acct.try_into().unwrap();
 
 	Ok(acct)
+}
+
+pub fn send_sql_for_test(req: &types::TestForSqlRequest) -> anyhow::Result<Vec<u8>> {
+	if req.is_txn {
+		info!("start to send sql txn...");
+		let txn = TappstoreTxn::SqlTest {
+			token_id: req.tapp_id,
+			sql: req.sql.to_string(),
+		};
+		let txn_bytes: Vec<u8> = bincode::serialize(&txn)?;
+		execute_tx_with_txn_bytes(
+			txn_bytes,
+			req.uuid.to_string(),
+			tea_codec::ACTOR_PUBKEY_TAPPSTORE.into(),
+		)?;
+	}
+	else {
+		info!("start to send sql query...");
+
+	}
+	
+
+	Ok(b"ok".to_vec())
 }

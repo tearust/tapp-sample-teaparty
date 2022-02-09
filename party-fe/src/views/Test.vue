@@ -47,6 +47,9 @@
     <el-button type="danger" @click="query_balance_action('5HrN7fHLXWcFiXPwwtq2EkSGns9eMt5P7SpeTPewumZy6ftb')">HIDDEN_CONSUME_ACCOUNT balance</el-button>
     <el-divider />
 
+    <el-button type="primary" @click="send_sql_action('')">Send SQL Request</el-button>
+    <el-divider />
+
     <b style="display:block">Hash: {{latest_hash}}</b>
     <el-button type="danger" :disabled="!latest_hash" @click="query_hash_result()">Query hash result</el-button>
   </div>
@@ -278,6 +281,11 @@ export default {
       }catch(e){
         bbs.log(e);
       }
+    },
+
+    async send_sql_action(){
+      this.setLog("start sql test...");
+      
     },
 
 

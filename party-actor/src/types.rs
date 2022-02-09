@@ -213,3 +213,12 @@ pub struct NotificationMessageItem {
 	pub from_tapp_id: u64,
 	pub from_tapp_url: String,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TestForSqlRequest {
+	pub tapp_id: u64,
+	pub sql: String,
+	pub is_txn: bool,
+	pub uuid: String,
+}
