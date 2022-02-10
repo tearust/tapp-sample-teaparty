@@ -329,6 +329,7 @@ const F = {
           tid: {
             type: "Input",
             default: tappId,
+            disabled: true,
             label: "Tapp id",
           },
           sql: {
@@ -346,7 +347,7 @@ const F = {
         self.$root.loading(true);
        
         const opts = {
-          tappId: parseInt(form.tid),
+          tappId: _.toNumber(form.tid),
           sql: form.sql,
           isTxn: form.is_txn,
         };
