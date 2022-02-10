@@ -145,6 +145,11 @@ fn parse_tappstore_response(data: &[u8], uuid: &str) -> anyhow::Result<serde_jso
 	let tapp_query_response = tappstore::TappQueryResponse::decode(data)?;
 	info!("tapp_query_response => {:?}", tapp_query_response);
 	let rtn = match tapp_query_response.msg {
+		None =>{
+			json!({
+				"error": "none",
+			})
+		}
 		Some(tappstore::tapp_query_response::Msg::TeaBalanceResponse(balance_res)) => {
 			json!({
 			  "balance": u128_from_le_buffer(&balance_res.balance)?.to_string(),
@@ -183,32 +188,40 @@ fn parse_tappstore_response(data: &[u8], uuid: &str) -> anyhow::Result<serde_jso
 			})
 		}
 		Some(tappstore::tapp_query_response::Msg::CommonSqlQueryResponse(r)) => {
-			let result_payload: Vec<Payload> =
-				bincode::deserialize(&r.data)?;
-			info!(
-				"deser result_payload is {:?}",
-				&result_payload
-			);
-			let mut rows: Vec<String> = Vec::new();
-			for p in result_payload {
-				let line = match p {
-					Payload::Select { labels: _, rows } => {
-						format!("{:?}", &rows)
-					},
-					_ => format!("Query error: {:?}", p),
-				};
-				rows.push(line);
-				// info!("rows {:?}", &rows);
-				// let first_row = &rows[0];
-				// let first_value = &first_row[0];
+			info!("line191 r {:?}", &r);
+			if ! r.err.is_empty(){
+				error!("sql error: {}", &r.err);
+				json!({
+					"sql_query_error": r.err,
+				})
+			}else{
+				let result_payload: Vec<Payload> =
+					bincode::deserialize(&r.data)?;
+				info!(
+					"deser result_payload is {:?}",
+					&result_payload
+				);
+				let mut rows: Vec<String> = Vec::new();
+				for p in result_payload {
+					let line = match p {
+						Payload::Select { labels: _, rows } => {
+							format!("{:?}", &rows)
+						},
+						_ => format!("Query error: {:?}", p),
+					};
+					rows.push(line);
+					// info!("rows {:?}", &rows);
+					// let first_row = &rows[0];
+					// let first_value = &first_row[0];
 
-				// info!("11 => {:?}", first_row);
-				// info!("22 => {:?}", first_value);
+					// info!("11 => {:?}", first_row);
+					// info!("22 => {:?}", first_value);
+				}
+				info!("rows {:?}", &rows);
+				json!({
+					"sql_query_result": rows
+				})
 			}
-			info!("rows {:?}", &rows);
-			json!({
-				"sql_query_result": rows
-			})
 		}
 		_ => json!({ "error": format!("unknown tappstore response: {:?}", tapp_query_response) }),
 	};
