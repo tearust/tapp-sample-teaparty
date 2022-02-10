@@ -89,7 +89,7 @@ export default {
       }
       
       console.log(11, list);
-      this.list = _.reverse(list);
+      this.list = list; //_.reverse(list);
         
       this.$root.loading(false);
     },
