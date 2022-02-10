@@ -44,6 +44,7 @@ mod state;
 mod types;
 mod user;
 mod validating;
+mod wf;
 
 const BINDING_NAME: &'static str = "tea_tapp_bbs";
 const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -100,7 +101,6 @@ fn libp2p_back_message(msg: &BrokerMessage) -> HandlerResult<Vec<u8>> {
 		info!("party actor get lib msg back => {:?}", body);
 
 		user::libp2p_msg_cb(&body)?;
-		channel::libp2p_msg_cb(&body)?;
 		notification::libp2p_msg_cb(&body)?;
 
 		// TODO handle it when return real validator.
@@ -334,4 +334,3 @@ fn handle_adapter_http_request(req: rpc::AdapterHttpRequest) -> anyhow::Result<V
 		}
 	}
 }
- 

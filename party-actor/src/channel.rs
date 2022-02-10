@@ -23,13 +23,36 @@ use vmh_codec::message::{
 use wascc_actor::prelude::codec::messaging::BrokerMessage;
 use wascc_actor::prelude::*;
 
+use crate::channel;
 use crate::help;
 use crate::user;
+use crate::wf;
 
 pub fn post_message(uuid: &str, req: &PostMessageRequest) -> anyhow::Result<Vec<u8>> {
 	user::check_auth(&req.tapp_id, &req.address, &req.auth_b64)?;
 
-	// to orbitdb
+	let ttl = get_post_message_ttl(&req)?;
+	let txn = TeapartyTxn::PostMessage {
+		token_id: req.tapp_id,
+		from: state::parse_to_acct(&req.address)?,
+		ttl,
+		auth_b64: req.auth_b64.to_string(),
+	};
+
+	let txn_bytes = bincode::serialize(&txn)?;
+
+	wf::sm_txn_request(
+		"post_message",
+		&uuid,
+		bincode::serialize(req)?,
+		txn_bytes,
+		&tea_codec::ACTOR_PUBKEY_PARTY_CONTRACT.to_string(),
+	)?;
+
+	Ok(b"ok".to_vec())
+}
+
+pub fn post_message_to_db(req: &PostMessageRequest) -> anyhow::Result<String> {
 	let message = {
 		let msg = base64::decode(&req.encrypted_message)?;
 
@@ -43,32 +66,7 @@ pub fn post_message(uuid: &str, req: &PostMessageRequest) -> anyhow::Result<Vec<
 	};
 
 	let block = help::current_block_number()? as u64;
-	// let block: u64 = current_timestamp()? as u64;
-
-	let ttl: u64 = {
-		match is_global_channel(&req.channel) {
-			true => (2 * 1440) as u64,
-			false => (10 * 1440) as u64,
-			// true => (2 * 60 * 60) as u64,
-			// false => (24 * 60 * 60) as u64,
-		}
-	};
-
-	let can_post_uuid = help::uuid_cb_key(&uuid, &"state_post_message");
-	info!("state begin to post_message => {}", can_post_uuid);
-	let txn = TeapartyTxn::PostMessage {
-		token_id: req.tapp_id,
-		from: state::parse_to_acct(&req.address)?,
-		ttl,
-		auth_b64: req.auth_b64.to_string(),
-	};
-	let txn_bytes = bincode::serialize(&txn)?;
-	state::execute_tx_with_txn_bytes(
-		txn_bytes,
-		can_post_uuid.to_string(),
-		tea_codec::ACTOR_PUBKEY_PARTY_CONTRACT.to_string(),
-	)?;
-	info!("state post message success");
+	let ttl = get_post_message_ttl(&req)?;
 
 	let dbname = db_name(req.tapp_id, &req.channel);
 	let add_message_data = orbitdb::AddMessageRequest {
@@ -80,46 +78,32 @@ pub fn post_message(uuid: &str, req: &PostMessageRequest) -> anyhow::Result<Vec<
 		utc_expired: block + ttl,
 	};
 	info!("aaa => {:?}", &add_message_data);
-	help::set_mem_cache(&can_post_uuid, encode_protobuf(add_message_data)?)?;
+	let res = orbitdb::OrbitBbsResponse::decode(
+		untyped::default()
+			.call(
+				tea_codec::ORBITDB_CAPABILITY_ID,
+				"bbs_AddMessage",
+				encode_protobuf(add_message_data)?,
+			)
+			.map_err(|e| anyhow::anyhow!("{}", e))?
+			.as_slice(),
+	)?;
+	info!("[bbs] post_message response: {:?}", res);
 
-	Ok(b"ok".to_vec())
+	Ok("aaa".to_string())
 }
 
-// fn post_message_cb() -> anyhow::Result<()> {
-
-// Ok(res.data.into_bytes())
-// }
-
-pub fn libp2p_msg_cb(body: &tokenstate::StateReceiverResponse) -> anyhow::Result<bool> {
-	let uuid = &body.uuid;
-
-	if uuid.starts_with_ignore_ascii_case("state_post_message") {
-		// post_message cb
-		if let Ok(add_message_buf) = help::get_mem_cache(&uuid) {
-			if body.msg.is_some() {
-				let res = orbitdb::OrbitBbsResponse::decode(
-					untyped::default()
-						.call(
-							tea_codec::ORBITDB_CAPABILITY_ID,
-							"bbs_AddMessage",
-							add_message_buf,
-						)
-						.map_err(|e| anyhow::anyhow!("{}", e))?
-						.as_slice(),
-				)?;
-				info!("[bbs] post_message response: {:?}", res);
-
-				help::set_mem_cache(
-					&help::cb_key_to_uuid(uuid, "state_post_message"),
-					encode_protobuf(res)?,
-				)?;
-
-				return Ok(true);
-			}
+fn get_post_message_ttl(req: &PostMessageRequest) -> anyhow::Result<u64> {
+	let ttl: u64 = {
+		match is_global_channel(&req.channel) {
+			true => (2 * 1440) as u64,
+			false => (10 * 1440) as u64,
+			// true => (2 * 60 * 60) as u64,
+			// false => (24 * 60 * 60) as u64,
 		}
-	}
+	};
 
-	Ok(false)
+	Ok(ttl)
 }
 
 pub(crate) fn load_message_list(

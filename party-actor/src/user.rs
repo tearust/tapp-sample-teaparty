@@ -184,7 +184,7 @@ pub fn query_balance(req: &HttpQueryBalanceRequest) -> anyhow::Result<Vec<u8>> {
 			tappstore::TeaBalanceRequest {
 				account: req.address.to_string(),
 				token_id: req.tapp_id,
-				auth_key: [0;8].to_vec(),
+				auth_key: [0; 8].to_vec(),
 			},
 		)),
 	};

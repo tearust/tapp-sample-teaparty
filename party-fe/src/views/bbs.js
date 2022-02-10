@@ -228,6 +228,8 @@ const F = {
       throw 'not_login';
     }
 
+    const txn = require('./txn').default;
+
     F.top_log("Send withdraw txn...");
     const tappId = F.getTappId();
     self.$store.commit('modal/open', {
@@ -254,9 +256,13 @@ const F = {
           amount,
         };
     
-        const rs = await sync_request('withdraw', param);
-        console.log("withdraw action =>", rs);
-        await succ_cb(rs)
+        // const rs = await sync_request('withdraw', param);
+        // console.log("withdraw action =>", rs);
+        // await succ_cb(rs)
+
+        const rs = await txn.txn_request('withdraw', param);
+        console.log(222, rs);
+
         self.$root.loading(false);
         close();
         self.$root.success();

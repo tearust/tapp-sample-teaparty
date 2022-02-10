@@ -1,6 +1,9 @@
 use interface::Tsid;
 use prost::Message;
 
+use base64;
+use interface::sql::Payload;
+use serde_json::json;
 use tea_actor_utility::{
 	actor_enclave::{generate_uuid, get_my_tea_id},
 	actor_env::{get_system_time, time_since},
@@ -8,9 +11,6 @@ use tea_actor_utility::{
 	actor_layer1::general_remote_request,
 	actor_libp2p,
 };
-use interface::{sql::Payload};
-use base64;
-use serde_json::json;
 use tea_codec;
 use vmh_codec::message::{
 	encode_protobuf,
@@ -18,6 +18,7 @@ use vmh_codec::message::{
 };
 use wascc_actor::untyped;
 
+use crate::wf;
 use crate::BINDING_NAME;
 
 pub fn p2p_send_to_receive_actor(msg: Vec<u8>) -> anyhow::Result<()> {
@@ -145,7 +146,7 @@ fn parse_tappstore_response(data: &[u8], uuid: &str) -> anyhow::Result<serde_jso
 	let tapp_query_response = tappstore::TappQueryResponse::decode(data)?;
 	info!("tapp_query_response => {:?}", tapp_query_response);
 	let rtn = match tapp_query_response.msg {
-		None =>{
+		None => {
 			json!({
 				"error": "none",
 			})
@@ -158,11 +159,14 @@ fn parse_tappstore_response(data: &[u8], uuid: &str) -> anyhow::Result<serde_jso
 			})
 		}
 		Some(tappstore::tapp_query_response::Msg::FindExecutedTxnResponse(r)) => {
-			if let Some(_res) = r.executed_txn {
-				json!({
-					// "tsid": hex::encode(&res.tsid),
-					"status": true,
-				})
+			info!("FindExecutedTxnResponse => {:?}", r);
+
+			if let Some(_res) = r.clone().executed_txn {
+				// json!({
+				// 	// "tsid": hex::encode(&res.tsid),
+				// 	"status": true,
+				// })
+				wf::sm_txn_cb(r.clone(), &uuid)?
 			} else {
 				json!({
 					"status": false,
@@ -188,24 +192,20 @@ fn parse_tappstore_response(data: &[u8], uuid: &str) -> anyhow::Result<serde_jso
 			})
 		}
 		Some(tappstore::tapp_query_response::Msg::CommonSqlQueryResponse(r)) => {
-			if ! r.err.is_empty(){
+			if !r.err.is_empty() {
 				error!("sql error: {}", &r.err);
 				json!({
 					"sql_query_error": r.err,
 				})
-			}else{
-				let result_payload: Vec<Payload> =
-					bincode::deserialize(&r.data)?;
-				info!(
-					"deser result_payload is {:?}",
-					&result_payload
-				);
+			} else {
+				let result_payload: Vec<Payload> = bincode::deserialize(&r.data)?;
+				info!("deser result_payload is {:?}", &result_payload);
 				let mut rows: Vec<String> = Vec::new();
 				for p in result_payload {
 					let line = match p {
 						Payload::Select { labels: _, rows } => {
 							format!("{:?}", &rows)
-						},
+						}
 						_ => format!("Query error: {:?}", p),
 					};
 					rows.push(line);
@@ -217,9 +217,7 @@ fn parse_tappstore_response(data: &[u8], uuid: &str) -> anyhow::Result<serde_jso
 					// info!("22 => {:?}", first_value);
 				}
 				info!("rows {:?}", &rows);
-				json!({
-					"sql_query_result": rows
-				})
+				json!({ "sql_query_result": rows })
 			}
 		}
 		_ => json!({ "error": format!("unknown tappstore response: {:?}", tapp_query_response) }),

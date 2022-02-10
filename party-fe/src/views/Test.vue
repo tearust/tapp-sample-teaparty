@@ -50,8 +50,10 @@
     <el-button type="primary" @click="send_sql_action('')">Send SQL Request</el-button>
     <el-divider />
 
-    <b style="display:block">Hash: {{latest_hash}}</b>
-    <el-button type="danger" :disabled="!latest_hash" @click="query_hash_result()">Query hash result</el-button>
+    <!-- <b style="display:block">
+      <el-input type="text" v-model="latest_hash" />
+    </b>
+    <el-button type="danger" :disabled="!latest_hash" @click="query_hash_result()">Query hash result</el-button> -->
   </div>
 
   <div v-if="!is_error" v-html="result" style="margin-top: 20px; background: #111; color: #0f0; padding: 4px 8px;min-height: 40px; line-height:20px; word-break:break-all;"></div>

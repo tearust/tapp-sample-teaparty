@@ -220,8 +220,7 @@ pub fn send_sql_for_test(req: &types::TestForSqlRequest) -> anyhow::Result<Vec<u
 			uuid.clone(),
 			tea_codec::ACTOR_PUBKEY_TAPPSTORE.into(),
 		)?;
-	}
-	else {
+	} else {
 		info!("start to send sql query...req is {:?}", &req);
 
 		let req = tappstore::TappQueryRequest {
@@ -239,7 +238,6 @@ pub fn send_sql_for_test(req: &types::TestForSqlRequest) -> anyhow::Result<Vec<u
 			tea_codec::ACTOR_PUBKEY_TAPPSTORE.into(),
 		)?;
 	}
-	
 
 	Ok(b"ok".to_vec())
 }
