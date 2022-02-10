@@ -138,7 +138,9 @@ const F = {
       encryptedMessage: encrypted_message,
       authB64: user.session_key,
     };
-    const rs = await sync_request('postMessage', opts);
+
+    const txn = require('./txn').default;
+    const rs = await txn.txn_request('postMessage', opts);
 
     F.top_log(null);
     console.log(11, rs);

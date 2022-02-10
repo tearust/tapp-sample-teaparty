@@ -55,12 +55,12 @@ const F = {
 
     console.log("step2 result: ", step_2_rs);
 
-    bbs.log('Wait for query txn result...');
-    console.log('Wait for query txn result...');
+    bbs.log('Wait for query txn hash result...');
+    console.log('Wait for query txn hash result...');
     utils.sleep(5000);
 
     const step_3_hash = step_2_rs.hash;
-    const hash_uuid = "query_hash_"+_uuid;
+    const hash_uuid = "hash_"+_uuid;
 
     bbs.log("Start to send query txn hash request...");
     console.log('Start to send query txn hash request...');
@@ -82,8 +82,9 @@ const F = {
         step_4_rs = await _axios.post('/tapp/query_result', {
           uuid: hash_uuid,
         });
-
+console.log(111, step_4_rs)
         step_4_rs = utils.parseJSON(step_4_rs);
+        if(!step_4_rs.status) throw 'continue';
       }catch(e){
         console.log("step4 error: ", e);
         // rs = e.message;
@@ -98,7 +99,7 @@ const F = {
     console.log("Start to query hash result...");
     await step_4_loop();
 
-    console.log("step4 result: "+step_4_rs);
+    console.log("step4 result: ", step_4_rs);
 
     const rs = step_4_rs.status;
 
