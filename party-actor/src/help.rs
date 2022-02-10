@@ -188,7 +188,6 @@ fn parse_tappstore_response(data: &[u8], uuid: &str) -> anyhow::Result<serde_jso
 			})
 		}
 		Some(tappstore::tapp_query_response::Msg::CommonSqlQueryResponse(r)) => {
-			info!("line191 r {:?}", &r);
 			if ! r.err.is_empty(){
 				error!("sql error: {}", &r.err);
 				json!({
