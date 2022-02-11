@@ -23,6 +23,7 @@ use vmh_codec::message::{
 
 use crate::help;
 use crate::state;
+use crate::wf;
 
 pub fn save_session_key(session_key: String, tapp_id: &u64, address: &str) -> anyhow::Result<()> {
 	let key = format!("session_key_{}_{}", tapp_id, address);
@@ -210,11 +211,15 @@ pub fn withdraw(req: &WithdrawRequest) -> anyhow::Result<Vec<u8>> {
 		auth_b64: req.auth_b64.to_string(),
 	};
 	let txn_bytes: Vec<u8> = bincode::serialize(&txn)?;
-	state::execute_tx_with_txn_bytes(
+
+	wf::sm_txn_request(
+		"withdraw",
+		&req.uuid.to_string(),
+		bincode::serialize(req)?,
 		txn_bytes,
-		req.uuid.to_string(),
 		tea_codec::ACTOR_PUBKEY_TAPPSTORE.into(),
 	)?;
+	
 
 	Ok(b"ok".to_vec())
 }

@@ -69,7 +69,12 @@ pub fn sm_txn_cb(
 			  "status": true,
 			  "msg_id": msg_id,
 			})
-		}
+    }
+    "withdraw" => {
+      json!({
+        "status": true,
+      })
+    }
 		_ => {
 			json!({
 			  "status": true

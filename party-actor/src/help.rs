@@ -91,7 +91,7 @@ pub fn conn_id_by_tea_id(tea_id: Vec<u8>) -> anyhow::Result<String> {
 }
 
 pub fn set_mem_cache(key: &str, val: Vec<u8>) -> anyhow::Result<()> {
-	actor_kvp::set(BINDING_NAME, &key, &val, 600).map_err(|e| anyhow::anyhow!("{}", e))?;
+	actor_kvp::set(BINDING_NAME, &key, &val, 1800).map_err(|e| anyhow::anyhow!("{}", e))?;
 
 	Ok(())
 }
