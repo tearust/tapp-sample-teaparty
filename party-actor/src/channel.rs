@@ -90,7 +90,7 @@ pub fn post_message_to_db(req: &PostMessageRequest) -> anyhow::Result<String> {
 	)?;
 	info!("[bbs] post_message response: {:?}", res);
 
-	Ok(res.data.to_string())
+	Ok(res.data)
 }
 
 fn get_post_message_ttl(req: &PostMessageRequest) -> anyhow::Result<u64> {
