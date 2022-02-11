@@ -166,7 +166,18 @@ fn parse_tappstore_response(data: &[u8], uuid: &str) -> anyhow::Result<serde_jso
 				// 	// "tsid": hex::encode(&res.tsid),
 				// 	"status": true,
 				// })
-				wf::sm_txn_cb(r.clone(), &uuid)?
+				if r.clone().executed_txn.is_some() {
+					info!("Txn hash return success. go to next step...");
+					wf::sm_txn_cb(r.clone(), &uuid)?
+				}
+				else {
+					info!("Txn hash no error. but not success. wait for next loop...");
+					json!({
+						"status": false,
+						"error": "wait",
+					})
+				}
+				
 			} else {
 				json!({
 					"status": false,
