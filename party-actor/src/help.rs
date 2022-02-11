@@ -205,12 +205,9 @@ fn parse_tappstore_response(data: &[u8], uuid: &str) -> anyhow::Result<serde_jso
 					"status": false,
 					"error": &r.err,
 				})
-				// json!({
-				// 	"sql_query_error": r.err,
-				// })
 			} else {
 				let result_payload: Vec<Payload> = bincode::deserialize(&r.data)?;
-				info!("deser result_payload is {:?}", &result_payload);
+				info!("parse_tappstore_response, deser result_payload is {:?}", &result_payload);
 				let mut rows: Vec<String> = Vec::new();
 				for p in result_payload {
 					let line = match p {
@@ -220,12 +217,6 @@ fn parse_tappstore_response(data: &[u8], uuid: &str) -> anyhow::Result<serde_jso
 						_ => format!("Query error: {:?}", p),
 					};
 					rows.push(line);
-					// info!("rows {:?}", &rows);
-					// let first_row = &rows[0];
-					// let first_value = &first_row[0];
-
-					// info!("11 => {:?}", first_row);
-					// info!("22 => {:?}", first_value);
 				}
 				info!("rows {:?}", &rows);
 				json!({ "sql_query_result": rows })
