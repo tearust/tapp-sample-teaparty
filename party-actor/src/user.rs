@@ -219,7 +219,6 @@ pub fn withdraw(req: &WithdrawRequest) -> anyhow::Result<Vec<u8>> {
 		txn_bytes,
 		tea_codec::ACTOR_PUBKEY_TAPPSTORE.into(),
 	)?;
-	
 
 	Ok(b"ok".to_vec())
 }

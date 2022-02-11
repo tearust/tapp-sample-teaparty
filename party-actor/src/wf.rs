@@ -24,6 +24,7 @@ use wascc_actor::prelude::*;
 
 use crate::channel;
 use crate::help;
+use crate::notification;
 use crate::state;
 use crate::user;
 
@@ -69,12 +70,20 @@ pub fn sm_txn_cb(
 			  "status": true,
 			  "msg_id": msg_id,
 			})
-    }
-    "withdraw" => {
-      json!({
-        "status": true,
-      })
-    }
+		}
+		"withdraw" => {
+			json!({
+			  "status": true,
+			})
+		}
+		"notification_add_message" => {
+			let req: NotificationAddMessageRequest = bincode::deserialize(&req_bytes)?;
+			let msg_id = notification::add_message_to_db(&req)?;
+			json!({
+			  "status": true,
+			  "msg_id": msg_id,
+			})
+		}
 		_ => {
 			json!({
 			  "status": true

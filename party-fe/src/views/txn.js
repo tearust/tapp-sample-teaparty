@@ -57,28 +57,33 @@ const F = {
 
     bbs.log('Wait for query txn hash result...');
     console.log('Wait for query txn hash result...');
-    utils.sleep(5000);
+    utils.sleep(10000);
 
     const step_3_hash = step_2_rs.hash;
     const hash_uuid = "hash_"+_uuid;
 
     bbs.log("Start to send query txn hash request...");
     console.log('Start to send query txn hash request...');
-    const step_3_rs = await _axios.post('/tapp/queryHashResult', {
+    let step_3_rs = await _axios.post('/tapp/queryHashResult', {
       hash: step_3_hash,
       uuid: hash_uuid,
     });
+    // await utils.sleep(5000);
+    // step_3_rs = await _axios.post('/tapp/queryHashResult', {
+    //   hash: step_3_hash,
+    //   uuid: hash_uuid,
+    // });
 
     console.log("step3 result: ", step_3_rs);
 
     bbs.log('Wait for query txn hash result...');
     console.log('Wait for query txn hash result...');
-    await utils.sleep(10000);
+    await utils.sleep(5000);
 
     let step_4_rs = null;
     let sn = 0;
     const step_4_loop = async ()=>{
-      if(sn > 5) {
+      if(sn > 10) {
         step_4_rs = {
           'status': false,
           'error': 'request timeout',
@@ -98,7 +103,7 @@ console.log(111, step_4_rs)
         // rs = e.message;
         step_4_rs = null;
         sn++;
-        await utils.sleep(3000);
+        await utils.sleep(5000);
         await step_4_loop();
       }
   

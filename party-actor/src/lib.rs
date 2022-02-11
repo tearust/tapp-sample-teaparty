@@ -101,7 +101,6 @@ fn libp2p_back_message(msg: &BrokerMessage) -> HandlerResult<Vec<u8>> {
 		info!("party actor get lib msg back => {:?}", body);
 
 		user::libp2p_msg_cb(&body)?;
-		notification::libp2p_msg_cb(&body)?;
 
 		// TODO handle it when return real validator.
 		if body.msg == None || body.error_message == "i am not a validator" {

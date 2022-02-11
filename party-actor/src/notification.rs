@@ -23,11 +23,34 @@ use wascc_actor::prelude::*;
 use crate::help;
 use crate::state;
 use crate::user;
+use crate::wf;
 
 pub fn add_message(req: &NotificationAddMessageRequest) -> anyhow::Result<Vec<u8>> {
 	let uuid = &req.uuid;
 	user::check_auth(&req.tapp_id, &req.from, &req.auth_b64)?;
 
+	// send txn
+	let ttl = get_add_message_ttl(&req)?;
+	let txn = TeapartyTxn::AddNotificationMessage {
+		token_id: req.tapp_id,
+		from: state::parse_to_acct(&req.from)?,
+		to: state::parse_to_acct(&req.to)?,
+		ttl,
+		auth_b64: req.auth_b64.to_string(),
+	};
+	let txn_bytes = bincode::serialize(&txn)?;
+	wf::sm_txn_request(
+		"notification_add_message",
+		&uuid,
+		bincode::serialize(req)?,
+		txn_bytes,
+		&tea_codec::ACTOR_PUBKEY_PARTY_CONTRACT.to_string(),
+	)?;
+
+	Ok(b"ok".to_vec())
+}
+
+pub fn add_message_to_db(req: &NotificationAddMessageRequest) -> anyhow::Result<String> {
 	// to orbitdb
 	let message = {
 		let msg = base64::decode(&req.content_b64)?;
@@ -41,9 +64,7 @@ pub fn add_message(req: &NotificationAddMessageRequest) -> anyhow::Result<Vec<u8
 	};
 
 	let block: u32 = help::current_block_number()?;
-	let ttl: u32 = 1440 * 2;
-
-	let can_post_uuid = help::uuid_cb_key(&uuid, &"notification_add_message");
+	let ttl: u32 = get_add_message_ttl(&req)?;
 
 	let add_message_data = orbitdb::NotificationAddMessageRequest {
 		tapp_id: req.tapp_id,
@@ -56,58 +77,26 @@ pub fn add_message(req: &NotificationAddMessageRequest) -> anyhow::Result<Vec<u8
 		from_tapp_url: req.from_tapp_url.clone(),
 	};
 	info!("notification add_message_data => {:?}", &add_message_data);
-	help::set_mem_cache(&can_post_uuid, encode_protobuf(add_message_data)?)?;
 
-	// send txn
-	let txn = TeapartyTxn::AddNotificationMessage {
-		token_id: req.tapp_id,
-		from: state::parse_to_acct(&req.from)?,
-		to: state::parse_to_acct(&req.to)?,
-		ttl,
-		auth_b64: req.auth_b64.to_string(),
-	};
-	info!("notification add_message txn => {:?}", txn);
-	let txn_bytes = bincode::serialize(&txn)?;
-	state::execute_tx_with_txn_bytes(
-		txn_bytes,
-		can_post_uuid.to_string(),
-		tea_codec::ACTOR_PUBKEY_PARTY_CONTRACT.to_string(),
+	let res = orbitdb::OrbitBbsResponse::decode(
+		untyped::default()
+			.call(
+				tea_codec::ORBITDB_CAPABILITY_ID,
+				"notification_AddMessage",
+				encode_protobuf(add_message_data)?,
+			)
+			.map_err(|e| anyhow::anyhow!("{}", e))?
+			.as_slice(),
 	)?;
-	info!("send txn finish...");
 
-	Ok(b"ok".to_vec())
+	info!("[notification] add_message response: {:?}", res);
+
+	Ok(res.data)
 }
 
-pub fn libp2p_msg_cb(body: &tokenstate::StateReceiverResponse) -> anyhow::Result<bool> {
-	let uuid = &body.uuid;
-
-	if uuid.starts_with_ignore_ascii_case("notification_add_message") {
-		// add_message cb
-		if let Ok(add_message_buf) = help::get_mem_cache(&uuid) {
-			if body.msg.is_some() {
-				let res = orbitdb::OrbitBbsResponse::decode(
-					untyped::default()
-						.call(
-							tea_codec::ORBITDB_CAPABILITY_ID,
-							"notification_AddMessage",
-							add_message_buf,
-						)
-						.map_err(|e| anyhow::anyhow!("{}", e))?
-						.as_slice(),
-				)?;
-				info!("[notification] add_message response: {:?}", res);
-
-				help::set_mem_cache(
-					&help::cb_key_to_uuid(uuid, "notification_add_message"),
-					encode_protobuf(res)?,
-				)?;
-
-				return Ok(true);
-			}
-		}
-	}
-
-	Ok(false)
+fn get_add_message_ttl(_req: &NotificationAddMessageRequest) -> anyhow::Result<u32> {
+	let ttl: u32 = 1440 * 2;
+	Ok(ttl)
 }
 
 pub fn get_message_list(req: &NotificationGetMessageRequest) -> anyhow::Result<Vec<u8>> {
