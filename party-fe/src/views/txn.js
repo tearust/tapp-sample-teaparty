@@ -55,31 +55,13 @@ const F = {
 
     console.log("step2 result: ", step_2_rs);
 
-    bbs.log('Wait for query txn hash result...');
-    console.log('Wait for query txn hash result...');
-    utils.sleep(10000);
+    bbs.log('Wait for next step...');
+    console.log('Wait for next step...');
+    utils.sleep(5000);
 
     const step_3_hash = step_2_rs.hash;
     const hash_uuid = "hash_"+_uuid;
-
-    bbs.log("Start to send query txn hash request...");
-    console.log('Start to send query txn hash request...');
-    let step_3_rs = await _axios.post('/tapp/queryHashResult', {
-      hash: step_3_hash,
-      uuid: hash_uuid,
-    });
-    // await utils.sleep(5000);
-    // step_3_rs = await _axios.post('/tapp/queryHashResult', {
-    //   hash: step_3_hash,
-    //   uuid: hash_uuid,
-    // });
-
-    console.log("step3 result: ", step_3_rs);
-
-    bbs.log('Wait for query txn hash result...');
-    console.log('Wait for query txn hash result...');
-    await utils.sleep(5000);
-
+    let step_3_rs = null;
     let step_4_rs = null;
     let sn = 0;
     const step_4_loop = async ()=>{
@@ -91,15 +73,31 @@ const F = {
         return;
       }
       try{
+        bbs.log("Send query txn hash request...");
+        console.log('Send query txn hash request...');
+        step_3_rs = await _axios.post('/tapp/queryHashResult', {
+          hash: step_3_hash,
+          uuid: hash_uuid,
+        });
+    
+        bbs.log('Wait for query txn hash result...');
+        console.log('Wait for query txn hash result...');
+        await utils.sleep(5000);
+
         console.log('query hash result for '+hash_uuid+'...');
         step_4_rs = await _axios.post('/tapp/query_result', {
           uuid: hash_uuid,
         });
 console.log(111, step_4_rs)
         step_4_rs = utils.parseJSON(step_4_rs);
-        if(!step_4_rs.status) throw 'continue';
+        if(!step_4_rs.status) throw step_4_rs.error;
       }catch(e){
         console.log("step4 error: ", e);
+
+        if(e !== 'wait'){
+          throw e;
+        }
+        
         // rs = e.message;
         step_4_rs = null;
         sn++;

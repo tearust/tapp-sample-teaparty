@@ -101,6 +101,8 @@ export default {
   },
   
   async mounted(){
+    bbs.set_global_log(this);
+
     this.$root.loading(true);
 
     this.wf = new SettingAccount();
@@ -125,7 +127,7 @@ export default {
       bbs.topupFromLayer1(this, async ()=>{
         this.$root.success("Topup success.");
 
-        bbs.top_log("Waiting for query balance...");
+        // bbs.top_log("Waiting for query balance...");
         await utils.sleep(10000);
         await this.refreshAccount(true);
 
@@ -135,7 +137,7 @@ export default {
     async withdrawHandler(){
       bbs.withdrawFromLayer2(this, 1, async ()=>{
         
-        bbs.top_log("Waiting for query balance...");
+        // bbs.top_log("Waiting for query balance...");
         await utils.sleep(10000);
         await this.refreshAccount(true);
       });

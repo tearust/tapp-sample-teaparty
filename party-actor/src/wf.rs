@@ -93,3 +93,6 @@ pub fn sm_txn_cb(
 
 	Ok(rs)
 }
+
+// TODO
+// pub fn sm_query_request

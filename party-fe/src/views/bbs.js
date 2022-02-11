@@ -58,11 +58,17 @@ const F = {
 
   },
 
-  top_log(html, level='warning'){
-    utils.publish('top_log', {
-      top_log: html,
-      top_log_level: level,
+  set_global_log(self){
+    F.setLog((msg)=>{
+      self.$root.loading(true, msg);
     });
+  },
+
+  top_log(html, level='warning'){
+    // utils.publish('top_log', {
+    //   top_log: html,
+    //   top_log_level: level,
+    // });
   },
 
   getUser(address){
@@ -388,10 +394,11 @@ console.log(111, opts);
       authB64: 'not_used_key',
     };
 
-    F.top_log("Query balance...");
     const rs = await sync_request('query_balance', param);
-    console.log(1, rs);
-    F.top_log(null);
+    if(!rs.balance) {
+      rs.balance = 0;
+    }
+
     return rs ? utils.layer1.balanceToAmount(rs.balance) : null;
   },
 
@@ -465,9 +472,10 @@ console.log(111, opts);
           authB64: user.session_key,
         };
 
+        const txn = require('./txn').default;
         let rs = null;
         try{
-          rs = await sync_request('notificationAddMessage', opts);
+          rs = await txn.txn_request('notificationAddMessage', opts);
           F.top_log(null);
 
           succ_cb(rs)
@@ -501,7 +509,7 @@ console.log(111, opts);
 
 const sync_request = async (method, param, message_cb, sp_method='query_result', sp_uuid=null) => {
   message_cb = message_cb || ((msg) => {
-    msg && F.log(msg);
+    msg && console.log(msg);
   });
   const _uuid = sp_uuid || uuid();
 

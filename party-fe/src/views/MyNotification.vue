@@ -69,7 +69,9 @@ export default {
   },
 
   async mounted(){
+    bbs.set_global_log(this);
     await this.refrersh_list();
+
   },
   methods: {
     async clickTab(e){
@@ -95,6 +97,7 @@ export default {
     },
     async postNotification(to){
       try{
+        
         const rs = await bbs.send_notification(this, to, async (rs)=>{
           this.$root.success("Send success");
 
