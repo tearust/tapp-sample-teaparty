@@ -7,6 +7,8 @@ use interface::{Account, AuthKey, Balance, Tsid, GOD_MODE_AUTH_KEY, TOKEN_ID_TEA
 use party_shared::TeapartyTxn;
 use prost::Message;
 use std::convert::TryInto;
+use tea_actor_utility::actor_crypto::sha256;
+use tea_actor_utility::actor_replica::report_txn_error;
 use tea_actor_utility::{
 	action::post_intercom,
 	actor_crypto::{public_from_private_key, public_key_from_ss58, public_key_to_ss58},
@@ -70,11 +72,20 @@ fn helper_get_state_tsid() -> HandlerResult<Tsid> {
 	let tsid: Tsid = bincode::deserialize(&tsid_bytes)?;
 	Ok(tsid)
 }
+
 fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 	info!("enter handle_txn_exec");
 	let (tsid, txn_bytes): (Tsid, Vec<u8>) = bincode::deserialize(&msg.body)?;
+	if let Err(e) = txn_exec_inner(tsid, &txn_bytes) {
+		let txn_hash = sha256(txn_bytes)?;
+		report_txn_error(txn_hash, e.to_string())?;
+	}
+	Ok(())
+}
+
+fn txn_exec_inner(tsid: Tsid, txn_bytes: &[u8]) -> HandlerResult<()> {
 	// info!("before TeapartyTxn der");
-	let sample_txn: TeapartyTxn = bincode::deserialize(&txn_bytes)?;
+	let sample_txn: TeapartyTxn = bincode::deserialize(txn_bytes)?;
 	// info!("decode the txn {:?}", &sample_txn);
 	let base: Tsid = helper_get_state_tsid()?;
 	// info!("base tsid is {:?}", &base);
