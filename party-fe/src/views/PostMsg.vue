@@ -112,7 +112,7 @@ export default {
           bbs.top_log(msg);
         });
         const rs = await bbs.sendMessage(this.layer1_account.address, msg, this.channel);
-       
+        
         this.$message.success('success.');
         this.closeModal();
         if(cb){

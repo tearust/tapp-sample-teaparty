@@ -161,7 +161,7 @@ fn parse_tappstore_response(data: &[u8], uuid: &str) -> anyhow::Result<serde_jso
 		Some(tappstore::tapp_query_response::Msg::FindExecutedTxnResponse(r)) => {
 			info!("FindExecutedTxnResponse => {:?}", r);
 
-			if let Some(_res) = r.clone().executed_txn {
+			if &r.success == true {
 				// json!({
 				// 	// "tsid": hex::encode(&res.tsid),
 				// 	"status": true,
@@ -170,6 +170,7 @@ fn parse_tappstore_response(data: &[u8], uuid: &str) -> anyhow::Result<serde_jso
 			} else {
 				json!({
 					"status": false,
+					"error": &r.error_msg,
 				})
 			}
 		}
