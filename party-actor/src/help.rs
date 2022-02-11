@@ -205,8 +205,12 @@ fn parse_tappstore_response(data: &[u8], uuid: &str) -> anyhow::Result<serde_jso
 			if !r.err.is_empty() {
 				error!("sql error: {}", &r.err);
 				json!({
-					"sql_query_error": r.err,
+					"status": false,
+					"error": &r.err,
 				})
+				// json!({
+				// 	"sql_query_error": r.err,
+				// })
 			} else {
 				let result_payload: Vec<Payload> = bincode::deserialize(&r.data)?;
 				info!("deser result_payload is {:?}", &result_payload);
