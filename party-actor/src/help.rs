@@ -162,10 +162,7 @@ fn parse_tappstore_response(data: &[u8], uuid: &str) -> anyhow::Result<serde_jso
 			info!("FindExecutedTxnResponse => {:?}", r);
 
 			if r.clone().success == true {
-				// json!({
-				// 	// "tsid": hex::encode(&res.tsid),
-				// 	"status": true,
-				// })
+
 				if r.clone().executed_txn.is_some() {
 					info!("Txn hash return success. go to next step...");
 					wf::sm_txn_cb(r.clone(), &uuid)?
