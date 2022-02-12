@@ -5,6 +5,7 @@ use interface::{
 };
 use serde::{Deserialize, Serialize};
 use std::convert::{TryFrom, TryInto};
+use tea_actor_utility::actor_statemachine::new_txn_serial;
 use thiserror::Error;
 
 pub const HANDLED_BY_ACTOR_NAME: &str = "TeapartyTxn";
@@ -57,7 +58,7 @@ pub enum TeapartyTxn {
 		to: Account,
 		auth_b64: String,
 		ttl: u32,
-	}
+	},
 }
 
 impl Transferable for TeapartyTxn {
@@ -70,26 +71,27 @@ impl TryFrom<TxnSerial> for TeapartyTxn {
 	type Error = bincode::Error;
 
 	fn try_from(value: TxnSerial) -> Result<Self, Self::Error> {
-		bincode::deserialize::<Self>(&value.bytes)
+		bincode::deserialize::<Self>(value.bytes())
 	}
 }
 
 impl TryInto<TxnSerial> for TeapartyTxn {
-	type Error = bincode::Error;
+	type Error = anyhow::Error;
 
 	fn try_into(self) -> Result<TxnSerial, Self::Error> {
-		Ok(TxnSerial {
-			actor_name: HANDLED_BY_ACTOR_NAME.to_string(),
-			bytes: bincode::serialize(&self).unwrap(),
-		})
+		Ok(new_txn_serial(
+			HANDLED_BY_ACTOR_NAME.to_string(),
+			bincode::serialize(&self).unwrap(),
+		)?)
 	}
 }
 
 impl Txn<'static> for TeapartyTxn {}
 
 impl TeapartyTxn {
-	pub fn to_serial_bytes(self) -> Result<Vec<u8>, bincode::Error> {
+	pub fn to_serial_bytes(self) -> anyhow::Result<Vec<u8>> {
 		let serial: TxnSerial = self.try_into()?;
-		bincode::serialize(&serial)
+		let rtn = bincode::serialize(&serial)?;
+		Ok(rtn)
 	}
 }

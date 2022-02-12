@@ -23,15 +23,13 @@ use party_shared::TeapartyTxn;
 use wascc_actor::HandlerResult;
 
 use interface::{Account, AuthKey, Balance, Followup, Hash, Ts, TxnSerial};
+use tea_actor_utility::actor_statemachine::new_txn_serial;
 
 use crate::help;
 use crate::types;
 
 fn get_hash_from_txn(txn_bytes: Vec<u8>, to_actor_name: String) -> anyhow::Result<Hash> {
-	let txn_serial = TxnSerial {
-		actor_name: to_actor_name,
-		bytes: txn_bytes.clone(),
-	};
+	let txn_serial = new_txn_serial(to_actor_name, txn_bytes.clone())?;
 	let txn_hash: Hash = sha256(bincode::serialize(&txn_serial)?)?
 		.as_slice()
 		.try_into()

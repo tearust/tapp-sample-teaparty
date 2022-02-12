@@ -14,12 +14,13 @@ use party_shared::TeapartyTxn;
 use wascc_actor::untyped;
 
 use interface::{Account, AuthKey, Balance, Followup, Hash, Ts, Tsid, TxnSerial};
+use tea_actor_utility::actor_statemachine::new_txn_serial;
 
 fn get_serial_and_hash_from_txn(txn_bytes: Vec<u8>) -> anyhow::Result<(TxnSerial, Hash)> {
-	let txn_serial = TxnSerial {
-		actor_name: tea_codec::ACTOR_PUBKEY_PARTY_CONTRACT.to_string(),
-		bytes: txn_bytes.clone(),
-	};
+	let txn_serial = new_txn_serial(
+		tea_codec::ACTOR_PUBKEY_PARTY_CONTRACT.to_string(),
+		txn_bytes.clone(),
+	)?;
 	let txn_hash: Hash = sha256(bincode::serialize(&txn_serial)?)?
 		.as_slice()
 		.try_into()
