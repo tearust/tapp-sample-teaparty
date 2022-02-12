@@ -10,7 +10,7 @@ use tea_actor_utility::actor_env::get_system_time;
 
 use base64;
 use serde_json::json;
-use tea_actor_utility::actor_enclave::{generate_uuid, get_my_tea_id};
+use tea_actor_utility::actor_enclave::{generate_uuid, get_my_tea_id, random_u64};
 use tea_codec;
 
 use actor_txns::tappstore::TappstoreTxn;
@@ -28,13 +28,16 @@ use tea_actor_utility::actor_statemachine::new_txn_serial;
 use crate::help;
 use crate::types;
 
-fn get_hash_from_txn(txn_bytes: Vec<u8>, to_actor_name: String) -> anyhow::Result<Hash> {
+fn get_hash_from_txn(
+	txn_bytes: Vec<u8>,
+	to_actor_name: String,
+) -> anyhow::Result<(Hash, TxnSerial)> {
 	let txn_serial = new_txn_serial(to_actor_name, txn_bytes.clone())?;
 	let txn_hash: Hash = sha256(bincode::serialize(&txn_serial)?)?
 		.as_slice()
 		.try_into()
 		.expect("wrong length hash");
-	Ok(txn_hash)
+	Ok((txn_hash, txn_serial))
 }
 
 pub fn send_tx_via_p2p(
@@ -42,14 +45,15 @@ pub fn send_tx_via_p2p(
 	uuid: String,
 	to_actor_name: String,
 ) -> anyhow::Result<(Ts, Hash)> {
-	let txn_hash = get_hash_from_txn(txn_bytes.clone(), to_actor_name.clone())?;
+	let (txn_hash, txn_serial) = get_hash_from_txn(txn_bytes, to_actor_name.clone())?;
 
 	let payload = encode_protobuf(tokenstate::StateReceiverMessage {
 		uuid,
 		msg: Some(tokenstate::state_receiver_message::Msg::StateCommand(
 			tokenstate::StateCommand {
-				data: txn_bytes,
-				target: to_actor_name,
+				data: txn_serial.bytes().to_vec(),
+				target: txn_serial.actor_name().to_string(),
+				nonce: txn_serial.nonce(),
 			},
 		)),
 	})?;
