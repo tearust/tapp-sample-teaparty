@@ -268,12 +268,17 @@ const F = {
         // console.log("withdraw action =>", rs);
         // await succ_cb(rs)
 
-        const rs = await txn.txn_request('withdraw', param);
-        console.log(222, rs);
-
-        self.$root.loading(false);
+        try{
+          await txn.txn_request('withdraw', param);
+          
+          self.$root.success();
+        }catch(e){
+          self.$root.showError(e);
+        }
+        
+        
         close();
-        self.$root.success();
+        self.$root.loading(false);
         
       }
     });

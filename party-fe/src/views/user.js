@@ -93,8 +93,6 @@ const F = {
     if(json.success){
       utils.cache.remove(F.getUserId(address));
       store.dispatch('init_user');
-
-      bbs.log('logout success.');
     }
 
   
