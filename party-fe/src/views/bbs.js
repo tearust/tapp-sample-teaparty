@@ -371,14 +371,16 @@ const F = {
           isTxn: form.is_txn,
         };
 console.log(111, opts);
+
+        const txn = require('./txn').default;
         let rs = null;
         try{
-          rs = await sync_request('testForSql', opts);
+          rs = await txn.txn_request('testForSql', opts);
           F.top_log(null);
 
           succ_cb(rs)
         }catch(e){
-          F.top_log(e, 'error');
+          F.log(e);
         }
         
         close();
