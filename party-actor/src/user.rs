@@ -63,9 +63,29 @@ pub fn get_aes_key(tapp_id: &u64) -> anyhow::Result<Vec<u8>> {
 }
 
 pub fn prepare_login_request(req: &PrepareLoginRequest) -> anyhow::Result<Vec<u8>> {
-	// send to state receive actor
-	let uuid = req.uuid.to_string();
+	let txn_uuid = req.uuid.to_string();
 
+	let login_request_txn = TappstoreTxn::GenSessionKey {
+		token_id: req.tapp_id,
+		acct_s58: req.address.to_string(),
+		data: base64::decode(&req.data)?,
+		signature: base64::decode(&req.signature)?,
+		tea_id: help::get_tea_id()?,
+	};
+	let txn_bytes: Vec<u8> = bincode::serialize(&login_request_txn)?;
+
+	wf::sm_txn_request(
+		"login_request",
+		&txn_uuid,
+		bincode::serialize(req)?,
+		txn_bytes,
+		&tea_codec::ACTOR_PUBKEY_TAPPSTORE.to_string(),
+	)?;
+
+	Ok(b"ok".to_vec())
+}
+
+pub fn login_request_cb(req: &PrepareLoginRequest) -> anyhow::Result<String> {
 	let query_bytes = tappstore::tapp_query_request::Msg::CheckUserSessionRequest(
 		tappstore::CheckUserSessionRequest {
 			account: req.address.to_string(),
@@ -76,22 +96,15 @@ pub fn prepare_login_request(req: &PrepareLoginRequest) -> anyhow::Result<Vec<u8
 	let query_bytes = tappstore::TappQueryRequest {
 		msg: Some(query_bytes),
 	};
-	help::set_mem_cache(
-		&help::uuid_cb_key(&uuid, &"check_user_auth"),
+
+	let uuid = wf::to_query_uuid(&req.uuid);
+	state::send_query_via_p2p(
 		encode_protobuf(query_bytes)?,
+		&uuid,
+		tea_codec::ACTOR_PUBKEY_TAPPSTORE.into(),
 	)?;
 
-	let login_request_txn = TappstoreTxn::GenSessionKey {
-		token_id: req.tapp_id,
-		acct_s58: req.address.to_string(),
-		data: base64::decode(&req.data)?,
-		signature: base64::decode(&req.signature)?,
-		tea_id: help::get_tea_id()?,
-	};
-	let txn_bytes: Vec<u8> = bincode::serialize(&login_request_txn)?;
-	state::execute_tx_with_txn_bytes(txn_bytes, uuid, tea_codec::ACTOR_PUBKEY_TAPPSTORE.into())?;
-
-	Ok(b"ok".to_vec())
+	Ok(uuid)
 }
 
 pub fn libp2p_msg_cb(body: &tokenstate::StateReceiverResponse) -> anyhow::Result<bool> {

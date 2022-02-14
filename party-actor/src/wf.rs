@@ -84,6 +84,17 @@ pub fn sm_txn_cb(
 			  "msg_id": msg_id,
 			})
 		}
+		"login_request" => {
+			let req: PrepareLoginRequest = bincode::deserialize(&req_bytes)?;
+			// send query 
+			let query_uuid = user::login_request_cb(&req)?;
+
+			json!({
+				"status": true,
+				"need_query": true,
+				"query_uuid": query_uuid,
+			})
+		}
 		_ => {
 			json!({
 			  "status": true
@@ -94,5 +105,9 @@ pub fn sm_txn_cb(
 	Ok(rs)
 }
 
-// TODO
-// pub fn sm_query_request
+pub fn to_query_uuid(uuid: &str) -> String {
+	let query_uuid = str::replace(&uuid, "txn_", "");
+	let query_uuid = str::replace(&query_uuid, "hash_", "");
+
+	query_uuid.to_string()
+}
