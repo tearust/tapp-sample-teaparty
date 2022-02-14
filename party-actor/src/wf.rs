@@ -41,7 +41,7 @@ pub fn sm_txn_request(
 	help::set_mem_cache(&action_key, bincode::serialize(&action_name)?)?;
 	help::set_mem_cache(&req_key, req_bytes.clone())?;
 
-	info!("start to send txn request for {:?}", &uuid);
+	info!("start to send txn request for {} with uuid [{}]", &action_name, &uuid);
 	state::execute_tx_with_txn_bytes(txn_bytes, uuid.to_string(), txn_target.to_string())?;
 	info!("finish to send txn request...");
 
