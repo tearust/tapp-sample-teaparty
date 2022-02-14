@@ -105,7 +105,9 @@ fn txn_exec_inner(tsid: Tsid, txn_bytes: &[u8]) -> HandlerResult<()> {
 				1000000000000 as Balance
 			};
 
-			warn!("todo: check balance, if not enough, return error.");
+			if ! actor_statemachine::verify_enough_account_balance(from, token_id, amt)?{
+				return Err("not_enough_balance_postmessage".into());
+			}
 
 			let auth_key: AuthKey = bincode::deserialize(&base64::decode(auth_b64)?)?;
 			let auth_ops_bytes = actor_statemachine::query_auth_ops_bytes(auth_key)?;
@@ -133,7 +135,9 @@ fn txn_exec_inner(tsid: Tsid, txn_bytes: &[u8]) -> HandlerResult<()> {
 				1000000000000 as Balance
 			};
 
-			warn!("todo: check balance, if not enough, return error.");
+			if ! actor_statemachine::verify_enough_account_balance(from, token_id, amt)?{
+				return Err("not_enough_balance_postmessage".into());
+			}
 
 			let auth_key: AuthKey = bincode::deserialize(&base64::decode(auth_b64)?)?;
 			let auth_ops_bytes = actor_statemachine::query_auth_ops_bytes(auth_key)?;
@@ -224,6 +228,9 @@ fn txn_exec_inner(tsid: Tsid, txn_bytes: &[u8]) -> HandlerResult<()> {
 			} else {
 				1000000000000 as Balance
 			};
+			if ! actor_statemachine::verify_enough_account_balance(from, token_id, amt)?{
+				return Err("not_enough_balance_postmessage".into());
+			}
 			let auth_key: AuthKey = bincode::deserialize(&base64::decode(auth_b64)?)?;
 			let auth_ops_bytes = actor_statemachine::query_auth_ops_bytes(auth_key)?;
 			let ctx = TokenContext::new(tsid, base, token_id, &auth_ops_bytes)?;
