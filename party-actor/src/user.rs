@@ -107,48 +107,6 @@ pub fn login_request_cb(req: &PrepareLoginRequest) -> anyhow::Result<String> {
 	Ok(uuid)
 }
 
-pub fn libp2p_msg_cb(body: &tokenstate::StateReceiverResponse) -> anyhow::Result<bool> {
-	let uuid = &body.uuid;
-
-	if uuid.starts_with_ignore_ascii_case("check_user") {
-		match &body.msg {
-			Some(tokenstate::state_receiver_response::Msg::GeneralQueryResponse(r)) => {
-				let query_res = tappstore::TappQueryResponse::decode(r.data.as_slice())?;
-
-				libp2p_msg_cb_handler(&query_res)?;
-
-				return Ok(true);
-			}
-			_ => warn!("unknown state receiver response: {:?}", body.msg),
-		}
-	}
-
-	Ok(false)
-}
-
-fn libp2p_msg_cb_handler(res: &tappstore::TappQueryResponse) -> anyhow::Result<()> {
-	match &res.msg {
-		Some(tappstore::tapp_query_response::Msg::CheckUserSessionResponse(r)) => {
-			let aes_key = &r.aes_key;
-			let auth_key = &r.auth_key;
-
-			let auth_b64 = base64::encode(auth_key);
-			info!("save auth_b64 => {:?}", auth_b64);
-			info!("save aes_key => {:?}", aes_key);
-
-			save_session_key(auth_b64, &r.token_id, &r.account)?;
-			save_aes_key(aes_key.to_vec(), &r.token_id)?;
-		}
-		_ => warn!("unknown tapp_query_response: {:?}", res.msg),
-	}
-
-	Ok(())
-}
-
-pub fn check_user_query_uuid(uuid: &str) -> String {
-	format!("check_user_{}", uuid)
-}
-
 pub fn check_auth(tapp_id: &u64, address: &str, auth_b64: &str) -> anyhow::Result<Vec<u8>> {
 	let auth_key = get_session_key(&tapp_id, &address);
 
@@ -214,8 +172,6 @@ pub fn query_balance(req: &HttpQueryBalanceRequest) -> anyhow::Result<Vec<u8>> {
 
 pub fn withdraw(req: &WithdrawRequest) -> anyhow::Result<Vec<u8>> {
 	check_auth(&req.tapp_id, &req.address, &req.auth_b64)?;
-
-	info!("start to withdraw action...");
 
 	let txn = TappstoreTxn::Withdraw {
 		token_id: req.tapp_id,

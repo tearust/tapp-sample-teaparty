@@ -70,6 +70,7 @@ import Base from '../workflow/Base';
 import _ from 'lodash';
 import utils from '../tea/utils';
 import user from '../views/user';
+import bbs from '../views/bbs';
 export default {
   data() {
     return {
@@ -181,6 +182,8 @@ export default {
     
   },
   async mounted(){
+    bbs.set_global_log(this);
+
     const id = _.toNumber(utils.urlParam('id'));
     const channel = decodeURIComponent(utils.urlParam('v'));
 

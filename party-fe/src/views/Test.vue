@@ -21,9 +21,9 @@
   </div> -->
 
   <div style="text-align:left;">
-    <el-button v-if="!user || !user.isLogin" type="primary" @click="login_action()">Login</el-button>
+    <!-- <el-button v-if="!user || !user.isLogin" type="primary" @click="login_action()">Login</el-button>
     <el-button v-if="user && user.isLogin" type="primary" @click="logout_action()">Logout</el-button>
-    <el-divider />
+    <el-divider /> -->
     <el-button type="primary" @click="topup_action()">Topup 10</el-button>
     <el-button type="danger" @click="query_balance_action()">Query balance</el-button>
     <el-button type="danger" @click="query_consume_account_action()">Query consume account</el-button>

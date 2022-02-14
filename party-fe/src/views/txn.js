@@ -116,7 +116,41 @@ console.log(111, step_4_rs)
       throw step_4_rs.error;
     }
 
-    const rs = step_4_rs.status;
+    if(!step_4_rs.need_query){
+      return step_4_rs;
+    }
+
+    // continue query
+
+    let step_5_rs = null;
+    let step_5_uuid = step_4_rs.query_uuid || _uuid;
+    let step_5_n = 0;
+    const step_5_loop = async ()=>{
+      if(step_5_n > 3){
+        throw 'query timeout...';
+      }
+      try{
+        console.log('continue query for '+step_5_uuid+'...');
+        step_5_rs = await _axios.post('/tapp/query_result', {
+          uuid: step_5_uuid,
+        });
+
+        step_5_rs = utils.parseJSON(step_5_rs);
+      }catch(e){
+        console.log("step5 error: ", e);
+        step_5_n ++;
+        step_5_rs = null;
+        await utils.sleep(5000);
+        await step_5_loop();
+      }
+    };
+
+    bbs.log("Start to query step 5 reuslt...");
+    console.log("Start to query step 5 result...");
+    await step_5_loop();
+    console.log("step5 result: ", step_5_rs);
+
+    const rs = step_5_rs;
 
     return rs;
   }

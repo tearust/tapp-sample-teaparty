@@ -100,8 +100,6 @@ fn libp2p_back_message(msg: &BrokerMessage) -> HandlerResult<Vec<u8>> {
 		let body = tokenstate::StateReceiverResponse::decode(content.as_slice())?;
 		info!("party actor get lib msg back => {:?}", body);
 
-		user::libp2p_msg_cb(&body)?;
-
 		// TODO handle it when return real validator.
 		if body.msg == None || body.error_message == "i am not a validator" {
 			info!("still need to waiting statemachine response.");
@@ -141,7 +139,6 @@ fn handle_system_init(_msg: &BrokerMessage) -> HandlerResult<()> {
 	register_adapter_http_dispatcher(
 		vec![
 			"login",
-			"checkUserAuth",
 			"checkLogin",
 			"logout",
 			"updateTappProfile",
@@ -208,30 +205,7 @@ fn handle_adapter_http_request(req: rpc::AdapterHttpRequest) -> anyhow::Result<V
 			let req: PrepareLoginRequest = serde_json::from_slice(&req.payload)?;
 			user::prepare_login_request(&req)
 		}
-		"checkUserAuth" => {
-			let req: HttpQueryResultWithUuid = serde_json::from_slice(&req.payload)?;
 
-			let uuid = &req.uuid;
-			let check_user_auth_rs =
-				help::get_mem_cache(&help::uuid_cb_key(&uuid, &"check_user_auth"));
-
-			let new_uuid = user::check_user_query_uuid(&uuid);
-			if let Ok(req_bytes) = check_user_auth_rs {
-				// send query
-				state::send_query_via_p2p(
-					req_bytes,
-					&new_uuid,
-					tea_codec::ACTOR_PUBKEY_TAPPSTORE.into(),
-				)?;
-
-				// already send, delete flag
-				help::del_mem_cache(&help::uuid_cb_key(&uuid, &"check_user_auth"))?;
-			}
-
-			let res_val = help::to_json_response(&new_uuid)?;
-			info!("check user auth result => {:?}", res_val);
-			Ok(serde_json::to_vec(&res_val)?)
-		}
 		"checkLogin" => {
 			let req: CheckLoginRequest = serde_json::from_slice(&req.payload)?;
 			user::check_auth(&req.tapp_id, &req.address, &req.auth_b64)

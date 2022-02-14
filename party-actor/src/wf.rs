@@ -52,7 +52,7 @@ pub fn sm_txn_cb(
 	req: replica::FindExecutedTxnResponse,
 	uuid: &str,
 ) -> anyhow::Result<serde_json::Value> {
-	info!("aaa => {:?}\n{:?}", req, uuid);
+	info!("sm_txn_cb => {:?}\n{:?}", req, uuid);
 
 	let ori_uuid = str::replace(&uuid, "hash_", "");
 	let action_key = help::uuid_cb_key(&ori_uuid, "action_name");
@@ -86,7 +86,7 @@ pub fn sm_txn_cb(
 		}
 		"login_request" => {
 			let req: PrepareLoginRequest = bincode::deserialize(&req_bytes)?;
-			// send query 
+			// send query
 			let query_uuid = user::login_request_cb(&req)?;
 
 			json!({

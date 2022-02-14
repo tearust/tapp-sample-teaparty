@@ -41,38 +41,29 @@ const F = {
     sig = utils.uint8array_to_base64(hexToU8a(sig));
 
     try{
-      const rs = await bbs.sync_request('login', {
+      let txn = require('./txn').default;
+      const rs = await txn.txn_request('login', {
         tappId: bbs.getTappId(),
         address,
         data: utils.forge.util.encode64(`<Bytes>${data}</Bytes>`),
         signature: sig,
       });
-  
-      const j = rs;
-      if(j.ts){
-        bbs.top_log('Waiting for txn result...');
 
-        // query check user via uuid
-        await utils.sleep(10000);
-  
-        bbs.top_log("Send login query...");
-        const r1 = await bbs.sync_request('checkUserAuth', {}, null, 'checkUserAuth', j.uuid);
-  
-        if(r1.auth_key){
-          bbs.log('login success');
-          const user = {
-            address,
-            isLogin: true,
-            session_key: r1.auth_key,
-          };
-  
-          utils.cache.put(F.getUserId(address), user);
-          await store.dispatch('init_user');
-  
-          bbs.top_log(null);
-          return true;
-        }
+      if(rs.auth_key){
+        bbs.log('login success');
+        const user = {
+          address,
+          isLogin: true,
+          session_key: rs.auth_key,
+        };
+
+        utils.cache.put(F.getUserId(address), user);
+        await store.dispatch('init_user');
+
+        bbs.top_log(null);
+        return true;
       }
+      
     }catch(e){
       console.error(e);
     }

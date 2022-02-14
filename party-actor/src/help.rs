@@ -18,6 +18,7 @@ use vmh_codec::message::{
 };
 use wascc_actor::untyped;
 
+use crate::user;
 use crate::wf;
 use crate::BINDING_NAME;
 
@@ -162,7 +163,6 @@ fn parse_tappstore_response(data: &[u8], uuid: &str) -> anyhow::Result<serde_jso
 			info!("FindExecutedTxnResponse => {:?}", r);
 
 			if r.clone().success == true {
-
 				if r.clone().executed_txn.is_some() {
 					info!("Txn hash return success. go to next step...");
 					wf::sm_txn_cb(r.clone(), &uuid)?
@@ -181,7 +181,17 @@ fn parse_tappstore_response(data: &[u8], uuid: &str) -> anyhow::Result<serde_jso
 			}
 		}
 		Some(tappstore::tapp_query_response::Msg::CheckUserSessionResponse(r)) => {
+			let aes_key = &r.aes_key;
 			let auth_key = &r.auth_key;
+
+			let auth_b64 = base64::encode(auth_key);
+			info!("save auth_b64 => {:?}", auth_b64);
+			info!("save aes_key => {:?}", aes_key);
+
+			user::save_session_key(auth_b64, &r.token_id, &r.account)?;
+			user::save_aes_key(aes_key.to_vec(), &r.token_id)?;
+			let auth_key = &r.auth_key;
+
 			json!({
 				"auth_key": base64::encode(auth_key),
 			})
@@ -207,7 +217,10 @@ fn parse_tappstore_response(data: &[u8], uuid: &str) -> anyhow::Result<serde_jso
 				})
 			} else {
 				let result_payload: Vec<Payload> = bincode::deserialize(&r.data)?;
-				info!("parse_tappstore_response, deser result_payload is {:?}", &result_payload);
+				info!(
+					"parse_tappstore_response, deser result_payload is {:?}",
+					&result_payload
+				);
 				let mut rows: Vec<String> = Vec::new();
 				for p in result_payload {
 					let line = match p {
