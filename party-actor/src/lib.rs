@@ -256,7 +256,7 @@ fn handle_adapter_http_request(req: rpc::AdapterHttpRequest) -> anyhow::Result<V
 		}
 		"extendMessage" => {
 			let req: ExtendMessageRequest = serde_json::from_slice(&req.payload)?;
-			extend_message(&uuid, req)
+			extend_message(&req.uuid.clone(), &req)
 		}
 		"deleteMessage" => {
 			let req: DeleteMessageRequest = serde_json::from_slice(&req.payload)?;

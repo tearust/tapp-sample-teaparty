@@ -167,24 +167,38 @@ pub(crate) fn load_message_list(
 }
 
 pub(crate) fn extend_message(
-	_uuid: &str,
-	request: ExtendMessageRequest,
+	uuid: &str,
+	req: &ExtendMessageRequest,
 ) -> anyhow::Result<Vec<u8>> {
-	let utc_expired = {
-		let _now: u64 = current_timestamp()? as u64;
-		let ttl: u64 = (1 * 60 * 60) as u64;
-		match request.time {
-			Some(v) => (v as u64),
-			None => ttl,
-		}
+	user::check_auth(&req.tapp_id, &req.address, &req.auth_b64)?;
+
+	let txn = TeapartyTxn::ExtendMessage {
+		token_id: req.tapp_id,
+		from: state::parse_to_acct(&req.address)?,
+		ttl: req.ttl,
+		auth_b64: req.auth_b64.to_string(),
 	};
 
-	let dbname = db_name(request.tapp_id, &request.channel);
+	let txn_bytes = bincode::serialize(&txn)?;
+	wf::sm_txn_request(
+		"extend_message",
+		&uuid,
+		bincode::serialize(req)?,
+		txn_bytes,
+		&tea_codec::ACTOR_PUBKEY_PARTY_CONTRACT.to_string(),
+	)?;
+
+	Ok(b"ok".to_vec())
+
+}
+
+pub fn extend_message_to_db(req: &ExtendMessageRequest) -> anyhow::Result<()> {
+	let dbname = db_name(req.tapp_id, &req.channel);
 	let extend_message_data = orbitdb::ExtendMessageRequest {
-		tapp_id: request.tapp_id,
+		tapp_id: req.tapp_id,
 		dbname,
-		msg_id: request.msg_id,
-		utc_expired,
+		msg_id: req.msg_id.to_string(),
+		utc_expired: req.ttl,
 	};
 
 	let res = orbitdb::OrbitBbsResponse::decode(
@@ -197,9 +211,10 @@ pub(crate) fn extend_message(
 			.map_err(|e| anyhow::anyhow!("{}", e))?
 			.as_slice(),
 	)?;
-	// info!("[bbs] extend message response: {:?}", res);
+	info!("[bbs] extend message response: {:?}", res);
 
-	Ok(res.data.into_bytes())
+	// Ok(res.data.into_bytes())
+	Ok(())
 }
 
 pub(crate) fn delete_message(

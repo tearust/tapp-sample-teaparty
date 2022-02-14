@@ -38,10 +38,10 @@ pub enum TeapartyTxn {
 	},
 
 	ExtendMessage {
+		token_id: TokenId,
 		from: Account,
 		ttl: u64,
-		uuid: String,
-		auth: AuthKey,
+		auth_b64: String,
 	},
 
 	UpdateProfile {

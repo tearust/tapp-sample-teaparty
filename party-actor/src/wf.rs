@@ -71,6 +71,14 @@ pub fn sm_txn_cb(
 			  "msg_id": msg_id,
 			})
 		}
+		"extend_message" => {
+			let req: ExtendMessageRequest = bincode::deserialize(&req_bytes)?;
+			channel::extend_message_to_db(&req)?;
+
+			json!({
+				"status": true,
+			})
+		}
 		"withdraw" => {
 			json!({
 			  "status": true,

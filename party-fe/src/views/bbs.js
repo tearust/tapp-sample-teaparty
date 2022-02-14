@@ -154,6 +154,11 @@ const F = {
     return rs;
   },
   async delete_message(address, msg_data, channel=default_channel){
+    const user = F.getUser(address);
+    if(!user || !user.isLogin){
+      throw 'Not login';
+    }
+
     const {id, sender} = msg_data;
     if(sender !== address){
       throw 'Invalid message owner';
@@ -167,17 +172,29 @@ const F = {
     return rs;
   },
   async extend_message(address, msg_data, channel=default_channel){
+    const user = F.getUser(address);
+    if(!user || !user.isLogin){
+      throw 'Not login';
+    }
+
     const {id, sender} = msg_data;
     if(sender !== address){
       throw 'Invalid message owner';
     }
 
-    const rs = await _axios.post('/tapp/extendMessage', {
+    const opts = {
       tappId: F.getTappId(),
       msgId: id,
       channel: F.getChannel(channel),
-      time: 6*60*60,
-    });
+      ttl: 2*1440,
+      address,
+      authB64: user.session_key,
+    };
+
+    const txn = require('./txn').default;
+    const rs = await txn.txn_request('extendMessage', opts);
+
+    
 
     return rs;
   },

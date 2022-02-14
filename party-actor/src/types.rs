@@ -31,9 +31,11 @@ pub struct LoadMessageRequest {
 pub struct ExtendMessageRequest {
 	pub tapp_id: u64,
 	pub channel: String,
-
+	pub address: String,
+	pub uuid: String,
+	pub auth_b64: String,
 	pub msg_id: String,
-	pub time: Option<u64>,
+	pub ttl: u64,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

@@ -96,7 +96,7 @@ fn txn_exec_inner(tsid: Tsid, txn_bytes: &[u8]) -> HandlerResult<()> {
 			ttl,
 			auth_b64,
 		} => {
-			info!("PostMessage from ttl: {:?},{:?}", &from, &ttl);
+			info!("PostMessage => from ttl: {:?},{:?}", &from, &ttl);
 
 			// ttl > 2000, 2 TEA, else, 1 TEA
 			let amt: Balance = if ttl > 5000 {
@@ -104,6 +104,8 @@ fn txn_exec_inner(tsid: Tsid, txn_bytes: &[u8]) -> HandlerResult<()> {
 			} else {
 				1000000000000 as Balance
 			};
+
+			warn!("todo: check balance, if not enough, return error.");
 
 			let auth_key: AuthKey = bincode::deserialize(&base64::decode(auth_b64)?)?;
 			let auth_ops_bytes = actor_statemachine::query_auth_ops_bytes(auth_key)?;
@@ -116,32 +118,60 @@ fn txn_exec_inner(tsid: Tsid, txn_bytes: &[u8]) -> HandlerResult<()> {
 			(actor_statemachine::consume_from_account(req)?, auth_key)
 		}
 
-		TeapartyTxn::TransferTea {
+		TeapartyTxn::ExtendMessage {
+			token_id,
 			from,
-			to,
-			amt,
-			uuid: _,
-			auth,
+			ttl,
+			auth_b64,
 		} => {
-			todo!("this TransferTea has not complted");
-			info!(
-				"TransferTea from to amt: {:?},{:?},{:?},{}",
-				&from, &to, &amt, auth
-			);
-			let auth_key: AuthKey = auth;
-			let auth_ops_bytes: Vec<u8> = query_auth_ops_bytes(auth)?;
-			let ctx = TokenContext::new(tsid, base, TOKEN_ID_TEA, &auth_ops_bytes)?;
-			let ctx_bytes = bincode::serialize(&ctx)?;
-			let amt: Vec<u8> = bincode::serialize(&amt)?;
+			info!("ExtendMessage => from ttl: {:?},{:?}", &from, &ttl);
 
-			let mov = MoveRequest {
-				ctx: ctx_bytes,
-				from: from.to_vec(),
-				to: to.to_vec(),
-				amt,
+			// ttl > 2000, 2 TEA, else, 1 TEA
+			let amt: Balance = if ttl > 5000 {
+				2000000000000 as Balance
+			} else {
+				1000000000000 as Balance
 			};
-			(actor_statemachine::mov(mov)?, auth_key)
+
+			warn!("todo: check balance, if not enough, return error.");
+
+			let auth_key: AuthKey = bincode::deserialize(&base64::decode(auth_b64)?)?;
+			let auth_ops_bytes = actor_statemachine::query_auth_ops_bytes(auth_key)?;
+			let ctx = TokenContext::new(tsid, base, token_id, &auth_ops_bytes)?;
+			let req = ConsumeFromAccountRequest {
+				ctx: bincode::serialize(&ctx)?,
+				acct: bincode::serialize(&from)?,
+				amt: bincode::serialize(&amt)?,
+			};
+			(actor_statemachine::consume_from_account(req)?, auth_key)
 		}
+
+		// TeapartyTxn::TransferTea {
+		// 	from,
+		// 	to,
+		// 	amt,
+		// 	uuid: _,
+		// 	auth,
+		// } => {
+		// 	todo!("this TransferTea has not complted");
+		// 	info!(
+		// 		"TransferTea from to amt: {:?},{:?},{:?},{}",
+		// 		&from, &to, &amt, auth
+		// 	);
+		// 	let auth_key: AuthKey = auth;
+		// 	let auth_ops_bytes: Vec<u8> = query_auth_ops_bytes(auth)?;
+		// 	let ctx = TokenContext::new(tsid, base, TOKEN_ID_TEA, &auth_ops_bytes)?;
+		// 	let ctx_bytes = bincode::serialize(&ctx)?;
+		// 	let amt: Vec<u8> = bincode::serialize(&amt)?;
+
+		// 	let mov = MoveRequest {
+		// 		ctx: ctx_bytes,
+		// 		from: from.to_vec(),
+		// 		to: to.to_vec(),
+		// 		amt,
+		// 	};
+		// 	(actor_statemachine::mov(mov)?, auth_key)
+		// }
 
 		TeapartyTxn::UpdateProfile {
 			acct,
