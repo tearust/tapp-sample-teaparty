@@ -1,8 +1,15 @@
 import utils from './utils';
-const LAYER1_URL = utils.get_env('layer1_url') || 'ws://127.0.0.1:9944';
-const LAYER1_HTTP = utils.get_env('layer1_http') || 'http://127.0.0.1:9933';
+let LAYER1_URL = utils.get_env('layer1_url') || 'ws://127.0.0.1:9944';
+let LAYER1_RPC = utils.get_env('layer1_rpc') || 'http://127.0.0.1:9933';
+
+const hostname = location.hostname;
+if(hostname !== 'localhost' && hostname !== '127.0.0.1'){
+  LAYER1_URL = 'ws://'+hostname+':9944';
+  LAYER1_RPC = 'http://'+hostname+':9933';
+}
+
 console.log('LAYER1_URL => '+LAYER1_URL);
-console.log('LAYER1_HTTP => '+LAYER1_HTTP);
+console.log('LAYER1_RPC => '+LAYER1_RPC);
 import types from './types.json';
 
 import {
@@ -28,7 +35,7 @@ class Layer1 {
     this.connected = 1;
     const _layer1 = new TeaLayer1({
       ws_url: LAYER1_URL,
-      http_url: LAYER1_HTTP,
+      http_url: LAYER1_RPC,
       system_top_up_account: 'Alice',
       env: 'browser',
       types,
