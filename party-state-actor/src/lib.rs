@@ -105,6 +105,8 @@ fn txn_exec_inner(tsid: Tsid, txn_bytes: &[u8]) -> HandlerResult<()> {
 				1000000000000 as Balance
 			};
 
+			info!("aaaaa => {:?}\n{:?}", token_id, amt);
+			info!("bbbb => {:?}", actor_statemachine::verify_enough_account_balance(from, token_id, amt));
 			if ! actor_statemachine::verify_enough_account_balance(from, token_id, amt)?{
 				return Err("not_enough_balance_postmessage".into());
 			}
