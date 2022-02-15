@@ -217,7 +217,32 @@ pub fn extend_message_to_db(req: &ExtendMessageRequest) -> anyhow::Result<()> {
 	Ok(())
 }
 
-pub(crate) fn delete_message(
+pub fn delete_message(
+	uuid: &str,
+	req: &DeleteMessageRequest
+) -> anyhow::Result<Vec<u8>> {
+	user::check_auth(&req.tapp_id, &req.address, &req.auth_b64)?;
+
+	let txn = TeapartyTxn::DeleteMessage {
+		token_id: req.tapp_id,
+		from: state::parse_to_acct(&req.address)?,
+		ttl: req.ttl,
+		auth_b64: req.auth_b64.to_string(),
+	};
+
+	let txn_bytes = bincode::serialize(&txn)?;
+	wf::sm_txn_request(
+		"extend_message",
+		&uuid,
+		bincode::serialize(req)?,
+		txn_bytes,
+		&tea_codec::ACTOR_PUBKEY_PARTY_CONTRACT.to_string(),
+	)?;
+
+	Ok(b"ok".to_vec())
+}
+
+pub fn delete_message_to_db(
 	_uuid: &str,
 	request: DeleteMessageRequest,
 ) -> anyhow::Result<Vec<u8>> {

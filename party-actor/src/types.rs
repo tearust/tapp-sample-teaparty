@@ -43,8 +43,10 @@ pub struct ExtendMessageRequest {
 pub struct DeleteMessageRequest {
 	pub tapp_id: u64,
 	pub channel: String,
-
+	pub address: String,
+	pub uuid: String,
 	pub msg_id: String,
+	pub auth_b64: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

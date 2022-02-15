@@ -43,6 +43,12 @@ pub enum TeapartyTxn {
 		ttl: u64,
 		auth_b64: String,
 	},
+	DeleteMessage {
+		token_id: TokenId,
+		from: Account,
+		msg_owner: Account,
+		auth_b64: String,
+	},
 
 	UpdateProfile {
 		acct: Account,
