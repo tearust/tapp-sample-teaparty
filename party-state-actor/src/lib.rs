@@ -82,7 +82,7 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 		let txn_hash = tsid.hash;
 		warn!("bbb => {:?}", txn_hash);
 		warn!("ccc => {:?}", tsid);
-		report_txn_error(txn_hash.clone(), e.to_string())?;
+		report_txn_error(txn_hash.clone().to_vec(), e.to_string())?;
 		return Err(format!(
 			"party-state-actor handle txn exec err. hash: 0x{}) exec error: {}",
 			hex::encode(txn_hash),
