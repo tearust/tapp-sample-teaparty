@@ -79,7 +79,7 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 	let (tsid, txn_bytes): (Tsid, Vec<u8>) = bincode::deserialize(&msg.body)?;
 	warn!("aaa => {:?}", txn_bytes);
 	if let Err(e) = txn_exec_inner(tsid, &txn_bytes) {
-		let txn_hash = sha256(txn_bytes)?;
+		let txn_hash = tsid.hash;
 		warn!("bbb => {:?}", txn_hash);
 		warn!("ccc => {:?}", tsid);
 		report_txn_error(txn_hash.clone(), e.to_string())?;
@@ -119,7 +119,7 @@ fn txn_exec_inner(tsid: Tsid, txn_bytes: &[u8]) -> HandlerResult<()> {
 			let result = actor_statemachine::verify_enough_account_balance(from, token_id, amt)?;
 			if ! result{
 				warn!("todo: why error can not back to B actor.");
-				return Err("not_enough_balance_postmessage".into());
+				return Err("not_enough_balance".into());
 			}else{
 
 			}
