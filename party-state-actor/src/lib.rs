@@ -75,9 +75,12 @@ fn helper_get_state_tsid() -> HandlerResult<Tsid> {
 
 fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 	info!("enter party state actor's handle_txn_exec");
+	warn!("aaa => {:?}", txn_bytes);
 	let (tsid, txn_bytes): (Tsid, Vec<u8>) = bincode::deserialize(&msg.body)?;
 	if let Err(e) = txn_exec_inner(tsid, &txn_bytes) {
 		let txn_hash = sha256(txn_bytes)?;
+		warn!("bbb => {:?}", txn_hash);
+		warn!("ccc => {:?}", tsid);
 		report_txn_error(txn_hash.clone(), e.to_string())?;
 		return Err(format!(
 			"party-state-actor handle txn exec err. hash: 0x{}) exec error: {}",
@@ -111,12 +114,13 @@ fn txn_exec_inner(tsid: Tsid, txn_bytes: &[u8]) -> HandlerResult<()> {
 				1000000000000 as Balance
 			};
 
-			// info!("bbbb => {:?}", actor_statemachine::verify_enough_account_balance(from, token_id, amt)?);
+			info!("bbbb => {:?}", actor_statemachine::verify_enough_account_balance(from, token_id, amt)?);
 			let result = actor_statemachine::verify_enough_account_balance(from, token_id, amt)?;
 			if ! result{
 				warn!("todo: why error can not back to B actor.");
 				return Err("not_enough_balance_postmessage".into());
 			}else{
+
 			}
 
 			let auth_key: AuthKey = bincode::deserialize(&base64::decode(auth_b64)?)?;
