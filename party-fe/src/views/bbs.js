@@ -163,14 +163,21 @@ const F = {
     if(sender !== address){
       throw 'Invalid message owner';
     }
-    const rs = await _axios.post('/tapp/deleteMessage', {
+
+    const opts = {
       tappId: F.getTappId(),
       msgId: id,
       channel: F.getChannel(channel),
-    });
+      address,
+      authB64: user.session_key,
+      is_tapp_owner: true,
+    };
+    const txn = require('./txn').default;
 
+    const rs = await txn.txn_request('/tapp/deleteMessage', opts);
     return rs;
   },
+  
   async extend_message(address, msg_data, channel=default_channel){
     const user = F.getUser(address);
     if(!user || !user.isLogin){

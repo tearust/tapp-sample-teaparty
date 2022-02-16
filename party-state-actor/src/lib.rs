@@ -161,6 +161,28 @@ fn txn_exec_inner(tsid: Tsid, txn_bytes: &[u8]) -> HandlerResult<()> {
 			};
 			(actor_statemachine::consume_from_account(req)?, auth_key)
 		}
+		TeapartyTxn::DeleteMessage {
+			token_id,
+			from,
+			auth_b64,
+			is_tapp_owner,
+		} => {
+			info!("DeleteMessage => \n{:?}\n{:?}\n{:?}\n{:?}", token_id, from, auth_b64, is_tapp_owner);
+
+			let amt = 0 as Balance;
+
+			// TODO verify amount
+
+			let auth_key: AuthKey = bincode::deserialize(&base64::decode(auth_b64)?)?;
+			let auth_ops_bytes = actor_statemachine::query_auth_ops_bytes(auth_key)?;
+			let ctx = TokenContext::new(tsid, base, token_id, &auth_ops_bytes)?;
+			let req = ConsumeFromAccountRequest {
+				ctx: bincode::serialize(&ctx)?,
+				acct: bincode::serialize(&from)?,
+				amt: bincode::serialize(&amt)?,
+			};
+			(actor_statemachine::consume_from_account(req)?, auth_key)
+		}
 
 		// TeapartyTxn::TransferTea {
 		// 	from,
