@@ -100,11 +100,10 @@ const F = {
       key: 'login',
       param: {},
       cb: async (permission_str, close)=>{
-        console.log(11, permission_str);
 
         self.$root.loading(true);
         try{
-          const f = await F.loginPrepare(permission_str, layer1_instance, self.layer1_account.address);
+          await F.loginPrepare(permission_str, layer1_instance, self.layer1_account.address);
 
           self.$root.success('Login success.');
         }catch(e){
