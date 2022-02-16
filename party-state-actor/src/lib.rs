@@ -75,8 +75,9 @@ fn helper_get_state_tsid() -> HandlerResult<Tsid> {
 
 fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 	info!("enter party state actor's handle_txn_exec");
-	warn!("aaa => {:?}", txn_bytes);
+	
 	let (tsid, txn_bytes): (Tsid, Vec<u8>) = bincode::deserialize(&msg.body)?;
+	warn!("aaa => {:?}", txn_bytes);
 	if let Err(e) = txn_exec_inner(tsid, &txn_bytes) {
 		let txn_hash = sha256(txn_bytes)?;
 		warn!("bbb => {:?}", txn_hash);
