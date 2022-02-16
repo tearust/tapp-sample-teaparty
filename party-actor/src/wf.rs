@@ -79,6 +79,14 @@ pub fn sm_txn_cb(
 				"status": true,
 			})
 		}
+		"delete_message" => {
+			let req: DeleteMessageRequest = bincode::deserialize(&req_bytes)?;
+			channel::delete_message_to_db(&req)?;
+
+			json!({
+				"status": true,
+			})
+		}
 		"withdraw" => {
 			json!({
 			  "status": true,

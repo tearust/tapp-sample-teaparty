@@ -260,7 +260,7 @@ fn handle_adapter_http_request(req: rpc::AdapterHttpRequest) -> anyhow::Result<V
 		}
 		"deleteMessage" => {
 			let req: DeleteMessageRequest = serde_json::from_slice(&req.payload)?;
-			delete_message(&uuid, req)
+			delete_message(&req.uuid.clone(), &req)
 		}
 
 		"query_result" => {

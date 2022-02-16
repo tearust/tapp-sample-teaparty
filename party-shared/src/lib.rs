@@ -46,8 +46,8 @@ pub enum TeapartyTxn {
 	DeleteMessage {
 		token_id: TokenId,
 		from: Account,
-		msg_owner: Account,
 		auth_b64: String,
+		is_tapp_owner: bool,
 	},
 
 	UpdateProfile {

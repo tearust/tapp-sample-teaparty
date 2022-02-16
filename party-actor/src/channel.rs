@@ -226,13 +226,13 @@ pub fn delete_message(
 	let txn = TeapartyTxn::DeleteMessage {
 		token_id: req.tapp_id,
 		from: state::parse_to_acct(&req.address)?,
-		ttl: req.ttl,
 		auth_b64: req.auth_b64.to_string(),
+		is_tapp_owner: req.is_tapp_owner,
 	};
 
 	let txn_bytes = bincode::serialize(&txn)?;
 	wf::sm_txn_request(
-		"extend_message",
+		"delete_message",
 		&uuid,
 		bincode::serialize(req)?,
 		txn_bytes,
@@ -243,14 +243,13 @@ pub fn delete_message(
 }
 
 pub fn delete_message_to_db(
-	_uuid: &str,
-	request: DeleteMessageRequest,
-) -> anyhow::Result<Vec<u8>> {
-	let dbname = db_name(request.tapp_id, &request.channel);
+	req: &DeleteMessageRequest,
+) -> anyhow::Result<()> {
+	let dbname = db_name(req.tapp_id, &req.channel);
 	let delete_message_data = orbitdb::DeleteMessageRequest {
-		tapp_id: request.tapp_id,
+		tapp_id: req.tapp_id,
 		dbname,
-		msg_id: request.msg_id,
+		msg_id: req.msg_id.to_string(),
 	};
 
 	let res = orbitdb::OrbitBbsResponse::decode(
@@ -263,9 +262,9 @@ pub fn delete_message_to_db(
 			.map_err(|e| anyhow::anyhow!("{}", e))?
 			.as_slice(),
 	)?;
-	// info!("[bbs] delete message response: {:?}", res);
+	info!("[bbs] delete message response: {:?}", res);
 
-	Ok(res.data.into_bytes())
+	Ok(())
 }
 
 fn message_key(channel: &str, hash: u64) -> String {

@@ -47,6 +47,7 @@ pub struct DeleteMessageRequest {
 	pub uuid: String,
 	pub msg_id: String,
 	pub auth_b64: String,
+	pub is_tapp_owner: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
