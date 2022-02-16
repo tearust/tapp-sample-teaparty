@@ -170,11 +170,11 @@ const F = {
       channel: F.getChannel(channel),
       address,
       authB64: user.session_key,
-      is_tapp_owner: true,
+      isTappOwner: true,
     };
     const txn = require('./txn').default;
 
-    const rs = await txn.txn_request('/tapp/deleteMessage', opts);
+    const rs = await txn.txn_request('deleteMessage', opts);
     return rs;
   },
   
@@ -507,11 +507,10 @@ console.log(111, opts);
         let rs = null;
         try{
           rs = await txn.txn_request('notificationAddMessage', opts);
-          F.top_log(null);
 
-          succ_cb(rs)
+          succ_cb(true, rs)
         }catch(e){
-          F.top_log(e, 'error');
+          succ_cb(false, e)
         }
         
         close();

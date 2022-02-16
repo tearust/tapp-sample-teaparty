@@ -96,16 +96,17 @@ export default {
       this.$root.loading(false);
     },
     async postNotification(to){
-      try{
-        
-        const rs = await bbs.send_notification(this, to, async (rs)=>{
+      await bbs.send_notification(this, to, async (f, rs)=>{
+        if(f){
           this.$root.success("Send success");
 
           await this.refrersh_list();
-        });
-      }catch(e){
-        this.$root.showError(e);
-      }
+        }
+        else{
+          this.$root.showError(rs);
+        }
+        
+      });
     }
     
   }

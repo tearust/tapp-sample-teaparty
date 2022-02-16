@@ -119,8 +119,8 @@ export default {
         }
       }catch(e){
         this.$root.showError(e);
-
-        await user.logout(this.layer1_account.address);
+console.log('post msg error =>', e);
+        // await user.logout(this.layer1_account.address);
         this.closeModal();
       }
       
