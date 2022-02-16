@@ -13,11 +13,18 @@
     <i v-if="!param || loading" class="el-icon-loading" style="display: block; width: 40px; height: 40px;font-size: 40px; margin: 0 auto;"></i>
 
     <div v-if="!loading" style="text-align:left;">
-      <p style="font-size: 15px;" v-if="layer1_account.address">
+      <div style="font-size: 15px;" v-if="layer1_account.address">
 
-        Click the button below to login with {{layer1_account.address}}.
-      </p>
-      <el-button v-if="layer1_account.address" type="primary" @click="confirm()">Login</el-button>
+        <h4>Please confirm the allowed permission.</h4>
+
+        <div>
+          <el-checkbox v-model="read" disabled>Read</el-checkbox>
+          <el-checkbox v-model="move">Move</el-checkbox>
+          <el-checkbox v-model="consume">Consume</el-checkbox>
+          <el-checkbox v-model="withdraw">Withdraw</el-checkbox>
+        </div>
+      </div>
+      <!-- <el-button v-if="layer1_account.address" type="primary" @click="confirm()">Login</el-button> -->
 
       <p style="font-size: 16px; color: #f00;" v-if="!layer1_account.address">
         Please select account from Polkadot extention.
@@ -27,7 +34,7 @@
 
     <span slot="footer" class="dialog-footer">
       <el-button size="small" @click="close()">Cancel</el-button>
-      <!-- <el-button size="small" type="primary" @click="confirm()">Login</el-button> -->
+      <el-button size="small" type="primary" @click="confirm()">Login</el-button>
     </span>
 
   </el-dialog>
@@ -49,7 +56,11 @@ export default {
       loading: true,
       form: {
         
-      }
+      },
+      read: true,
+      move: true,
+      consume: true,
+      withdraw: true,
     };
   },
   computed: {
@@ -76,10 +87,15 @@ export default {
       }, 500);
     },
     async confirm(){
-      await user.login(this.layer1_account.address);
       const cb = utils.mem.get('login');
+
+      const tmp = [];
+      if(this.read) tmp.push('read');
+      if(this.move) tmp.push('move');
+      if(this.consume) tmp.push('consume');
+      if(this.withdraw) tmp.push('withdraw');
       if(cb){
-        await cb(this.close);
+        await cb(tmp.join("_"), this.close);
       }
     },
     async openHandler(){
@@ -89,9 +105,9 @@ export default {
       let api = layer1_instance.getApi();
 
       
-      if(this.layer1_account.address){
-        await user.loginPrepare(layer1_instance, this.layer1_account.address);
-      }
+      // if(this.layer1_account.address){
+      //   await user.loginPrepare(layer1_instance, this.layer1_account.address);
+      // }
 
       this.loading = false;
     }

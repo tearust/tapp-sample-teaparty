@@ -31,11 +31,12 @@ const F = {
     
     console.log(111, rs);
   },
-  async loginPrepare(layer1_instance, address){
+  async loginPrepare(permission_str, layer1_instance, address){
     bbs.top_log('Send login txn...');
 
     // thanks for https://github.com/polkadot-js/extension/issues/827
-    const data = 'read_move_withdraw_consume';
+    const data = permission_str;
+    console.log('permission_str => '+permission_str);
 
     let sig = await layer1_instance.signWithExtension(address, data);
     sig = utils.uint8array_to_base64(hexToU8a(sig));
@@ -89,32 +90,38 @@ const F = {
   
   },
   async showLoginModal(self){
-    self.$root.loading(true);
     const layer1_instance = self.wf.getLayer1Instance();
-
     if(!self.layer1_account || !self.layer1_account.address){
       self.$root.showError("Invalid user, please select.");
       return;
     }
-    const f = await F.loginPrepare(layer1_instance, self.layer1_account.address);
-    if(f){
-      self.$root.success('Login success.');
-    }
-    else{
-      self.$root.showError("Login failed");
-    }
 
-    self.$root.loading(false);
-    // self.$store.commit('modal/open', {
-    //   key: 'login',
-    //   param: {
+    self.$store.commit('modal/open', {
+      key: 'login',
+      param: {},
+      cb: async (permission_str, close)=>{
+        console.log(11, permission_str);
 
-    //   },
-    //   cb: async (close)=>{
-    //     self.$root.success('Login success.');
-    //     close();
-    //   }
-    // })
+        self.$root.loading(true);
+        try{
+          const f = await F.loginPrepare(permission_str, layer1_instance, self.layer1_account.address);
+
+          self.$root.success('Login success.');
+        }catch(e){
+          self.$root.showError(e);
+        }
+
+        close();
+        self.$root.loading(false);
+        
+      }
+    })
+
+    
+    
+    
+
+    
   }
 };
 
