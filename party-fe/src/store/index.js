@@ -88,6 +88,7 @@ const initState = () => {
     bbs: {
       id: null,
       channel: null,
+      tapp: null,
     },
   }
 };

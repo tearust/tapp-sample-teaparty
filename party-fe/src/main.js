@@ -65,8 +65,20 @@ new Vue({
       }
     },
     showError(e, title = 'Error message') {
-      const err = e.message || e.toString();
-      const ex = _.get(layer1_error_tips, err, err);
+      let err = e.message || e.toString();
+      const [f, ss, OP, code, error_str] = utils.tappLayer2FormatError(err);
+      let default_error;
+      if(!f){
+        err = ss;
+        default_error = ss;
+      }
+      else{
+        err = ss;
+        default_error = error_str;
+      }
+
+      let ex = _.get(layer1_error_tips, err, default_error);
+
       this.$alert(ex, title, {
         type: 'error'
       });

@@ -90,6 +90,14 @@ const F = {
 
     return _.toNumber(id);
   },
+  async getTappDetail(self){
+    const layer1_instance = self.wf.getLayer1Instance();
+    const api = layer1_instance.getApi();
+
+    const tapp_id = F.getTappId();
+    const tapp = (await api.query.bondingCurve.tAppBondingCurve(tapp_id)).toJSON();
+    return tapp;
+  },
   async loadMessageList(address, channel=default_channel){
     // F.top_log("Query message list...");
     const rs = await _axios.post('/tapp/loadMessageList', {
@@ -148,7 +156,6 @@ const F = {
     const txn = require('./txn').default;
     const rs = await txn.txn_request('postMessage', opts);
 
-    F.top_log(null);
     console.log(11, rs);
     
     return rs;

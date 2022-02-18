@@ -30,11 +30,13 @@ pub fn add_message(req: &NotificationAddMessageRequest) -> anyhow::Result<Vec<u8
 	user::check_auth(&req.tapp_id, &req.from, &req.auth_b64)?;
 
 	// send txn
+	let block: u32 = help::current_block_number()?;
 	let ttl = get_add_message_ttl(&req)?;
 	let txn = TeapartyTxn::AddNotificationMessage {
 		token_id: req.tapp_id,
 		from: state::parse_to_acct(&req.from)?,
 		to: state::parse_to_acct(&req.to)?,
+		current: block,
 		ttl,
 		auth_b64: req.auth_b64.to_string(),
 	};

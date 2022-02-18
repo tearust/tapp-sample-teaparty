@@ -228,6 +228,7 @@ fn txn_exec_inner(tsid: Tsid, txn_bytes: &[u8]) -> HandlerResult<()> {
 			from,
 			to,
 			auth_b64,
+			current,
 			ttl,
 		} => {
 			info!(
@@ -237,7 +238,7 @@ fn txn_exec_inner(tsid: Tsid, txn_bytes: &[u8]) -> HandlerResult<()> {
 			let pushnotifications_inner_request = tappstore::PushNotificationsInnerRequest {
 				token_id,
 				accounts: vec![public_key_to_ss58(&to)?],
-				expired_heights: vec![ttl],
+				expired_heights: vec![ttl+current],
 				uuid: "ok".to_string(),
 				tsid: bincode::serialize(&tsid)?,
 			};

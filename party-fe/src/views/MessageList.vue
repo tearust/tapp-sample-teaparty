@@ -7,12 +7,15 @@
       </span>
       <p style="font-size: 18px; margin: 0; margin-top: 4px; padding-right: 70px; white-space: pre-line;">{{item.content}}</p>
 
-      <div class="t-action" v-if="user && user.address === item.sender">
-        <el-tooltip content="Extend expired time" placement="top" effect="light">
+      <div class="t-action">
+        <el-tooltip v-if="user && user.address === item.sender" content="Extend expired time" placement="top" effect="light">
           <el-button size="mini" circle type="primary" plain icon="el-icon-check" @click="clickExtendMessage(item)"></el-button>
         </el-tooltip>
 
-        <el-tooltip content="Delete message" placement="top" effect="light">
+        <el-tooltip v-if="
+          (user && user.address === item.sender)
+          || (user && bbs && bbs.tapp && user.address===bbs.tapp.owner)
+        " content="Delete message" placement="top" effect="light">
           <el-button size="mini" circle type="danger" plain icon="el-icon-delete" @click="clickDeleteMessage(item)"></el-button>
         </el-tooltip>
         
@@ -39,7 +42,7 @@ export default {
   },
   computed: {
     ...mapState([
-      'user'
+      'user', 'bbs',
     ])
   },
   watch: {
@@ -63,7 +66,7 @@ export default {
     },
     async clickExtendMessage(item){
       try{
-        await this.$confirm('Are you sure to extend this message for 2 hours<br/>Note that you need to pay in epoch 8.', {
+        await this.$confirm('Are you sure to extend this message for 2 hours<br/>Note that you need to pay in epoch 9.', {
           title: 'Extend message',
           dangerouslyUseHTMLString: true,
         });

@@ -184,9 +184,9 @@ export default {
   async mounted(){
     bbs.set_global_log(this);
 
-    const id = _.toNumber(utils.urlParam('id'));
+    const id = bbs.getTappId();
     const channel = decodeURIComponent(utils.urlParam('v'));
-
+    
     console.log('tapp id => '+id);
     console.log('main channel => '+channel);
 
@@ -236,6 +236,14 @@ export default {
       //   await this.wf.init();
       //   const block = await this.wf.getCurrentBlock();
       // }
+
+      const tapp = await bbs.getTappDetail(this);
+      console.log("tapp detail =>", tapp);
+      this.$store.commit('set_bbs', {
+        id,
+        channel,
+        tapp,
+      });
     });
 
     utils.register('top_log', (key, param)=>{

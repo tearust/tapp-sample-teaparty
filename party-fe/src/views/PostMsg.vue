@@ -118,8 +118,9 @@ export default {
           await cb();
         }
       }catch(e){
+        console.log('post msg error =>', e);
         this.$root.showError(e);
-console.log('post msg error =>', e);
+
         // await user.logout(this.layer1_account.address);
         this.closeModal();
       }

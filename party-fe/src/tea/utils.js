@@ -376,6 +376,20 @@ const F = {
     return rs ? rs.value : null;
   },
 
+  tappLayer2FormatError(error){
+    const reg = /^([A-Z]{2})+_([0-9]+)+__(.+)$/g;
+    if(!reg.test(error)) return [false, error];
+
+    const en = error.split('__');
+    const [OP, code] = en[0].split('_');
+    const error_default = en[1];
+
+    console.log('layer2 error => ', OP, code, error_default);
+
+    // TODO
+    return [true, en[0], OP, code, error_default];
+  },
+
 
 };
 
