@@ -64,11 +64,11 @@ const F = {
     });
   },
 
-  top_log(html, level='warning'){
-    // utils.publish('top_log', {
-    //   top_log: html,
-    //   top_log_level: level,
-    // });
+  top_log(html, level='success'){
+    utils.publish('top_log', {
+      top_log: html,
+      top_log_level: level,
+    });
   },
 
   getUser(address){
@@ -136,7 +136,6 @@ const F = {
       throw 'Not login';
     }
     
-    F.top_log("Send message txn...");
     msg = utils.forge.util.encodeUtf8(msg);
     const encrypted_message = utils.forge.util.encode64(msg);
     // console.log(121, utils.crypto.encode(address, msg));
@@ -156,19 +155,20 @@ const F = {
     const txn = require('./txn').default;
     const rs = await txn.txn_request('postMessage', opts);
 
-    console.log(11, rs);
     
     return rs;
   },
-  async delete_message(address, msg_data, channel=default_channel){
+  async delete_message(address, msg_data, channel=default_channel, tapp_detail){
     const user = F.getUser(address);
     if(!user || !user.isLogin){
       throw 'Not login';
     }
 
     const {id, sender} = msg_data;
-    if(sender !== address){
-      throw 'Invalid message owner';
+
+    const tapp_owner = tapp_detail.owner;
+    if(sender !== address && tapp_owner !== address){
+      throw 'Not awolled to delete.';
     }
 
     const opts = {
@@ -177,7 +177,7 @@ const F = {
       channel: F.getChannel(channel),
       address,
       authB64: user.session_key,
-      isTappOwner: true,
+      isTappOwner: tapp_owner===address,
     };
     const txn = require('./txn').default;
 
@@ -269,7 +269,6 @@ const F = {
 
     const txn = require('./txn').default;
 
-    F.top_log("Send withdraw txn...");
     const tappId = F.getTappId();
     self.$store.commit('modal/open', {
       key: 'common_form',
@@ -294,20 +293,16 @@ const F = {
           authB64: user.session_key,
           amount,
         };
-    
-        // const rs = await sync_request('withdraw', param);
-        // console.log("withdraw action =>", rs);
-        // await succ_cb(rs)
 
         try{
           await txn.txn_request('withdraw', param);
           
           self.$root.success();
+          succ_cb();
         }catch(e){
+
           self.$root.showError(e);
         }
-        
-        
         close();
         self.$root.loading(false);
         
@@ -483,6 +478,11 @@ console.log(111, opts);
             default: to,
             label: "Target address",
             required: true,
+            rules: {
+              min: 48,
+              max: 48,
+              message: 'Invalid address.'
+            }
           },
           content: {
             type: "textarea",
@@ -514,13 +514,12 @@ console.log(111, opts);
         let rs = null;
         try{
           rs = await txn.txn_request('notificationAddMessage', opts);
-
-          succ_cb(true, rs)
+          succ_cb(true, rs);
+          close();
         }catch(e){
-          succ_cb(false, e)
+          succ_cb(false, e);
         }
         
-        close();
         self.$root.loading(false);
 
         
@@ -528,14 +527,11 @@ console.log(111, opts);
     });
   },
   async getNotificationList(from=null, to=null){
-    F.top_log("Query notification list...");
     const rs = await _axios.post('/tapp/notificationGetMessageList', {
       tappId: F.getTappId(),
       from, 
       to,
     });
-
-    F.top_log(null);
 
     if(!rs) return [];
 

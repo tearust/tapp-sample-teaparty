@@ -77,7 +77,6 @@ export default {
     async clickTab(e){
       this.type = e.label;
       
-      console.log(11, this.type)
       await this.refrersh_list();
     },
     async refrersh_list(){
@@ -90,7 +89,7 @@ export default {
         list = await bbs.getNotificationList(this.layer1_account.address, null);
       }
       
-      console.log(11, list);
+      // console.log(11, list);
       this.list = list; //_.reverse(list);
         
       this.$root.loading(false);

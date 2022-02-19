@@ -377,6 +377,8 @@ const F = {
   },
 
   tappLayer2FormatError(error){
+    error = error.replace('waPC error: Host error: Error occurred during host call: Failed to invoke capability: Error occurred during host call:', '');
+
     const reg = /^([A-Z]{2})+_([0-9]+)+__(.+)$/g;
     if(!reg.test(error)) return [false, error];
 

@@ -16,7 +16,7 @@
 
       <el-button v-if="!user" style="position:absolute; width:120px; height: 32px; bottom:1px; left: 810px;" size="mini" type="primary" @click="showLoginModal()">Click to login</el-button>
     </div>
-    <div style="text-align:right;font-size:12px; color: #9c9c9c;">Post message will be paid in epoch 7.</div>
+    <div style="text-align:right;font-size:12px; color: #9c9c9c;">Post message will be paid in epoch 9.</div>
     
 
     
@@ -112,7 +112,7 @@ export default {
 
         const rs = await bbs.sendMessage(this.layer1_account.address, msg, this.channel);
         
-        this.$message.success('success.');
+        this.$root.success();
         this.closeModal();
         if(cb){
           await cb();
@@ -121,7 +121,10 @@ export default {
         console.log('post msg error =>', e);
         this.$root.showError(e);
 
-        // await user.logout(this.layer1_account.address);
+        if(e === 'not_login'){
+          await user.logout(this.layer1_account.address);
+        }
+        
         this.closeModal();
       }
       

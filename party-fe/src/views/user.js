@@ -32,7 +32,6 @@ const F = {
     console.log(111, rs);
   },
   async loginPrepare(permission_str, layer1_instance, address){
-    bbs.top_log('Send login txn...');
 
     // thanks for https://github.com/polkadot-js/extension/issues/827
     const data = permission_str;
@@ -51,7 +50,6 @@ const F = {
       });
 
       if(rs.auth_key){
-        bbs.log('login success');
         const user = {
           address,
           isLogin: true,

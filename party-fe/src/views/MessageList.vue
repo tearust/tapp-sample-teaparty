@@ -93,7 +93,7 @@ export default {
 
       this.$root.loading(true);
       const cb = utils.mem.get('refresh-list__'+this.channel);
-      await bbs.delete_message(this.user.address, item, this.channel);
+      await bbs.delete_message(this.user.address, item, this.channel, this.bbs.tapp);
       cb && cb();
 
       this.$root.loading(false);

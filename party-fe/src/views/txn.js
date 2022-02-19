@@ -21,9 +21,8 @@ const F = {
       console.log("step_1 result: ", step1_rs);
     }catch(e){
       console.error("step_1 error: ", e);
-      if(e === 'not_login'){
-        throw e;
-      }
+
+      throw e;
     }
 
     bbs.log('Wait for query txn hash...');
@@ -88,7 +87,7 @@ const F = {
         step_4_rs = await _axios.post('/tapp/query_result', {
           uuid: hash_uuid,
         });
-console.log(111, step_4_rs)
+
         step_4_rs = utils.parseJSON(step_4_rs);
         if(!step_4_rs.status) throw step_4_rs.error;
       }catch(e){

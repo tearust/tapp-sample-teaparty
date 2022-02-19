@@ -25,11 +25,16 @@
       <div class="x-item">
         <b>{{'My TEA' | cardTitle}}</b>
         <span :inner-html.prop="layer1_account ? layer1_account.balance : '' | teaIcon"></span>
+      
+
+        
       </div>
 
       <div class="x-item">
         <b>{{'My tapp balance'}}</b>
-        <span :inner-html.prop="tapp_balance===null ? '...' : tapp_balance"></span>
+        <span style="margin-right: 34px;" :inner-html.prop="tapp_balance===null ? '...' : tapp_balance"></span>
+
+        <el-button size="mini" type="primary" plain icon="el-icon-refresh" circle @click="refreshTappBalanceHandler()" style="top:2px; right:0; position:absolute;"></el-button>
       </div>
       
 
@@ -137,9 +142,10 @@ export default {
     async withdrawHandler(){
       bbs.withdrawFromLayer2(this, 1, async ()=>{
         
-        // bbs.top_log("Waiting for query balance...");
-        await utils.sleep(10000);
+        bbs.top_log("Waiting for refresh balance...");
+        await utils.sleep(15000);
         await this.refreshAccount(true);
+        bbs.top_log(null);
       });
     },
 
@@ -153,6 +159,12 @@ export default {
       
       
       flag && this.$root.loading(false);
+    },
+
+    async refreshTappBalanceHandler(){
+      this.$root.loading(true, 'Refresh tapp balance...');
+      await this.queryTokenBalance();
+      this.$root.loading(false);
     },
 
     async queryTokenBalance(){
