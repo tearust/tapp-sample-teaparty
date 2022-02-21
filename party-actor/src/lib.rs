@@ -253,6 +253,7 @@ fn handle_adapter_http_request(req: rpc::AdapterHttpRequest) -> anyhow::Result<V
 		}
 		"postFreeMessage" => {
 			let req: PostMessageRequest = serde_json::from_slice(&req.payload)?;
+			user::check_auth(&req.tapp_id, &req.address, &req.auth_b64)?;
 			post_message_to_db(&req)?;
 
 			Ok(b"ok".to_vec())

@@ -152,9 +152,18 @@ const F = {
       authB64: user.session_key,
     };
 
-    const txn = require('./txn').default;
-    const rs = await txn.txn_request('postMessage', opts);
-
+    let rs = null;
+    if(opts.channel === 'test'){
+      // free msg
+      rs = await _axios.post('/tapp/postFreeMessage', {
+        ...opts,
+        uuid: uuid(),
+      });
+    }
+    else{
+      const txn = require('./txn').default;
+      rs = await txn.txn_request('postMessage', opts);
+    }
     
     return rs;
   },
