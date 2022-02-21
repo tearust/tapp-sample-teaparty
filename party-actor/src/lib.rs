@@ -2,7 +2,7 @@
 #![allow(unused_imports)]
 #![allow(non_camel_case_types)]
 
-use crate::channel::{delete_message, extend_message, load_message_list, post_message};
+use crate::channel::{delete_message, extend_message, load_message_list, post_message, post_message_to_db};
 use crate::validating::{login, logout};
 use actor::prelude::*;
 use codec::messaging::BrokerMessage;
@@ -147,6 +147,7 @@ fn handle_system_init(_msg: &BrokerMessage) -> HandlerResult<()> {
 			"queryTappAccount",
 			"queryTappStoreAccount",
 			"postMessage",
+			"postFreeMessage",
 			"loadMessageList",
 			"extendMessage",
 			"deleteMessage",
@@ -249,6 +250,12 @@ fn handle_adapter_http_request(req: rpc::AdapterHttpRequest) -> anyhow::Result<V
 		"postMessage" => {
 			let req: PostMessageRequest = serde_json::from_slice(&req.payload)?;
 			post_message(&req.uuid.clone(), &req)
+		}
+		"postFreeMessage" => {
+			let req: PostMessageRequest = serde_json::from_slice(&req.payload)?;
+			post_message_to_db(&req)?;
+
+			Ok(b"ok".to_vec())
 		}
 		"loadMessageList" => {
 			let req: LoadMessageRequest = serde_json::from_slice(&req.payload)?;
