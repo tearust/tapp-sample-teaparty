@@ -425,15 +425,15 @@ console.log(111, opts);
   },
 
   async query_balance(param){
-    // const user = F.getUser(param.address);
-    // if(!user || !user.isLogin){
-    //   throw 'not_login';
-    // }
+    const user = F.getUser(param.address);
+    if(!user || !user.isLogin){
+      throw 'not_login';
+    }
 
     param = {
       ...param,
       tappId: F.getTappId(),
-      authB64: 'not_used_key',
+      authB64: user.session_key,
     };
 
     const rs = await sync_request('query_balance', param);
