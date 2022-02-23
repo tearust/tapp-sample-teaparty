@@ -154,4 +154,9 @@ export default {
   TAppInsufficientFreeBalance: 'Insufficient TApp account balance',
   OperationAmountCanNotBeZero: 'Operation amount can not be 0',
 
+
+
+  // layer2
+  'CX_214': 'You don\'t have access to make payment on this transaction.'
+
 };

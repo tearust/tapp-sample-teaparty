@@ -66,7 +66,7 @@ export default {
     },
     async clickExtendMessage(item){
       try{
-        await this.$confirm('Are you sure to extend this message for 2 hours<br/>Note that you need to pay in epoch 9.', {
+        await this.$confirm('Are you sure to extend this message for 1200 blocks.', {
           title: 'Extend message',
           dangerouslyUseHTMLString: true,
         });

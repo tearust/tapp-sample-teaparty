@@ -19,8 +19,8 @@
     <div style="text-align:right;font-size:12px; color: #9c9c9c;">
       {{
         channel === 'test' ? 
-        'Post a 2 hours free message with no pay.' : 
-        'Post a 8 hours message with 1 TEA.'
+        'Post a 2-hours free message for free.' : 
+        'Post a 8-hours message with 1 TEA.'
       }}
     </div>
     

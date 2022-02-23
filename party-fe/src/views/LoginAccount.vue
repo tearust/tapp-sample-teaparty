@@ -3,7 +3,7 @@
 
   <div class="tea-card">
     <i class="x-icon ">
-      <img src="/fav.png" />
+      <img src="fav.png" />
     </i>
     
 

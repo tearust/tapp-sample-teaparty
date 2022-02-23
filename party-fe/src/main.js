@@ -76,9 +76,7 @@ new Vue({
         err = ss;
         default_error = error_str;
       }
-
       let ex = _.get(layer1_error_tips, err, default_error);
-
       this.$alert(ex, title, {
         type: 'error'
       });
