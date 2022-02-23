@@ -16,7 +16,13 @@
 
       <el-button v-if="!user" style="position:absolute; width:120px; height: 32px; bottom:1px; left: 810px;" size="mini" type="primary" @click="showLoginModal()">Click to login</el-button>
     </div>
-    <div style="text-align:right;font-size:12px; color: #9c9c9c;">Post message will be paid in epoch 9.</div>
+    <div style="text-align:right;font-size:12px; color: #9c9c9c;">
+      {{
+        channel === 'test' ? 
+        'Post a 2 hours free message with no pay.' : 
+        'Post a 8 hours message with 1 TEA.'
+      }}
+    </div>
     
 
     
@@ -99,6 +105,7 @@ export default {
   },
   methods: {
     async submitForm(){
+      
       const cb = utils.mem.get('refresh-list__'+this.channel);
     
       const msg = this.form.msg;
@@ -139,6 +146,7 @@ export default {
       this.modal.visible = true;
     },
     showLoginModal(){
+      
       user.showLoginModal(this);
     },
     async keyupHandler(e){

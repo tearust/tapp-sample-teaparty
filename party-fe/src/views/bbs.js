@@ -4,7 +4,7 @@ import tapp from '../tea/tapp';
 import store from '../store';
 import { hexToString, numberToHex } from 'tearust_layer1';
 
-const default_channel = utils.urlParam('c') || 'test';
+const default_channel = 'test';
 console.log('channel => '+default_channel);
 let layer2_url = utils.get_env('layer2_url');
 
@@ -209,7 +209,7 @@ const F = {
       tappId: F.getTappId(),
       msgId: id,
       channel: F.getChannel(channel),
-      ttl: 2*1440,
+      ttl: 1200,
       address,
       authB64: user.session_key,
     };
@@ -480,12 +480,13 @@ console.log(111, opts);
     self.$store.commit('modal/open', {
       key: 'common_form',
       param: {
-        title: 'Send notification',
+        title: 'Compose new message',
+        confirm_text: 'Sent',
         props: {
           target: {
             type: "Input",
             default: to,
-            label: "Target address",
+            label: "Reciptient address",
             required: true,
             rules: {
               min: 48,
@@ -495,12 +496,12 @@ console.log(111, opts);
           },
           content: {
             type: "textarea",
-            label: 'Content',
+            label: 'Subject',
             required: true,
           },
           tapp_url: {
             type: "Input",
-            label: 'TApp url',
+            label: 'Optional URL link',
           }
         },
       },

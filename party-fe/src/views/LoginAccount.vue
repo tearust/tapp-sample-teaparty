@@ -23,7 +23,7 @@
 
       </div>
       <div class="x-item">
-        <b>{{'My TEA' | cardTitle}}</b>
+        <b>{{'My main wallet' | cardTitle}}</b>
         <span :inner-html.prop="layer1_account ? layer1_account.balance : '' | teaIcon"></span>
       
 
@@ -31,8 +31,8 @@
       </div>
 
       <div class="x-item">
-        <b>{{'My tapp balance'}}</b>
-        <span style="margin-right: 34px;" :inner-html.prop="tapp_balance===null ? '...' : tapp_balance"></span>
+        <b>{{'My TeaParty balance'}}</b>
+        <span style="margin-right: 34px;" :inner-html.prop="tapp_balance===null ? '...' : tapp_balance | teaIcon"></span>
 
         <el-button size="mini" type="primary" plain icon="el-icon-refresh" circle @click="refreshTappBalanceHandler()" style="top:2px; right:0; position:absolute;"></el-button>
       </div>
@@ -140,13 +140,18 @@ export default {
     },
 
     async withdrawHandler(){
-      bbs.withdrawFromLayer2(this, 1, async ()=>{
+      try{
+        bbs.withdrawFromLayer2(this, 1, async ()=>{
         
-        bbs.top_log("Waiting for refresh balance...");
-        await utils.sleep(15000);
-        await this.refreshAccount(true);
-        bbs.top_log(null);
-      });
+          bbs.top_log("Waiting for refresh balance...");
+          await utils.sleep(15000);
+          await this.refreshAccount(true);
+          bbs.top_log(null);
+        });
+      }catch(e){
+        this.$root.showError(e);
+      }
+      
     },
 
     async refreshAccount(flag=false){

@@ -3,14 +3,14 @@
   <el-tabs tab-position="left" @tab-click="clickTab($event)" style="position:absolute;">
     <el-tab-pane key="receive" label="Received" :lazy="true">
     </el-tab-pane>
-    <el-tab-pane key="send" label="Send" :lazy="true">
+    <el-tab-pane key="send" label="Sent" :lazy="true">
     </el-tab-pane>
     
   </el-tabs>
 
   <div class="tea-page" style="margin-left: 130px;">
-    <h4>{{type}}</h4>
-    <el-button size="small" style="position:absolute;top:0;right:0;" @click="postNotification(null)"  type="primary">Post notification</el-button>
+    <!-- <h4>{{type}}</h4> -->
+    <el-button size="small" style="position:absolute;top:0;right:0;" @click="postNotification(null)"  type="primary">Compose new message</el-button>
     
     <div class="t-item" v-for="item of (list||[])" :key="item.id">
       <span v-if="type==='Received'" style="font-size: 13px; font-weight:bold; color:#8c8c8c;">

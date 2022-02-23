@@ -31,19 +31,20 @@
   </div>
   
 
-  <el-menu-item index="/test">{{'TEST'}}</el-menu-item>
+  <!-- <el-menu-item index="/test">{{'TEST'}}</el-menu-item> -->
 
   
   
   <el-menu-item index="/log">{{'Log'}}</el-menu-item>
 
-  <el-menu-item index="/my_notification">{{'Notifications'}}</el-menu-item>
+  <el-menu-item index="/my_notification">{{'Inbox'}}</el-menu-item>
 
   <!-- <el-menu-item index="/tapp_profile">{{'Profile'}}</el-menu-item> -->
   <el-menu-item index="/profile">{{'My assets'}}</el-menu-item>
 
 
-  <el-menu-item style="margin-right: 30px;" index="/home">{{bbs.channel || '...'}}</el-menu-item>
+  <!-- <el-menu-item style="margin-right: 30px;" index="/home">{{bbs.channel || '...'}}</el-menu-item> -->
+  <el-menu-item style="margin-right: 30px;" index="/home">Town hall</el-menu-item>
   <el-menu-item index="/channel">{{'Taste for free'}}</el-menu-item>
 
   
