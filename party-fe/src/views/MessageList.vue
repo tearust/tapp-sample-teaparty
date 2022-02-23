@@ -8,7 +8,7 @@
       <p style="font-size: 18px; margin: 0; margin-top: 4px; padding-right: 70px; white-space: pre-line;">{{item.content}}</p>
 
       <div class="t-action">
-        <el-tooltip v-if="user && user.address === item.sender" content="Extend message lifespan to 1200 more blocks." placement="top" effect="light">
+        <el-tooltip v-if="channel!=='test' && user && user.address === item.sender" content="Extend message lifespan to 1200 more blocks." placement="top" effect="light">
           <el-button size="mini" circle type="primary" plain icon="el-icon-check" @click="clickExtendMessage(item)"></el-button>
         </el-tooltip>
 
