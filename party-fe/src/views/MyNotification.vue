@@ -17,7 +17,7 @@
         From <b style="color:#35a696; margin-right: 10px;">{{item.sender}}</b>
         at <b style="color:#35a696;">{{item.utc}}</b> (Expired at <b style="color:#35a696;">{{item.utc_expired}}</b>)
       </span>
-      <span v-if="type==='Send'" style="font-size: 13px; font-weight:bold; color:#8c8c8c;">
+      <span v-if="type==='Sent'" style="font-size: 13px; font-weight:bold; color:#8c8c8c;">
         To <b style="color:#35a696; margin-right: 10px;">{{item.to}}</b>
         at <b style="color:#35a696;">{{item.utc}}</b> (Expired at <b style="color:#35a696;">{{item.utc_expired}}</b>)
       </span>
