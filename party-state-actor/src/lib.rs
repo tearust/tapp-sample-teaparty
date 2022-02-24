@@ -242,15 +242,7 @@ fn txn_exec_inner(tsid: Tsid, txn_bytes: &[u8]) -> HandlerResult<()> {
 				uuid: "ok".to_string(),
 				tsid: bincode::serialize(&tsid)?,
 			};
-			info!("req: {:?}", &pushnotifications_inner_request);
-			post_intercom(
-				tea_codec::ACTOR_PUBKEY_TAPPSTORE,
-				&BrokerMessage {
-					subject: "actor.tappstore.push_notifications".into(),
-					reply_to: "".into(),
-					body: encode_protobuf(pushnotifications_inner_request).unwrap(),
-				},
-			)?;
+			
 			let amt: Balance = if ttl > 5000 {
 				2000000000000 as Balance
 			} else {
@@ -265,6 +257,17 @@ fn txn_exec_inner(tsid: Tsid, txn_bytes: &[u8]) -> HandlerResult<()> {
 				acct: bincode::serialize(&from)?,
 				amt: bincode::serialize(&amt)?,
 			};
+
+			info!("req: {:?}", &pushnotifications_inner_request);
+			post_intercom(
+				tea_codec::ACTOR_PUBKEY_TAPPSTORE,
+				&BrokerMessage {
+					subject: "actor.tappstore.push_notifications".into(),
+					reply_to: "".into(),
+					body: encode_protobuf(pushnotifications_inner_request).unwrap(),
+				},
+			)?;
+			
 			(actor_statemachine::consume_from_account(req)?, auth_key)
 			// Ok(())
 			// if let Err(e) = tea_actor_utility::action::call_async_intercom(
