@@ -9,7 +9,7 @@
   </el-tabs>
 
   <div class="tea-page" style="margin-left: 130px;">
-    <!-- <h4>{{type}}</h4> -->
+    <h4>&nbsp;</h4>
     <el-button size="small" style="position:absolute;top:0;right:0;" @click="postNotification(null)"  type="primary">Compose new message</el-button>
     
     <div class="t-item" v-for="item of (list||[])" :key="item.id">
@@ -21,7 +21,10 @@
         To <b style="color:#35a696; margin-right: 10px;">{{item.to}}</b>
         at <b style="color:#35a696;">{{item.utc}}</b> (Expired at <b style="color:#35a696;">{{item.utc_expired}}</b>)
       </span>
-      <p style="font-size: 18px; margin: 0; margin-top: 4px; padding-right: 70px; white-space: pre-line;">{{item.content}}</p>
+      <p style="font-size: 19px; margin: 0; margin-top: 4px; padding-right: 70px; white-space: pre-line;">
+        {{item.content}}
+        <a style="display:block; font-size: 16px; color: #8c8c8c;" v-if="item.link" :href="item.link" target="_blank">Link</a>
+      </p>
 
       <div class="t-action" v-if="type==='Received'">
         <el-tooltip content="Reply message" placement="top" effect="light">

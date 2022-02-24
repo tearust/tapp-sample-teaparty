@@ -144,8 +144,8 @@ const F = {
       }
     };
 
-    bbs.log("Start to query step 5 reuslt...");
-    console.log("Start to query step 5 result...");
+    bbs.log("Start to query action result...");
+    console.log("Start to query action result...");
     await step_5_loop();
     console.log("step5 result: ", step_5_rs);
 

@@ -231,7 +231,9 @@ const F = {
     return _.map(list, (item)=>{
       // item.utc = moment(item.utc*1000).format(formatter);
       item.utc_expired = item.utcExpired;
-      
+      if(item.fromTappUrl && item.fromTappUrl !== 'null'){
+        item.link = decodeURIComponent(item.fromTappUrl);
+      }
       return item;
     });
   },
@@ -334,7 +336,9 @@ const F = {
           target: {
             type: "Input",
             disabled: true,
-            label: "Contact address",
+            hidden: true,
+            label: "Contract address",
+            class: 'hidden',
           },
           amount: {
             type: "number",
@@ -344,6 +348,11 @@ const F = {
         },
       },
       cb: async (form, close)=>{
+        if(self.layer1_account.balance < form.amount){
+          self.$root.showError("Not enough balance to topup.");
+          return false;
+        }
+
         self.$root.loading(true);
         const total = utils.layer1.amountToBalance(form.amount);
         const amt = numberToHex(total);
@@ -481,7 +490,7 @@ console.log(111, opts);
       key: 'common_form',
       param: {
         title: 'Compose new message',
-        confirm_text: 'Sent',
+        confirm_text: 'Send',
         props: {
           target: {
             type: "Input",
