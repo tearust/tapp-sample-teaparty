@@ -226,3 +226,10 @@ pub struct TestForSqlRequest {
 	pub is_txn: bool,
 	pub uuid: String,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TestForComsumeDividend {
+	pub tapp_id: u64,
+	pub uuid: String,
+}

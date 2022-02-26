@@ -158,6 +158,7 @@ fn handle_system_init(_msg: &BrokerMessage) -> HandlerResult<()> {
 			"notificationAddMessage",
 			"notificationGetMessageList",
 			"testForSql",
+			"testForComsumeDividend",
 		]
 		.iter()
 		.map(|v| v.to_string())
@@ -307,6 +308,10 @@ fn handle_adapter_http_request(req: rpc::AdapterHttpRequest) -> anyhow::Result<V
 		"testForSql" => {
 			let req: TestForSqlRequest = serde_json::from_slice(&req.payload)?;
 			state::send_sql_for_test(&req)
+		}
+		"testForComsumeDividend" => {
+			let req: TestForComsumeDividend = serde_json::from_slice(&req.payload)?;
+			state::send_test_for_comsume_dividend(&req)
 		}
 
 		_ => {

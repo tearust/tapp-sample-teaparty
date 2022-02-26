@@ -243,3 +243,22 @@ pub fn send_sql_for_test(req: &types::TestForSqlRequest) -> anyhow::Result<Vec<u
 
 	Ok(b"ok".to_vec())
 }
+
+pub fn send_test_for_comsume_dividend(
+	req: &types::TestForComsumeDividend,
+) -> anyhow::Result<Vec<u8>> {
+	let uuid = &req.uuid;
+
+	info!("start to send test consume dividend txn...");
+	let txn = TappstoreTxn::ConsumeToDividend {
+		token_id: req.tapp_id,
+	};
+	let txn_bytes: Vec<u8> = bincode::serialize(&txn)?;
+	execute_tx_with_txn_bytes(
+		txn_bytes,
+		uuid.clone(),
+		tea_codec::ACTOR_PUBKEY_TAPPSTORE.into(),
+	)?;
+
+	Ok(b"ok".to_vec())
+}
