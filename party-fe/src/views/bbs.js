@@ -433,6 +433,48 @@ console.log(111, opts);
     });
   },
 
+  async send_consume_dividend_action(self, succ_cb){
+    const tappId = F.getTappId();
+
+    self.$store.commit('modal/open', {
+      key: 'common_form',
+      param: {
+        title: 'Consume dividend test',
+        text: '',
+        props: {
+          tid: {
+            type: "Input",
+            default: tappId,
+            disabled: true,
+            label: "Tapp id",
+          },
+        },
+      },
+      cb: async (form, close)=>{
+        self.$root.loading(true);
+       
+        const opts = {
+          tappId: _.toNumber(form.tid),
+        };
+console.log(111, opts);
+
+        const txn = require('./txn').default;
+        let rs = null;
+        try{
+          rs = await txn.txn_request('testForComsumeDividend', opts);
+          F.top_log(null);
+
+          succ_cb(rs)
+        }catch(e){
+          F.log(e);
+        }
+        
+        close();
+        self.$root.loading(false);
+      }
+    });
+  },
+
   async query_balance(param){
     const user = F.getUser(param.address);
     if(!user || !user.isLogin){

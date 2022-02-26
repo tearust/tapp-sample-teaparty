@@ -48,6 +48,7 @@
     <el-divider />
 
     <el-button type="primary" @click="send_sql_action('')">Send SQL Request</el-button>
+    <el-button type="primary" @click="send_consume_dividend_action('')">Test for consume dividend</el-button>
     <el-divider />
 
     <!-- <b style="display:block">
@@ -296,6 +297,16 @@ export default {
       }
     },
 
+    async send_consume_dividend_action(){
+      this.setLog("start consume dividend action...");
+      try{
+        const rs = await bbs.send_consume_dividend_action(this, async (rs)=>{
+          this.$root.success("consume dividend success");
+        });
+      }catch(e){
+        bbs.log(e);
+      }
+    },
 
     
     async query_hash_result(){
@@ -309,6 +320,7 @@ export default {
         bbs.log(e);
       }
     },
+    
     
   }
 
