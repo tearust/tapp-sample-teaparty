@@ -28,7 +28,7 @@ use crate::wf;
 pub fn save_session_key(session_key: String, tapp_id: &u64, address: &str) -> anyhow::Result<()> {
 	let key = format!("session_key_{}_{}", tapp_id, address);
 
-	actor_kvp::set(BINDING_NAME, &key, &session_key, 6000 * 120)
+	actor_kvp::set(BINDING_NAME, &key, &session_key, 60 * 60 * 24)
 		.map_err(|e| anyhow::anyhow!("{}", e))?;
 
 	Ok(())
