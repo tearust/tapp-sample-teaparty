@@ -103,7 +103,7 @@ fn get_add_message_ttl(_req: &NotificationAddMessageRequest) -> anyhow::Result<u
 
 pub fn get_message_list(req: &NotificationGetMessageRequest) -> anyhow::Result<Vec<u8>> {
 	let block = help::current_block_number()?;
-	user::check_auth(&req.tapp_id, &req.from, &req.auth_b64)?;
+	user::check_auth(&req.tapp_id, &req.address, &req.auth_b64)?;
 
 	// to orbitdb
 	let get_message_req = orbitdb::NotificationGetMessageRequest {

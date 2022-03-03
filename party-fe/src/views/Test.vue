@@ -278,7 +278,7 @@ export default {
       this.setLog("start query notification list...");
 
       try{
-        const list = await bbs.getNotificationList(this.layer1_account.address);
+        const list = await bbs.getNotificationList(this, this.layer1_account.address);
         console.log(111, list);
         bbs.log(JSON.stringify(list));
       }catch(e){

@@ -86,10 +86,10 @@ export default {
       this.$root.loading(true);
       let list = null;
       if(this.type === 'Received'){
-        list = await bbs.getNotificationList(null, this.layer1_account.address);
+        list = await bbs.getNotificationList(this, null, this.layer1_account.address);
       }
       else{
-        list = await bbs.getNotificationList(this.layer1_account.address, null);
+        list = await bbs.getNotificationList(this, this.layer1_account.address, null);
       }
       
       // console.log(11, list);

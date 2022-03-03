@@ -200,6 +200,7 @@ pub struct NotificationAddMessageRequest {
 #[serde(rename_all = "camelCase")]
 pub struct NotificationGetMessageRequest {
 	pub tapp_id: u64,
+	pub address: String,
 	pub from: Option<String>,
 	pub to: Option<String>,
 	pub auth_b64: String,

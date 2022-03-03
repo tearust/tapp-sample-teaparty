@@ -588,8 +588,8 @@ console.log(111, opts);
       }
     });
   },
-  async getNotificationList(from=null, to=null){
-    const user = F.getUser(from);
+  async getNotificationList(self, from=null, to=null){
+    const user = F.getUser(self.layer1_account.address);
     if(!user || !user.isLogin){
       throw 'not_login';
     }
@@ -598,6 +598,7 @@ console.log(111, opts);
       tappId: F.getTappId(),
       from, 
       to,
+      address: self.layer1_account.address,
       authB64: user.session_key,
     });
 
