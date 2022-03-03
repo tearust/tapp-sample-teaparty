@@ -532,6 +532,7 @@ console.log(111, opts);
       key: 'common_form',
       param: {
         title: 'Compose new message',
+        text: 'Note: it costs 1 TEA to send a message.',
         confirm_text: 'Send',
         props: {
           target: {
@@ -547,7 +548,7 @@ console.log(111, opts);
           },
           content: {
             type: "textarea",
-            label: 'Subject',
+            label: 'Content',
             required: true,
           },
           tapp_url: {
@@ -588,10 +589,16 @@ console.log(111, opts);
     });
   },
   async getNotificationList(from=null, to=null){
+    const user = F.getUser(from);
+    if(!user || !user.isLogin){
+      throw 'not_login';
+    }
+
     const rs = await _axios.post('/tapp/notificationGetMessageList', {
       tappId: F.getTappId(),
       from, 
       to,
+      authB64: user.session_key,
     });
 
     if(!rs) return [];

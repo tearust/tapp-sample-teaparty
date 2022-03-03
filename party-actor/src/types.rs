@@ -202,6 +202,7 @@ pub struct NotificationGetMessageRequest {
 	pub tapp_id: u64,
 	pub from: Option<String>,
 	pub to: Option<String>,
+	pub auth_b64: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

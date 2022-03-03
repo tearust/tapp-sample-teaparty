@@ -157,6 +157,9 @@ export default {
 
 
   // layer2
-  'CX_214': 'You don\'t have access to make payment on this transaction.'
+  'CX_214': 'You don\'t have access to make payment on this transaction.',
+  'CX_217': 'Session expired, please login again.',
+
+  'overdraw_of_from_account': 'You have insufficient funds in your app wallet for this transaction',
 
 };
