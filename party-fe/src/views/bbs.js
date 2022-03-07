@@ -541,6 +541,7 @@ console.log(111, opts);
             default: to,
             label: "Recipient address",
             required: true,
+            disabled: !!to,
             rules: {
               min: 48,
               max: 48,

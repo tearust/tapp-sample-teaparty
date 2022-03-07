@@ -25,6 +25,9 @@ let routers = [
     path: '/profile',
     name: 'profile',
     component: LoginAccount,
+    meta: {
+      needLogin: true,
+    },
   },
   {
     path: '/home',
@@ -66,6 +69,9 @@ let routers = [
     path: '/my_notification',
     name: 'my_notification',
     component: MyNotification,
+    meta: {
+      needLogin: true,
+    },
   }
   
   

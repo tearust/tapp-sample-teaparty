@@ -37,10 +37,10 @@
   
   <el-menu-item index="/log">{{'Log'}}</el-menu-item>
 
-  <el-menu-item index="/my_notification">{{'Inbox'}}</el-menu-item>
+  <el-menu-item v-if="user && user.isLogin" index="/my_notification">{{'Inbox'}}</el-menu-item>
 
   <!-- <el-menu-item index="/tapp_profile">{{'Profile'}}</el-menu-item> -->
-  <el-menu-item index="/profile">{{'My assets'}}</el-menu-item>
+  <el-menu-item v-if="user && user.isLogin" index="/profile">{{'My assets'}}</el-menu-item>
 
 
   <!-- <el-menu-item style="margin-right: 30px;" index="/home">{{bbs.channel || '...'}}</el-menu-item> -->
@@ -155,11 +155,15 @@ export default {
     async handleCommand(item){
 
       this.$store.commit('set_account', item);
-      if(this.wf){
-        this.$root.loading(true);
-        await this.wf.refreshCurrentAccount();
-        this.$root.loading(false);
-      }
+      location.reload(true);
+      
+      // if(this.wf){
+      //   this.$root.loading(true);
+      //   bbs.top_log(null);
+      //   await this.wf.refreshCurrentAccount();
+        
+      //   this.$root.loading(false);
+      // }
 
     },
     async clickSelectAccount(){
@@ -175,11 +179,15 @@ export default {
 
     async loginOrLogout(){
       if(!this.user){
-        user.showLoginModal(this);
+        await user.showLoginModal(this);
       }
       else{
-        user.logout(this.layer1_account.address);
+        await user.logout(this.layer1_account.address);
         this.$root.success('Logout success.');
+        _.delay(()=>{
+          location.reload(true);
+        }, 2000);
+        
       }
     }
     

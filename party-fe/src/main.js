@@ -18,17 +18,29 @@ import { _ } from 'tearust_utils';
 import layer1_error_tips from './assets/error';
 import strings from './assets/string';
 
+import bbs from './views/bbs';
+
 import './filter';
 
 Vue.use(ElementUI, { locale });
 Vue.config.productionTip = false;
 
-
 router.beforeEach((to, from, next) => {
+  try{
+    bbs.top_log(null);
+  }catch(e){}
+
   if (to.meta && to.meta.needLogin) {
-    const { layer1_account } = store.getters;
-    if (!layer1_account) {
-      next({ path: '/login_account' })
+    
+    const user = store.state.user;
+    if(user && user.isLogin){
+      return next();
+    }
+    else{
+      _.delay(()=>{
+        router.push('/home').catch(()=>{});
+      }, 1000);
+      
     }
   }
 

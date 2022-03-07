@@ -194,7 +194,7 @@ export default {
       }catch(e){
         console.error(e);
 
-        bbs.top_log('Not login', 'error');
+        // bbs.top_log('Not login', 'error');
       }
       
     },
