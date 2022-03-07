@@ -233,6 +233,7 @@ const F = {
       item.utc_expired = item.utcExpired;
       if(item.fromTappUrl && item.fromTappUrl !== 'null'){
         item.link = decodeURIComponent(item.fromTappUrl);
+        item.content = decodeURIComponent(item.content);
       }
       return item;
     });
@@ -560,7 +561,8 @@ console.log(111, opts);
       cb: async (form, close)=>{
         self.$root.loading(true);
         const to = form.target;
-        const text = utils.forge.util.encode64(form.content);
+        let text = encodeURIComponent(form.content);
+        text = utils.forge.util.encode64(text);
 
         const opts = {
           tappId: F.getTappId(),
