@@ -44,8 +44,8 @@
 
 
   <!-- <el-menu-item style="margin-right: 30px;" index="/home">{{bbs.channel || '...'}}</el-menu-item> -->
-  <el-menu-item style="margin-right: 30px;" index="/home">Town hall</el-menu-item>
-  <el-menu-item index="/channel">{{'Taste for free'}}</el-menu-item>
+  <el-menu-item style="margin-right: 30px;" index="/home">Public Board</el-menu-item>
+  <el-menu-item index="/channel">{{'Free Board'}}</el-menu-item>
 
   
 </el-menu>

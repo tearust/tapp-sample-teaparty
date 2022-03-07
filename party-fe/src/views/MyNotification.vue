@@ -73,6 +73,10 @@ export default {
 
   async mounted(){
     bbs.set_global_log(this);
+
+    this.wf = new Base();
+    await this.wf.init();
+
     await this.refrersh_list();
 
   },
@@ -85,16 +89,20 @@ export default {
     async refrersh_list(){
       this.$root.loading(true);
       let list = null;
-      if(this.type === 'Received'){
-        list = await bbs.getNotificationList(this, null, this.layer1_account.address);
+
+      try{
+        if(this.type === 'Received'){
+          list = await bbs.getNotificationList(this, null, this.layer1_account.address);
+        }
+        else{
+          list = await bbs.getNotificationList(this, this.layer1_account.address, null);
+        }
+
+        this.list = list; //_.reverse(list);
+      }catch(e){
+        bbs.top_log('Not login', 'error');
       }
-      else{
-        list = await bbs.getNotificationList(this, this.layer1_account.address, null);
-      }
-      
-      // console.log(11, list);
-      this.list = list; //_.reverse(list);
-        
+    
       this.$root.loading(false);
     },
     async postNotification(to){

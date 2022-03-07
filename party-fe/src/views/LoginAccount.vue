@@ -31,7 +31,7 @@
       </div>
 
       <div class="x-item">
-        <b>{{'My TeaParty balance'}}</b>
+        <b>{{'My TEA Party balance'}}</b>
         <span style="margin-right: 34px;" :inner-html.prop="tapp_balance===null ? '...' : tapp_balance | teaIcon"></span>
 
         <el-button size="mini" type="primary" plain icon="el-icon-refresh" circle @click="refreshTappBalanceHandler()" style="top:2px; right:0; position:absolute;"></el-button>
@@ -42,10 +42,15 @@
 
       <div class="x-bottom">
 
-        <el-button :disabled="!tapp_balance" @click="withdrawHandler()">Withdraw</el-button>
+        <el-tooltip effect="light" placement="top" content="Move funds back to your main wallet">
+          <el-button :disabled="!tapp_balance" @click="withdrawHandler()">Withdraw</el-button>
+        </el-tooltip>
+        
+        <el-tooltip effect="light" placement="top" content="Move funds from your main wallet to use in this TApp">
+          <el-button v-if="layer1_account" @click="rechargeHandler()">Topup</el-button>
+        </el-tooltip>
 
-
-        <el-button v-if="layer1_account" @click="rechargeHandler()">Topup</el-button>
+        
 
         
 
@@ -93,9 +98,18 @@ export default {
   },
 
   computed: {
+    ...mapState([
+      'user',
+    ]),
     ...mapGetters([
       'layer1_account'
     ]),
+  },
+
+  watch: {
+    async user(){
+      this.queryTokenBalance();
+    }
   },
 
   async created(){
