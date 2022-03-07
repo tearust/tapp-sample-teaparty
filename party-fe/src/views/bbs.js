@@ -231,9 +231,10 @@ const F = {
     return _.map(list, (item)=>{
       // item.utc = moment(item.utc*1000).format(formatter);
       item.utc_expired = item.utcExpired;
+      item.content = decodeURIComponent(item.content);
       if(item.fromTappUrl && item.fromTappUrl !== 'null'){
         item.link = decodeURIComponent(item.fromTappUrl);
-        item.content = decodeURIComponent(item.content);
+        
       }
       return item;
     });

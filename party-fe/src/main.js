@@ -32,16 +32,6 @@ router.beforeEach((to, from, next) => {
 
   if (to.meta && to.meta.needLogin) {
     
-    const user = store.state.user;
-    if(user && user.isLogin){
-      return next();
-    }
-    else{
-      _.delay(()=>{
-        router.push('/home').catch(()=>{});
-      }, 1000);
-      
-    }
   }
 
   next();

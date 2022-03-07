@@ -95,6 +95,11 @@ export default {
         let name = to.path;
 
         this.activeIndex = name;
+
+        console.log(111, to, this.layer1_account.address, this.user)
+        if(to.meta && to.meta.needLogin && this.layer1_account.address && (!this.user || !this.user.isLogin)){
+          this.$router.push('/home');
+        }
       }
     },
 

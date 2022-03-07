@@ -100,7 +100,9 @@ export default {
 
         this.list = list; //_.reverse(list);
       }catch(e){
+        console.error(e);
         this.list = null;
+        this.$root.showError(e);
         // bbs.top_log('Not login', 'error');
       }
     
