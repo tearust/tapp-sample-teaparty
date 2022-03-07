@@ -538,7 +538,7 @@ console.log(111, opts);
           target: {
             type: "Input",
             default: to,
-            label: "Reciptient address",
+            label: "Recipient address",
             required: true,
             rules: {
               min: 48,
