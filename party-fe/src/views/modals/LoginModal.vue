@@ -15,7 +15,7 @@
     <div v-if="!loading" style="text-align:left;">
       <div style="font-size: 15px;" v-if="layer1_account.address">
 
-        <h4>Please confirm the allowed permission.</h4>
+        <h4>Please confirm the allowed permissions.</h4>
 
         <div>
           <el-checkbox v-model="read" disabled>Read</el-checkbox>

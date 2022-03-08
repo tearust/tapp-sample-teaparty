@@ -102,7 +102,7 @@ export default {
       }catch(e){
         console.error(e);
         this.list = null;
-        this.$root.showError(e);
+        // this.$root.showError(e);
         // bbs.top_log('Not login', 'error');
       }
     
