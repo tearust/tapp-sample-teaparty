@@ -210,7 +210,7 @@ console.log('message => ', opts)
       tappId: F.getTappId(),
       msgId: id,
       channel: F.getChannel(channel),
-      ttl: 4800,
+      ttl: 14400,
       address,
       authB64: user.session_key,
     };

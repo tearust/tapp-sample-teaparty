@@ -14,9 +14,9 @@
 
       <div style="position:relative; margin-top: 5px; margin-bottom: 20px; height:32px;">
         <el-select v-if="user && channel!=='test'" v-model="form.ttl" size="small" style="width:240px;">
-          <el-option :key="1" label="4800 blocks (8 hours) with 1 TEA" :value="4800" />
-          <el-option :key="2" label="9000 blocks (15 hours) with 2 TEA" :value="9000" />
-          <el-option :key="3" label="14400 blocks (24 hours) with 3 TEA" :value="14400" />
+          <el-option :key="1" label="14400 blocks (1 day) with 1 TEA" :value="14400" />
+          <el-option :key="2" label="28800 blocks (2 day) with 2 TEA" :value="28800" />
+          <el-option :key="3" label="43200 blocks (3 day) with 3 TEA" :value="43200" />
         </el-select>
 
         <span v-if="user && channel==='test'" style="font-size: 14px;color:#666;position:relative;top:-5px;">Post a 4800 blocks (8 hours) message for free.</span>
@@ -83,7 +83,7 @@ export default {
       },
       form: {
         msg: '',
-        ttl: 4800,
+        ttl: 14400,
       },
       rules: {
         msg: [{

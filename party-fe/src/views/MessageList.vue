@@ -66,7 +66,7 @@ export default {
     },
     async clickExtendMessage(item){
       try{
-        await this.$confirm('Are you sure to extend this message for 4800 blocks with 1 TEA.', {
+        await this.$confirm('Are you sure to extend this message for 14400 blocks with 1 TEA.', {
           title: 'Extend message',
           dangerouslyUseHTMLString: true,
         });
