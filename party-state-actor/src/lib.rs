@@ -105,9 +105,13 @@ fn txn_exec_inner(tsid: Tsid, txn_bytes: &[u8]) -> HandlerResult<()> {
 			info!("PostMessage => from ttl: {:?},{:?}", &from, &ttl);
 
 			// ttl > 2000, 2 TEA, else, 1 TEA
-			let amt: Balance = if ttl > 5000 {
+			let amt: Balance = if ttl > 10000 {
+				3000000000000 as Balance
+			} 
+			else if ttl > 5000 {
 				2000000000000 as Balance
-			} else {
+			}
+			else {
 				1000000000000 as Balance
 			};
 

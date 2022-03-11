@@ -8,7 +8,7 @@
       fit="fit">
     </el-image>
     
-    <!-- <b class="lg">{{chain.current_block_hash ? chain.current_block : ''}}</b> -->
+    <b class="lg" style="color:#35a696">TEA Party</b>
   </a>
   
 

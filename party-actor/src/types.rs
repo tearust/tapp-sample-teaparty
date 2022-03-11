@@ -10,6 +10,7 @@ pub struct PostMessageRequest {
 	pub address: String,
 	pub uuid: String,
 	pub auth_b64: String,
+	pub ttl: Option<u64>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
