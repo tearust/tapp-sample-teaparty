@@ -130,7 +130,7 @@ const F = {
     console.log('updateTappProfile => ', rs);
     return rs;
   },
-  async sendMessage(address, msg, channel=default_channel){
+  async sendMessage(address, msg, channel=default_channel, ttl=null){
     const user = F.getUser(address);
     if(!user || !user.isLogin){
       throw 'Not login';
@@ -150,8 +150,9 @@ const F = {
       // message: msg
       encryptedMessage: encrypted_message,
       authB64: user.session_key,
+      ttl,
     };
-
+console.log('message => ', opts)
     let rs = null;
     if(opts.channel === 'test'){
       // free msg
@@ -209,7 +210,7 @@ const F = {
       tappId: F.getTappId(),
       msgId: id,
       channel: F.getChannel(channel),
-      ttl: 1200,
+      ttl: 4800,
       address,
       authB64: user.session_key,
     };

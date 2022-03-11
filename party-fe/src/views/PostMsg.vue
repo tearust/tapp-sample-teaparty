@@ -8,21 +8,25 @@
         placeholder="What's happening?" 
         resize="none"
         @keydown.native="keyupHandler($event)"
-        style="height: auto;" 
+        style="height: auto; width: 100%;" 
         v-model="form.msg">
       </el-input>
 
-      <el-button v-if="user" style="position:absolute; width:120px; height: 32px; bottom:1px; left: 810px;" size="mini" type="primary" :disabled="!form.msg" @click="submitForm()">Post message</el-button>
+      <div style="position:relative; margin-top: 5px; margin-bottom: 20px; height:32px;">
+        <el-select v-if="user && channel!=='test'" v-model="form.ttl" size="small" style="width:240px;">
+          <el-option :key="1" label="4800 blocks (8 hours) with 1 TEA" :value="4800" />
+          <el-option :key="2" label="9000 blocks (15 hours) with 2 TEA" :value="9000" />
+          <el-option :key="3" label="14400 blocks (24 hours) with 3 TEA" :value="14400" />
+        </el-select>
 
-      <el-button v-if="!user" style="position:absolute; width:120px; height: 32px; bottom:1px; left: 810px;" size="mini" type="primary" @click="showLoginModal()">Click to login</el-button>
+        <span v-if="user && channel==='test'" style="font-size: 14px;color:#666;position:relative;top:-5px;">Post a 4800 blocks (8 hours) message for free.</span>
+
+        <el-button v-if="user" style="position:absolute; width:150px; right:0;" size="small" type="primary" :disabled="!form.msg" @click="submitForm()">Post message</el-button>
+
+        <el-button v-if="!user" style="position:absolute; width:150px; right:0;" size="small" type="primary" @click="showLoginModal()">Click to login</el-button>
+      </div>
     </div>
-    <div style="text-align:right;font-size:12px; color: #9c9c9c;">
-      {{
-        channel === 'test' ? 
-        'Post a 2-hours free message for free.' : 
-        'Post a 8-hours message with 1 TEA.'
-      }}
-    </div>
+    
     
 
     
@@ -74,12 +78,12 @@ export default {
   },
   data(){
     return {
-
       modal: {
         visible: false,
       },
       form: {
         msg: '',
+        ttl: 4800,
       },
       rules: {
         msg: [{
@@ -109,6 +113,7 @@ export default {
       const cb = utils.mem.get('refresh-list__'+this.channel);
     
       const msg = this.form.msg;
+      const ttl = this.channel==='test' ? 4800 : this.form.ttl;
       if(!msg){
         this.$root.showError('Please input message');
         return;
@@ -116,8 +121,8 @@ export default {
       
       this.$root.loading(true);
       try{
-
-        const rs = await bbs.sendMessage(this.layer1_account.address, msg, this.channel);
+        
+        const rs = await bbs.sendMessage(this.layer1_account.address, msg, this.channel, ttl);
         
         this.$root.success();
         this.closeModal();

@@ -2,7 +2,7 @@
 <div class="tea-page">
   
 
-  <PostMsg style="width:800px;" :channel="channel" />
+  <PostMsg :channel="channel" />
 
   <!-- <el-button size="small" style="top:5px;" class="tea-refresh-btn" type="primary" plain icon="el-icon-refresh" circle @click="refreshList()"></el-button> -->
   
