@@ -96,13 +96,13 @@ pub fn post_message_to_db(req: &PostMessageRequest) -> anyhow::Result<String> {
 fn get_post_message_ttl(req: &PostMessageRequest) -> anyhow::Result<u64> {
 	let ttl: u64 = {
 		match is_global_channel(&req.channel) {
-			true => (2 * 600) as u64,
+			true => 14400 as u64,
 			false => {
 				if let Some(n) = &req.ttl {
 					*n
 				}
 				else {
-					(8 * 600) as u64
+					14400 as u64
 				}
 			},
 		
