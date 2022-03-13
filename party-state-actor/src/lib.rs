@@ -47,7 +47,7 @@ fn handle_message(msg: BrokerMessage) -> HandlerResult<Vec<u8>> {
 	match handle_message_inner(msg) {
 		Ok(res) => Ok(res),
 		Err(e) => {
-			error!("simple-actor handle test task error {}", e);
+			error!("party-state-actor handle test task error {}", e);
 			Err(e)
 		}
 	}
@@ -61,7 +61,7 @@ fn handle_message_inner(msg: BrokerMessage) -> HandlerResult<Vec<u8>> {
 	Ok(vec![])
 }
 fn handle_system_init() -> anyhow::Result<()> {
-	info!("simple actor system init...");
+	info!("party-state-actor system init...");
 
 	register_layer1_event()?;
 	Ok(())
@@ -89,6 +89,20 @@ fn handle_txn_exec(msg: BrokerMessage) -> HandlerResult<()> {
 	Ok(())
 }
 
+// calculate fee with msg ttl.
+fn calculate_fee(ttl: u32) -> Balance {
+	let amt: Balance = if ttl > 40000 {
+		3000000000000 as Balance
+	} 
+	else if ttl > 20000 {
+		2000000000000 as Balance
+	}
+	else {
+		1000000000000 as Balance
+	};
+	amt
+}
+
 fn txn_exec_inner(tsid: Tsid, txn_bytes: &[u8]) -> HandlerResult<()> {
 	// info!("before TeapartyTxn der");
 	let sample_txn: TeapartyTxn = bincode::deserialize(txn_bytes)?;
@@ -104,24 +118,7 @@ fn txn_exec_inner(tsid: Tsid, txn_bytes: &[u8]) -> HandlerResult<()> {
 		} => {
 			info!("PostMessage => from ttl: {:?},{:?}", &from, &ttl);
 
-			// ttl > 2000, 2 TEA, else, 1 TEA
-			let amt: Balance = if ttl > 40000 {
-				3000000000000 as Balance
-			} 
-			else if ttl > 20000 {
-				2000000000000 as Balance
-			}
-			else {
-				1000000000000 as Balance
-			};
-
-			// let result = actor_statemachine::verify_enough_account_balance(from, token_id, amt)?;
-			// if ! result{
-			// 	warn!("todo: why error can not back to B actor.");
-			// 	return Err("not_enough_balance".into());
-			// }else{
-
-			// }
+			let amt = calculate_fee(ttl);
 
 			let auth_key: AuthKey = bincode::deserialize(&base64::decode(auth_b64)?)?;
 			let auth_ops_bytes = actor_statemachine::query_auth_ops_bytes(auth_key)?;
@@ -142,17 +139,7 @@ fn txn_exec_inner(tsid: Tsid, txn_bytes: &[u8]) -> HandlerResult<()> {
 		} => {
 			info!("ExtendMessage => from ttl: {:?},{:?}", &from, &ttl);
 
-			// ttl > 2000, 2 TEA, else, 1 TEA
-			let amt: Balance = if ttl > 40000 {
-				3000000000000 as Balance
-			} 
-			else if ttl > 20000 {
-				2000000000000 as Balance
-			}
-			else {
-				1000000000000 as Balance
-			};
-
+			let amt = calculate_fee(ttl);
 
 			let auth_key: AuthKey = bincode::deserialize(&base64::decode(auth_b64)?)?;
 			let auth_ops_bytes = actor_statemachine::query_auth_ops_bytes(auth_key)?;
@@ -185,52 +172,6 @@ fn txn_exec_inner(tsid: Tsid, txn_bytes: &[u8]) -> HandlerResult<()> {
 			(actor_statemachine::consume_from_account(req)?, auth_key)
 		}
 
-		// TeapartyTxn::TransferTea {
-		// 	from,
-		// 	to,
-		// 	amt,
-		// 	uuid: _,
-		// 	auth,
-		// } => {
-		// 	todo!("this TransferTea has not complted");
-		// 	info!(
-		// 		"TransferTea from to amt: {:?},{:?},{:?},{}",
-		// 		&from, &to, &amt, auth
-		// 	);
-		// 	let auth_key: AuthKey = auth;
-		// 	let auth_ops_bytes: Vec<u8> = query_auth_ops_bytes(auth)?;
-		// 	let ctx = TokenContext::new(tsid, base, TOKEN_ID_TEA, &auth_ops_bytes)?;
-		// 	let ctx_bytes = bincode::serialize(&ctx)?;
-		// 	let amt: Vec<u8> = bincode::serialize(&amt)?;
-
-		// 	let mov = MoveRequest {
-		// 		ctx: ctx_bytes,
-		// 		from: from.to_vec(),
-		// 		to: to.to_vec(),
-		// 		amt,
-		// 	};
-		// 	(actor_statemachine::mov(mov)?, auth_key)
-		// }
-
-		TeapartyTxn::UpdateProfile {
-			acct,
-			token_id,
-			auth_b64,
-			post_message_fee,
-		} => {
-			info!(
-				"UpdateProfile => : {:?},{:?},{:?},{:?}",
-				acct, token_id, auth_b64, post_message_fee
-			);
-			// TODO save profile bytes to statemachine.
-			warn!("todo: save profile to statemachine");
-
-			let auth_key: AuthKey = bincode::deserialize(&base64::decode(auth_b64)?)?;
-			let _auth_ops_bytes = actor_statemachine::query_auth_ops_bytes(auth_key)?;
-			todo!();
-			(b"ok".to_vec(), auth_key)
-		}
-
 		TeapartyTxn::AddNotificationMessage {
 			token_id,
 			from,
@@ -251,11 +192,7 @@ fn txn_exec_inner(tsid: Tsid, txn_bytes: &[u8]) -> HandlerResult<()> {
 				tsid: bincode::serialize(&tsid)?,
 			};
 			
-			let amt: Balance = if ttl > 5000 {
-				2000000000000 as Balance
-			} else {
-				1000000000000 as Balance
-			};
+			let amt = calculate_fee(ttl);
 
 			let auth_key: AuthKey = bincode::deserialize(&base64::decode(auth_b64)?)?;
 			let auth_ops_bytes = actor_statemachine::query_auth_ops_bytes(auth_key)?;
@@ -277,46 +214,6 @@ fn txn_exec_inner(tsid: Tsid, txn_bytes: &[u8]) -> HandlerResult<()> {
 			)?;
 			
 			(actor_statemachine::consume_from_account(req)?, auth_key)
-			// Ok(())
-			// if let Err(e) = tea_actor_utility::action::call_async_intercom(
-			// 	ACTOR_PUBKEY_TOKENSTATE_SERVICE,
-			// 	BINDING_NAME,
-			// 	BrokerMessage {
-			// 		subject: "actor.tokenstate.last_block_height".into(),
-			// 		reply_to: Default::default(),
-			// 		body: Default::default(),
-			// 	},
-			// 	move |msg|{
-			// 		let height: u32 = bincode::deserialize(&msg.body)?;
-			// 		// .map_err(|e|{
-			// 		// 		error!("fetch last block height failed: {}", e);
-			// 		// 	}
-			// 		// );
-			// 		info!("party state actor received height : {}", &height);
-			// 		warn!("todo: complete the txn");
-			// 		let expired_height = height + ttl;
-			// 		let pushnotifications_inner_request = tappstore::PushNotificationsInnerRequest{
-			// 			token_id,
-			// 			accounts: vec!(public_key_to_ss58(&to)?),
-			// 			expired_heights: vec!(expired_height),
-			// 			uuid: "ok".to_string(),
-			// 		};
-
-			// 		// let msg_body: Vec<u8> = serialize(&pushnotifications_inner_request)
-			// 		// .map_err(|e| error!("line195");)?;
-			// 		post_intercom(
-			// 			tea_codec::ACTOR_PUBKEY_TAPPSTORE,
-			// 			&BrokerMessage {
-			// 				subject: "actor.tappstore.push_notifications".into(),
-			// 				reply_to: "".into(),
-			// 				body: encode_protobuf(pushnotifications_inner_request).unwrap(),
-			// 			},
-			// 		)?;
-			// 		Ok(())
-			// 	},
-			// ){
-			// 	error!("call async get last blockheight intercom failed {}", e);
-			// };
 		}
 
 		_ => Err(anyhow::anyhow!("Unhandled txn OP type"))?,
@@ -337,17 +234,8 @@ fn txn_exec_inner(tsid: Tsid, txn_bytes: &[u8]) -> HandlerResult<()> {
 	Ok(())
 }
 fn health(_req: codec::core::HealthRequest) -> HandlerResult<()> {
-	info!("health call from simple actor");
+	info!("health call from party-state actor");
 	Ok(())
 }
 
-// fn fetch_consume_account(token_id: u64) -> anyhow::Result<Vec<u8>> {
-// 	let key = untyped::default()
-// 		.call(
-// 			tea_codec::TOKENSTATE_CAPABILITY_ID,
-// 			OP_GET_APP_CONSUME_ACCT,
-// 			encode_protobuf(tokenstate::GetConsumeAccountRequest { token_id })?,
-// 		)
-// 		.map_err(|e| anyhow::anyhow!("{}", e))?;
-// 	Ok(key)
-// }
+

@@ -22,13 +22,6 @@ pub enum TeapartyTxnError {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum TeapartyTxn {
-	TransferTea {
-		from: Account,
-		to: Account,
-		amt: Balance,
-		uuid: String,
-		auth: AuthKey,
-	},
 
 	PostMessage {
 		token_id: TokenId,

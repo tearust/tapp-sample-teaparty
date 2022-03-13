@@ -1,7 +1,7 @@
 use bincode;
 use std::convert::TryInto;
 use tea_actor_utility::actor_crypto::{public_key_from_ss58, sha256};
-use tea_actor_utility::actor_env::get_system_time;
+use tea_actor_utility::actor_env::{get_system_time, get_my_tea_id};
 
 // use tea_actor_utility::actor_enclave::generate_uuid;
 // use base64;
@@ -73,8 +73,6 @@ pub fn send_tx_to_replica(txn_bytes: Vec<u8>) -> anyhow::Result<()> {
 	}
 
 	Ok(())
-
-	// Err(anyhow::anyhow!("{}", "No tx tsid returned."))
 }
 
 fn get_current_ts() -> anyhow::Result<Ts> {
@@ -85,9 +83,8 @@ fn get_current_ts() -> anyhow::Result<Ts> {
 	Ok(ts)
 }
 
-fn send_actor_hash() -> Hash {
-	// TODO
-	[0u8; 32]
+fn send_actor_hash() -> anyhow::Result<Hash> {
+	Ok(get_my_tea_id()?.as_slice().try_into()?)
 }
 
 fn execute_tx_with_txn(txn: TeapartyTxn) -> anyhow::Result<()> {
@@ -100,7 +97,7 @@ fn execute_tx_with_txn(txn: TeapartyTxn) -> anyhow::Result<()> {
 	let sent_time = get_current_ts()?;
 
 	// step 2, send followup
-	let sender_actor_hash = send_actor_hash();
+	let sender_actor_hash = send_actor_hash()?;
 	let req_fu: Followup = Followup {
 		ts: sent_time,
 		hash: txn_hash,
