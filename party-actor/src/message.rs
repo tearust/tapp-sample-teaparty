@@ -1,6 +1,3 @@
-use crate::state;
-use crate::types::*;
-use crate::validating::{aes_decrypt_local, aes_encrypt_local, is_user_logged_in};
 use interface::AuthKey;
 use prost::Message;
 use serde_json::json;
@@ -23,25 +20,27 @@ use vmh_codec::message::{
 use wascc_actor::prelude::codec::messaging::BrokerMessage;
 use wascc_actor::prelude::*;
 
-use crate::channel;
 use crate::help;
+use crate::request::{send_query, send_txn};
+use crate::types::*;
 use crate::user;
-use crate::wf;
+use crate::utility::parse_to_acct;
 
-pub fn post_message(uuid: &str, req: &PostMessageRequest) -> anyhow::Result<Vec<u8>> {
+pub fn post_message(req: &PostMessageRequest) -> anyhow::Result<Vec<u8>> {
 	user::check_auth(&req.tapp_id, &req.address, &req.auth_b64)?;
 
+	let uuid = &req.uuid;
 	let ttl = get_post_message_ttl(&req)?;
 	let txn = TeapartyTxn::PostMessage {
 		token_id: req.tapp_id,
-		from: state::parse_to_acct(&req.address)?,
+		from: parse_to_acct(&req.address)?,
 		ttl,
 		auth_b64: req.auth_b64.to_string(),
 	};
 
 	let txn_bytes = bincode::serialize(&txn)?;
 
-	wf::sm_txn_request(
+	send_txn(
 		"post_message",
 		&uuid,
 		bincode::serialize(req)?,
@@ -56,7 +55,7 @@ pub fn post_message_to_db(req: &PostMessageRequest) -> anyhow::Result<String> {
 	let message = {
 		let msg = base64::decode(&req.encrypted_message)?;
 
-		let aes_key = user::get_aes_key(&req.tapp_id)?;
+		let aes_key = help::get_aes_key(&req.tapp_id)?;
 		let mut data = msg.to_vec();
 		if data.len() < 8 {
 			data.extend_from_slice(&[0, 0, 0, 0, 0, 0, 0]);
@@ -77,7 +76,7 @@ pub fn post_message_to_db(req: &PostMessageRequest) -> anyhow::Result<String> {
 		utc: block,
 		utc_expired: block + ttl,
 	};
-	info!("aaa => {:?}", &add_message_data);
+
 	let res = orbitdb::OrbitBbsResponse::decode(
 		untyped::default()
 			.call(
@@ -100,36 +99,31 @@ fn get_post_message_ttl(req: &PostMessageRequest) -> anyhow::Result<u64> {
 			false => {
 				if let Some(n) = &req.ttl {
 					*n
-				}
-				else {
+				} else {
 					14400 as u64
 				}
-			},
-		
+			}
 		}
 	};
 
 	Ok(ttl)
 }
 
-pub(crate) fn load_message_list(
-	_uuid: &str,
-	request: LoadMessageRequest,
-) -> anyhow::Result<Vec<u8>> {
+pub fn load_message_list(req: &LoadMessageRequest) -> anyhow::Result<Vec<u8>> {
 	let block = help::current_block_number()? as u64;
 
 	// to orbitdb
-	let dbname = db_name(request.tapp_id, &request.channel);
+	let dbname = db_name(req.tapp_id, &req.channel);
 	let get_message_data = orbitdb::GetMessageRequest {
-		tapp_id: request.tapp_id,
+		tapp_id: req.tapp_id,
 		dbname,
-		sender: match request.address.is_empty() {
+		sender: match req.address.is_empty() {
 			true => "".to_string(),
-			false => request.address,
+			false => req.address.to_string(),
 		},
 		utc: block - 2,
 	};
-	info!("bbb => {:?}", &get_message_data);
+
 	let res = orbitdb::OrbitBbsResponse::decode(
 		untyped::default()
 			.call(
@@ -152,7 +146,7 @@ pub(crate) fn load_message_list(
 	for item in arr.iter() {
 		let text = item["content"].as_str().unwrap().to_string();
 
-		let aes_key = user::get_aes_key(&request.tapp_id)?;
+		let aes_key = help::get_aes_key(&req.tapp_id)?;
 		let content =
 			aes_decrypt(aes_key, base64::decode(text)?).unwrap_or(b"Failed to decrypt.".to_vec());
 
@@ -165,28 +159,25 @@ pub(crate) fn load_message_list(
 			content: String::from_utf8(content)?,
 		};
 
-		// info!("222222=====> {:?}", message_item);
 		rs.push(message_item);
 	}
 
 	Ok(serde_json::to_string(&rs)?.into_bytes())
 }
 
-pub(crate) fn extend_message(
-	uuid: &str,
-	req: &ExtendMessageRequest,
-) -> anyhow::Result<Vec<u8>> {
+pub fn extend_message(req: &ExtendMessageRequest) -> anyhow::Result<Vec<u8>> {
 	user::check_auth(&req.tapp_id, &req.address, &req.auth_b64)?;
 
+	let uuid = &req.uuid;
 	let txn = TeapartyTxn::ExtendMessage {
 		token_id: req.tapp_id,
-		from: state::parse_to_acct(&req.address)?,
+		from: parse_to_acct(&req.address)?,
 		ttl: req.ttl,
 		auth_b64: req.auth_b64.to_string(),
 	};
 
 	let txn_bytes = bincode::serialize(&txn)?;
-	wf::sm_txn_request(
+	send_txn(
 		"extend_message",
 		&uuid,
 		bincode::serialize(req)?,
@@ -195,7 +186,6 @@ pub(crate) fn extend_message(
 	)?;
 
 	Ok(b"ok".to_vec())
-
 }
 
 pub fn extend_message_to_db(req: &ExtendMessageRequest) -> anyhow::Result<()> {
@@ -223,21 +213,19 @@ pub fn extend_message_to_db(req: &ExtendMessageRequest) -> anyhow::Result<()> {
 	Ok(())
 }
 
-pub fn delete_message(
-	uuid: &str,
-	req: &DeleteMessageRequest
-) -> anyhow::Result<Vec<u8>> {
+pub fn delete_message(req: &DeleteMessageRequest) -> anyhow::Result<Vec<u8>> {
 	user::check_auth(&req.tapp_id, &req.address, &req.auth_b64)?;
 
+	let uuid = &req.uuid;
 	let txn = TeapartyTxn::DeleteMessage {
 		token_id: req.tapp_id,
-		from: state::parse_to_acct(&req.address)?,
+		from: parse_to_acct(&req.address)?,
 		auth_b64: req.auth_b64.to_string(),
 		is_tapp_owner: req.is_tapp_owner,
 	};
 
 	let txn_bytes = bincode::serialize(&txn)?;
-	wf::sm_txn_request(
+	send_txn(
 		"delete_message",
 		&uuid,
 		bincode::serialize(req)?,
@@ -248,9 +236,7 @@ pub fn delete_message(
 	Ok(b"ok".to_vec())
 }
 
-pub fn delete_message_to_db(
-	req: &DeleteMessageRequest,
-) -> anyhow::Result<()> {
+pub fn delete_message_to_db(req: &DeleteMessageRequest) -> anyhow::Result<()> {
 	let dbname = db_name(req.tapp_id, &req.channel);
 	let delete_message_data = orbitdb::DeleteMessageRequest {
 		tapp_id: req.tapp_id,

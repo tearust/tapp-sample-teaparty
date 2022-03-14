@@ -2,16 +2,11 @@
 #![allow(unused_imports)]
 #![allow(non_camel_case_types)]
 
-use crate::channel::{delete_message, extend_message, load_message_list, post_message, post_message_to_db};
-use crate::validating::{login, logout};
 use actor::prelude::*;
 use codec::messaging::BrokerMessage;
 use prost::Message;
 use std::convert::TryInto;
-#[cfg(not(feature = "nitro"))]
-use tea_actor_utility::action::get_uuid;
-#[cfg(feature = "nitro")]
-use tea_actor_utility::actor_enclave::generate_uuid;
+
 use tea_actor_utility::actor_layer1::register_layer1_event;
 
 use tea_actor_utility::{
@@ -36,17 +31,17 @@ extern crate log;
 #[macro_use]
 extern crate serde_derive;
 
-mod balance;
-mod channel;
+mod api;
 mod help;
+mod message;
 mod notification;
-mod state;
+mod query_cb;
+mod request;
+mod txn_cb;
 mod types;
 mod user;
-mod validating;
-mod wf;
+mod utility;
 
-const BINDING_NAME: &'static str = "tea_tapp_bbs";
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 actor_handlers! {
@@ -55,8 +50,6 @@ actor_handlers! {
 }
 
 fn handle_message(msg: BrokerMessage) -> HandlerResult<Vec<u8>> {
-	// info!("bbs actor received deliver message, {:?}", &msg);
-
 	let channel_parts: Vec<&str> = msg.subject.split('.').collect();
 	match &channel_parts[..] {
 		["tea", "system", "init"] => handle_system_init(&msg)?,
@@ -153,8 +146,6 @@ fn handle_system_init(_msg: &BrokerMessage) -> HandlerResult<()> {
 			"deleteMessage",
 			"query_balance",
 			"query_result",
-			"test_action",
-			"test_result",
 			"notificationAddMessage",
 			"notificationGetMessageList",
 			"testForSql",
@@ -177,9 +168,7 @@ fn handle_adapter_request(data: &[u8], section: &str) -> HandlerResult<Vec<u8>> 
 	match section {
 		"http" => match adapter_server_request.msg {
 			Some(rpc::adapter_server_request::Msg::AdapterHttpRequest(r)) => {
-				info!("bbs got http request: {:?}", r);
 				let res = handle_adapter_http_request(r)?;
-				info!("bbs send response");
 				return Ok(res);
 			}
 			_ => debug!(
@@ -198,120 +187,42 @@ fn handle_adapter_request(data: &[u8], section: &str) -> HandlerResult<Vec<u8>> 
 }
 
 fn handle_adapter_http_request(req: rpc::AdapterHttpRequest) -> anyhow::Result<Vec<u8>> {
-	#[cfg(feature = "nitro")]
-	let uuid = generate_uuid()?;
-	#[cfg(not(feature = "nitro"))]
-	let uuid = get_uuid();
 	match req.action.as_str() {
-		"login" => {
-			let req: PrepareLoginRequest = serde_json::from_slice(&req.payload)?;
-			user::prepare_login_request(&req)
-		}
-
+		"login" => api::login_request(&serde_json::from_slice(&req.payload)?),
 		"checkLogin" => {
 			let req: CheckLoginRequest = serde_json::from_slice(&req.payload)?;
 			user::check_auth(&req.tapp_id, &req.address, &req.auth_b64)
 		}
-		"logout" => {
-			let req: LogoutRequest = serde_json::from_slice(&req.payload)?;
-			logout(&uuid, &req)
-		}
-		"updateTappProfile" => {
-			let req: TappProfileRequest = serde_json::from_slice(&req.payload)?;
-			user::update_tapp_profile(&req)
-		}
-		"query_balance" => {
-			let req: HttpQueryBalanceRequest = serde_json::from_slice(&req.payload)?;
-
-			user::query_balance(&req)
-		}
-		"withdraw" => {
-			let req: WithdrawRequest = serde_json::from_slice(&req.payload)?;
-			user::withdraw(&req)
-		}
-		"queryHashResult" => {
-			let req: QueryHashRequest = serde_json::from_slice(&req.payload)?;
-			state::query_txn_hash_result(hex::decode(req.hash)?, req.uuid.to_string())?;
-
-			Ok(b"ok".to_vec())
-		}
-		"queryTappAccount" => {
-			let req: QueryTappAccountRequest = serde_json::from_slice(&req.payload)?;
-			state::query_tapp_account(req.tapp_id, req.uuid.to_string())?;
-
-			Ok(b"ok".to_vec())
-		}
+		"logout" => api::logout(&serde_json::from_slice(&req.payload)?),
+		"updateTappProfile" => api::update_tapp_profile(&serde_json::from_slice(&req.payload)?),
+		"query_balance" => api::query_balance(&serde_json::from_slice(&req.payload)?),
+		"withdraw" => api::withdraw(&serde_json::from_slice(&req.payload)?),
+		"queryHashResult" => api::query_txn_hash_result(&serde_json::from_slice(&req.payload)?),
+		"queryTappAccount" => api::query_tapp_account(&serde_json::from_slice(&req.payload)?),
 		"queryTappStoreAccount" => {
-			let req: QueryTappStoreAccountRequest = serde_json::from_slice(&req.payload)?;
-			state::query_tappstore_account(req.uuid.to_string())?;
-
-			Ok(b"ok".to_vec())
+			api::query_tappstore_account(&serde_json::from_slice(&req.payload)?)
 		}
 
-		"postMessage" => {
-			let req: PostMessageRequest = serde_json::from_slice(&req.payload)?;
-			post_message(&req.uuid.clone(), &req)
-		}
-		"postFreeMessage" => {
-			let req: PostMessageRequest = serde_json::from_slice(&req.payload)?;
-			user::check_auth(&req.tapp_id, &req.address, &req.auth_b64)?;
-			post_message_to_db(&req)?;
-
-			Ok(b"ok".to_vec())
-		}
-		"loadMessageList" => {
-			let req: LoadMessageRequest = serde_json::from_slice(&req.payload)?;
-			load_message_list(&uuid, req)
-		}
-		"extendMessage" => {
-			let req: ExtendMessageRequest = serde_json::from_slice(&req.payload)?;
-			extend_message(&req.uuid.clone(), &req)
-		}
-		"deleteMessage" => {
-			let req: DeleteMessageRequest = serde_json::from_slice(&req.payload)?;
-			delete_message(&req.uuid.clone(), &req)
-		}
+		"postMessage" => api::post_message(&serde_json::from_slice(&req.payload)?),
+		"postFreeMessage" => api::post_free_message(&serde_json::from_slice(&req.payload)?),
+		"loadMessageList" => api::load_message_list(&serde_json::from_slice(&req.payload)?),
+		"extendMessage" => api::extend_message(&serde_json::from_slice(&req.payload)?),
+		"deleteMessage" => api::delete_message(&serde_json::from_slice(&req.payload)?),
 
 		"query_result" => {
 			let req: HttpQueryResultWithUuid = serde_json::from_slice(&req.payload)?;
-			let res_val = help::to_json_response(&req.uuid)?;
+			let res_val = api::query_result(&req)?;
 			Ok(serde_json::to_vec(&res_val)?)
 		}
-		"test_action" => {
-			let req_json: serde_json::Value = serde_json::from_slice(&req.payload)?;
-			info!("test action req => {:?}", req_json);
-
-			let uuid = req_json["uuid"].as_str().unwrap();
-			help::set_mem_cache(&uuid, req.payload)?;
-
-			Ok(b"ok".to_vec())
-		}
-		"test_result" => {
-			let req_json: serde_json::Value = serde_json::from_slice(&req.payload)?;
-			info!("test result req => {:?}", req_json);
-
-			let uuid = req_json["uuid"].as_str().unwrap();
-			let rs = help::get_mem_cache(&uuid)?;
-
-			Ok(rs)
-		}
-
-		// notification
 		"notificationAddMessage" => {
-			let req: NotificationAddMessageRequest = serde_json::from_slice(&req.payload)?;
-			notification::add_message(&req)
+			api::notification_add_message(&serde_json::from_slice(&req.payload)?)
 		}
 		"notificationGetMessageList" => {
-			let req: NotificationGetMessageRequest = serde_json::from_slice(&req.payload)?;
-			notification::get_message_list(&req)
+			api::notification_get_message_list(&serde_json::from_slice(&req.payload)?)
 		}
-		"testForSql" => {
-			let req: TestForSqlRequest = serde_json::from_slice(&req.payload)?;
-			state::send_sql_for_test(&req)
-		}
+		"testForSql" => api::send_sql_for_test(&serde_json::from_slice(&req.payload)?),
 		"testForComsumeDividend" => {
-			let req: TestForComsumeDividend = serde_json::from_slice(&req.payload)?;
-			state::send_test_for_comsume_dividend(&req)
+			api::send_test_for_comsume_dividend(&serde_json::from_slice(&req.payload)?)
 		}
 
 		_ => {

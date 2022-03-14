@@ -1,5 +1,7 @@
 use interface::{AuthKey, Balance};
 
+pub const BINDING_NAME: &'static str = "tea_tapp_bbs";
+
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PostMessageRequest {
@@ -85,7 +87,7 @@ pub struct LoadMessageResponse {
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct PrepareLoginRequest {
+pub struct LoginRequest {
 	pub tapp_id: u64,
 	pub address: String,
 	/// Base64 encoded
@@ -113,21 +115,6 @@ pub struct PrepareLoginResponse {
 	pub sign_data: String,
 	/// Base64 encoded
 	pub signature: String,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct LoginRequest {
-	pub tapp_id: u64,
-	pub address: String,
-	/// Base64 encoded
-	pub encrypted_aes_key: String,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct LoginResponse {
-	pub success: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

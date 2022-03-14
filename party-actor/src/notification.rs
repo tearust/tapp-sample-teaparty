@@ -21,9 +21,10 @@ use wascc_actor::prelude::codec::messaging::BrokerMessage;
 use wascc_actor::prelude::*;
 
 use crate::help;
-use crate::state;
+use crate::request::{send_query, send_txn};
+use crate::types::*;
 use crate::user;
-use crate::wf;
+use crate::utility::parse_to_acct;
 
 pub fn add_message(req: &NotificationAddMessageRequest) -> anyhow::Result<Vec<u8>> {
 	let uuid = &req.uuid;
@@ -34,14 +35,14 @@ pub fn add_message(req: &NotificationAddMessageRequest) -> anyhow::Result<Vec<u8
 	let ttl = get_add_message_ttl(&req)?;
 	let txn = TeapartyTxn::AddNotificationMessage {
 		token_id: req.tapp_id,
-		from: state::parse_to_acct(&req.from)?,
-		to: state::parse_to_acct(&req.to)?,
+		from: parse_to_acct(&req.from)?,
+		to: parse_to_acct(&req.to)?,
 		current: block,
 		ttl,
 		auth_b64: req.auth_b64.to_string(),
 	};
 	let txn_bytes = bincode::serialize(&txn)?;
-	wf::sm_txn_request(
+	send_txn(
 		"notification_add_message",
 		&uuid,
 		bincode::serialize(req)?,
@@ -56,7 +57,7 @@ pub fn add_message_to_db(req: &NotificationAddMessageRequest) -> anyhow::Result<
 	// to orbitdb
 	let message = {
 		let msg = base64::decode(&req.content_b64)?;
-		let aes_key = user::get_aes_key(&req.tapp_id)?;
+		let aes_key = help::get_aes_key(&req.tapp_id)?;
 		let mut data = msg.to_vec();
 		if data.len() < 8 {
 			data.extend_from_slice(&[0, 0, 0, 0, 0, 0, 0]);
@@ -141,7 +142,7 @@ pub fn get_message_list(req: &NotificationGetMessageRequest) -> anyhow::Result<V
 	for item in arr.iter() {
 		let text = item["content"].as_str().unwrap().to_string();
 
-		let aes_key = user::get_aes_key(&req.tapp_id)?;
+		let aes_key = help::get_aes_key(&req.tapp_id)?;
 		let content = aes_decrypt(aes_key, base64::decode(text)?)?;
 
 		let message_item: NotificationMessageItem = NotificationMessageItem {

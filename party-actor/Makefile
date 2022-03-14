@@ -42,17 +42,14 @@ clean:
 doc:
 	@$(CARGO) doc
 
-test: build
-	@$(CARGO) test
+test:
+	RUST_LOG=info cargo +nightly test --features __test 
 
 update:
 	@$(CARGO) update
 
-release-tpm:
-	@$(CARGO) build --release --target wasm32-unknown-unknown --features tpm
-	wascap sign $(RELEASE)/$(NAME) $(RELEASE)/$(SIGN_NAME) -i $(KEYDIR)/account.nk -u $(KEYDIR)/module.nk -l -g -z -c tea:keyvalue -c tea:layer1 -c tea:env -c tea:ipfs -c tea:tpm -c tea:intercom -c tea:crypto -c tea:nitro -c tea:vmh-provider -c tea:layer1 -c tea:libp2p -c tea:orbitdb -n "TEA project: TApp BBS Actor"
-release-nitro:
-	@$(CARGO) build --release --target wasm32-unknown-unknown --features nitro
+release:
+	@$(CARGO) build --release --target wasm32-unknown-unknown
 	wascap sign $(RELEASE)/$(NAME) $(RELEASE)/$(SIGN_NAME) -i $(KEYDIR)/account.nk -u $(KEYDIR)/module.nk -l -g -z -c tea:keyvalue -c tea:layer1 -c tea:env -c tea:ipfs -c tea:tpm -c tea:intercom -c tea:crypto -c tea:nitro -c tea:vmh-provider -c tea:layer1 -c tea:libp2p -c tea:orbitdb -n "TEA project: TApp BBS Actor"
 
 keys: keys-account

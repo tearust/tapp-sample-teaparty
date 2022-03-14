@@ -1,5 +1,3 @@
-use crate::types::*;
-use crate::validating::{aes_decrypt_local, aes_encrypt_local, is_user_logged_in};
 use interface::AuthKey;
 use prost::Message;
 use serde_json::json;
@@ -22,41 +20,23 @@ use vmh_codec::message::{
 use wascc_actor::prelude::codec::messaging::BrokerMessage;
 use wascc_actor::prelude::*;
 
-use crate::channel;
+use crate::api;
 use crate::help;
+use crate::message;
 use crate::notification;
-use crate::state;
+use crate::types::*;
 use crate::user;
+use crate::utility::uuid_cb_key;
 
-pub fn sm_txn_request(
-	action_name: &str,
-	uuid: &str,
-	req_bytes: Vec<u8>,
-	txn_bytes: Vec<u8>,
-	txn_target: &str,
-) -> anyhow::Result<()> {
-	let ori_uuid = str::replace(&uuid, "txn_", "");
-	let action_key = help::uuid_cb_key(&ori_uuid, "action_name");
-	let req_key = help::uuid_cb_key(&ori_uuid, "action_req");
-	help::set_mem_cache(&action_key, bincode::serialize(&action_name)?)?;
-	help::set_mem_cache(&req_key, req_bytes.clone())?;
-
-	info!("start to send txn request for {} with uuid [{}]", &action_name, &uuid);
-	state::execute_tx_with_txn_bytes(txn_bytes, uuid.to_string(), txn_target.to_string())?;
-	info!("finish to send txn request...");
-
-	Ok(())
-}
-
-pub fn sm_txn_cb(
+pub fn txn_callback(
 	req: replica::FindExecutedTxnResponse,
 	uuid: &str,
 ) -> anyhow::Result<serde_json::Value> {
-	info!("sm_txn_cb => {:?}\n{:?}", req, uuid);
+	info!("txn_callback => {:?}\n{:?}", req, uuid);
 
 	let ori_uuid = str::replace(&uuid, "hash_", "");
-	let action_key = help::uuid_cb_key(&ori_uuid, "action_name");
-	let req_key = help::uuid_cb_key(&ori_uuid, "action_req");
+	let action_key = uuid_cb_key(&ori_uuid, "action_name");
+	let req_key = uuid_cb_key(&ori_uuid, "action_req");
 
 	let tmp = help::get_mem_cache(&action_key)?;
 	let action_name: &str = bincode::deserialize(&tmp)?;
@@ -65,7 +45,7 @@ pub fn sm_txn_cb(
 	let rs = match action_name {
 		"post_message" => {
 			let req: PostMessageRequest = bincode::deserialize(&req_bytes)?;
-			let msg_id = channel::post_message_to_db(&req)?;
+			let msg_id = message::post_message_to_db(&req)?;
 			json!({
 			  "status": true,
 			  "msg_id": msg_id,
@@ -73,7 +53,7 @@ pub fn sm_txn_cb(
 		}
 		"extend_message" => {
 			let req: ExtendMessageRequest = bincode::deserialize(&req_bytes)?;
-			channel::extend_message_to_db(&req)?;
+			message::extend_message_to_db(&req)?;
 
 			json!({
 				"status": true,
@@ -81,7 +61,7 @@ pub fn sm_txn_cb(
 		}
 		"delete_message" => {
 			let req: DeleteMessageRequest = bincode::deserialize(&req_bytes)?;
-			channel::delete_message_to_db(&req)?;
+			message::delete_message_to_db(&req)?;
 
 			json!({
 				"status": true,
@@ -101,7 +81,7 @@ pub fn sm_txn_cb(
 			})
 		}
 		"login_request" => {
-			let req: PrepareLoginRequest = bincode::deserialize(&req_bytes)?;
+			let req: LoginRequest = bincode::deserialize(&req_bytes)?;
 			// send query
 			let query_uuid = user::login_request_cb(&req)?;
 
@@ -119,11 +99,4 @@ pub fn sm_txn_cb(
 	};
 
 	Ok(rs)
-}
-
-pub fn to_query_uuid(uuid: &str) -> String {
-	let query_uuid = str::replace(&uuid, "txn_", "");
-	let query_uuid = str::replace(&query_uuid, "hash_", "");
-
-	query_uuid.to_string()
 }

@@ -33,6 +33,4 @@ interface = {path = "../../statemachine/interface"}
 party-shared = { path = "../party-shared" }
 
 [features]
-default = []
-nitro = ["tea-actor-utility/nitro"]
-tpm = ["tea-actor-utility/tpm"]
+__test = ["tea-actor-utility/__test" ]
