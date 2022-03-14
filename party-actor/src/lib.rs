@@ -41,6 +41,7 @@ mod txn_cb;
 mod types;
 mod user;
 mod utility;
+mod test;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
