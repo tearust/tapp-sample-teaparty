@@ -1,7 +1,7 @@
 use bincode;
 use interface::{
 	txn::{Transferable, Txn, TxnSerial},
-	Account, AuthKey, Balance, TokenId,
+	Account, Balance, TokenId,
 };
 use serde::{Deserialize, Serialize};
 use std::convert::{TryFrom, TryInto};
