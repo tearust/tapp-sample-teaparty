@@ -495,6 +495,9 @@ console.log(111, opts);
       rs.balance = 0;
     }
 
+    const ts = rs.ts;
+    console.log('latest ts is', ts, new Date(_.toNumber(ts.substr(0, 13))));
+
     return rs ? utils.layer1.balanceToAmount(rs.balance) : null;
   },
 
