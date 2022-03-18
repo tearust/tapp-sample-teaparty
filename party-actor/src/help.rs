@@ -42,7 +42,7 @@ pub fn del_mem_cache(key: &str) -> anyhow::Result<()> {
 const CURRENT_BLOCK_NUMBER_KEY: &str = "tea_tapp_party_actor";
 pub(crate) fn persist_current_block(event: &layer1::NewBlockEvent) -> anyhow::Result<()> {
 	actor_kvp::set_forever(
-		crate::BINDING_NAME,
+		BINDING_NAME,
 		CURRENT_BLOCK_NUMBER_KEY,
 		&event.block_number,
 	)?;
@@ -51,14 +51,14 @@ pub(crate) fn persist_current_block(event: &layer1::NewBlockEvent) -> anyhow::Re
 
 pub(crate) fn current_block_number() -> anyhow::Result<u32> {
 	let block_number: u32 =
-		actor_kvp::get(crate::BINDING_NAME, CURRENT_BLOCK_NUMBER_KEY)?.unwrap_or_default();
+		actor_kvp::get(BINDING_NAME, CURRENT_BLOCK_NUMBER_KEY)?.unwrap_or_default();
 	Ok(block_number)
 }
 
 pub fn save_session_key(session_key: String, tapp_id: &u64, address: &str) -> anyhow::Result<()> {
 	let key = format!("session_key_{}_{}", tapp_id, address);
 
-	actor_kvp::set(crate::BINDING_NAME, &key, &session_key, 60 * 60 * 1)
+	actor_kvp::set(BINDING_NAME, &key, &session_key, 60 * 60 * 1)
 		.map_err(|e| anyhow::anyhow!("{}", e))?;
 
 	Ok(())
@@ -66,7 +66,7 @@ pub fn save_session_key(session_key: String, tapp_id: &u64, address: &str) -> an
 pub fn get_session_key(tapp_id: &u64, address: &str) -> anyhow::Result<String> {
 	let key = format!("session_key_{}_{}", tapp_id, address);
 
-	let session_key: String = actor_kvp::get(crate::BINDING_NAME, &key)?
+	let session_key: String = actor_kvp::get(BINDING_NAME, &key)?
 		.ok_or(anyhow::anyhow!("failed to get session key"))?;
 
 	Ok(session_key)
@@ -75,7 +75,7 @@ pub fn get_session_key(tapp_id: &u64, address: &str) -> anyhow::Result<String> {
 pub fn save_aes_key(aes_key: Vec<u8>, tapp_id: &u64) -> anyhow::Result<()> {
 	let key = format!("aes_key_{}", tapp_id);
 
-	actor_kvp::set_forever(crate::BINDING_NAME, &key, &aes_key)
+	actor_kvp::set_forever(BINDING_NAME, &key, &aes_key)
 		.map_err(|e| anyhow::anyhow!("{}", e))?;
 
 	Ok(())
@@ -83,7 +83,7 @@ pub fn save_aes_key(aes_key: Vec<u8>, tapp_id: &u64) -> anyhow::Result<()> {
 pub fn get_aes_key(tapp_id: &u64) -> anyhow::Result<Vec<u8>> {
 	let key = format!("aes_key_{}", tapp_id);
 
-	let aes_key: Vec<u8> = actor_kvp::get(crate::BINDING_NAME, &key)?
+	let aes_key: Vec<u8> = actor_kvp::get(BINDING_NAME, &key)?
 		.ok_or(anyhow::anyhow!("failed to get aes key"))?;
 
 	Ok(aes_key)
