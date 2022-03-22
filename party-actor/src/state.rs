@@ -139,12 +139,19 @@ pub fn execute_tx_with_txn_bytes(
 	Ok(())
 }
 
-pub fn query_txn_hash_result(txn_hash: Vec<u8>, uuid: String) -> anyhow::Result<()> {
+pub fn query_txn_hash_result(req: &types::QueryHashRequest) -> anyhow::Result<()> {
 	info!("begin to query hash result...");
+
+	let txn_hash = hex::decode(&req.hash)?;
+	let uuid = &req.uuid.to_string();
+	let ts = bincode::serialize(&req.ts)?;
 
 	let req = tappstore::TappQueryRequest {
 		msg: Some(tappstore::tapp_query_request::Msg::FindExecutedTxnRequest(
-			replica::FindExecutedTxnRequest { txn_hash },
+			replica::FindExecutedTxnRequest { 
+				txn_hash,
+				ts,
+			},
 		)),
 	};
 

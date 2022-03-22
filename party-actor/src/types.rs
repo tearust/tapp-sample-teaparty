@@ -168,6 +168,7 @@ pub struct WithdrawRequest {
 pub struct QueryHashRequest {
 	pub uuid: String,
 	pub hash: String,
+	pub ts: u128,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

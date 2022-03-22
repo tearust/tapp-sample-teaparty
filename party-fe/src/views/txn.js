@@ -59,6 +59,7 @@ const F = {
     utils.sleep(5000);
 
     const step_3_hash = step_2_rs.hash;
+    const step_3_ts = _.toNumber(step_2_rs.ts);
     const hash_uuid = "hash_"+_uuid;
     let step_3_rs = null;
     let step_4_rs = null;
@@ -76,6 +77,7 @@ const F = {
         console.log('Send query txn hash request...');
         step_3_rs = await _axios.post('/tapp/queryHashResult', {
           hash: step_3_hash,
+          ts: step_3_ts,
           uuid: hash_uuid,
         });
     

@@ -231,7 +231,7 @@ fn handle_adapter_http_request(req: rpc::AdapterHttpRequest) -> anyhow::Result<V
 		}
 		"queryHashResult" => {
 			let req: QueryHashRequest = serde_json::from_slice(&req.payload)?;
-			state::query_txn_hash_result(hex::decode(req.hash)?, req.uuid.to_string())?;
+			state::query_txn_hash_result(&req)?;
 
 			Ok(b"ok".to_vec())
 		}
