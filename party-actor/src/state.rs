@@ -5,6 +5,7 @@ use bincode;
 use interface::txn::QuerySerial;
 use prost::Message;
 use std::convert::TryInto;
+use std::str::FromStr;
 use tea_actor_utility::actor_crypto::{public_key_from_ss58, sha256};
 use tea_actor_utility::actor_env::get_system_time;
 
@@ -144,7 +145,7 @@ pub fn query_txn_hash_result(req: &types::QueryHashRequest) -> anyhow::Result<()
 
 	let txn_hash = hex::decode(&req.hash)?;
 	let uuid = &req.uuid.to_string();
-	let ts = bincode::serialize(&req.ts)?;
+	let ts = bincode::serialize(&u128::from_str(&req.ts)?)?;
 
 	let req = tappstore::TappQueryRequest {
 		msg: Some(tappstore::tapp_query_request::Msg::FindExecutedTxnRequest(
