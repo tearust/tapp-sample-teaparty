@@ -127,7 +127,7 @@ const F = {
     let step_5_uuid = step_4_rs.query_uuid || _uuid;
     let step_5_n = 0;
     const step_5_loop = async ()=>{
-      if(step_5_n > 3){
+      if(step_5_n > 5){
         throw 'query timeout...';
       }
       try{
