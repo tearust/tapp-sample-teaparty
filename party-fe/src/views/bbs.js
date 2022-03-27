@@ -109,7 +109,6 @@ const F = {
     // F.top_log(null);
 
     if(!rs) return [];
-
     return F.formatMessageList(JSON.parse(rs));
 
   },
@@ -227,15 +226,22 @@ console.log('message => ', opts)
     return _axios;
   },
 
+  decodeMsg(msg){
+    try{
+      msg = decodeURIComponent(msg);
+    }catch(e){}
+    return msg;
+  },
+
   formatMessageList(list){
     // const formatter = 'YYYY-MM-DD HH:mm';
     return _.map(list, (item)=>{
       // item.utc = moment(item.utc*1000).format(formatter);
       item.utc_expired = item.utcExpired;
-      item.content = decodeURIComponent(item.content);
+      item.content = this.decodeMsg(item.content);
+      
       if(item.fromTappUrl && item.fromTappUrl !== 'null'){
-        item.link = decodeURIComponent(item.fromTappUrl);
-        
+        item.link = this.decodeMsg(item.fromTappUrl);
       }
       return item;
     });
@@ -417,7 +423,6 @@ console.log('message => ', opts)
           sql: form.sql,
           isTxn: form.is_txn,
         };
-console.log(111, opts);
 
         const txn = require('./txn').default;
         let rs = null;
@@ -459,7 +464,6 @@ console.log(111, opts);
         const opts = {
           tappId: _.toNumber(form.tid),
         };
-console.log(111, opts);
 
         const txn = require('./txn').default;
         let rs = null;
@@ -611,7 +615,7 @@ console.log(111, opts);
     });
 
     if(!rs) return [];
-
+    
     return F.formatMessageList(JSON.parse(rs));
 
   },
