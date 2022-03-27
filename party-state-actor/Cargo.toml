@@ -36,6 +36,4 @@ rand = "0.8.4"
 prost-build = "0.6"
 
 [features]
-default = []
-nitro = ["tea-actor-utility/nitro"]
-tpm = ["tea-actor-utility/tpm"]
+__test = ["tea-actor-utility/__test" ]

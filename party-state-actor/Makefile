@@ -34,12 +34,8 @@ test:
 update:
 	@$(CARGO) update
 
-release-tpm:
-	@$(CARGO) build --release --target wasm32-unknown-unknown --features tpm
-	wascap sign $(RELEASE)/$(NAME) $(RELEASE)/$(SIGN_NAME) -i $(KEYDIR)/account.nk -u $(KEYDIR)/module.nk -g -l -z -c tea:tpm -c tea:layer1 -c tea:keyvalue -c tea:env -c tea:ipfs -c tea:intercom -c tea:crypto -c tea:nitro -c tea:vmh-provider -c tea:replica -c tea:tokenstate -n "TEA Party Contract Actor"
-
-release-nitro:
-	@$(CARGO) build --release --target wasm32-unknown-unknown --features nitro
+release:
+	@$(CARGO) build --release --target wasm32-unknown-unknown
 	wascap sign $(RELEASE)/$(NAME) $(RELEASE)/$(SIGN_NAME) -i $(KEYDIR)/account.nk -u $(KEYDIR)/module.nk -g -l -z -c tea:tpm -c tea:layer1 -c tea:keyvalue -c tea:env -c tea:ipfs -c tea:intercom -c tea:crypto -c tea:nitro -c tea:vmh-provider -c tea:replica -c tea:tokenstate -n "TEA Party Contract Actor"
 
 keys: keys-account

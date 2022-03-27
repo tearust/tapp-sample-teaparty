@@ -1,7 +1,8 @@
 use bincode;
 use std::convert::TryInto;
 use tea_actor_utility::actor_crypto::{public_key_from_ss58, sha256};
-use tea_actor_utility::actor_env::{get_system_time, get_my_tea_id};
+use tea_actor_utility::actor_env::get_system_time;
+use tea_actor_utility::actor_enclave::get_my_tea_id;
 
 // use tea_actor_utility::actor_enclave::generate_uuid;
 // use base64;
