@@ -42,15 +42,30 @@ const mem = {
 };
 
 const cache = {
-  put(id, data) {
-    localStorage.setItem(id, JSON.stringify(data));
+  put(id, data, min=0) {
+    
+    const dd = {
+      d: data,
+    };
+    if(min){
+      dd.t = Date.now()+1000*60*min;
+    }
+    else{
+      dd.t = Date.now()+1000*3600*24*360;
+    }
+    localStorage.setItem(id, JSON.stringify(dd));
   },
   get(id) {
     const d = localStorage.getItem(id);
+
     try {
-      return JSON.parse(d);
+      const dd = JSON.parse(d);
+      if(!dd.t) return null;
+      if(dd.t < Date.now()) return null;
+
+      return dd.d;
     } catch (e) {
-      return d;
+      return null;
     }
   },
   remove(id) {

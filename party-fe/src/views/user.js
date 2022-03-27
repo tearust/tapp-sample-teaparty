@@ -56,7 +56,7 @@ const F = {
           session_key: rs.auth_key,
         };
 
-        utils.cache.put(F.getUserId(address), user);
+        utils.cache.put(F.getUserId(address), user, 45);
         await store.dispatch('init_user');
 
         bbs.top_log(null);

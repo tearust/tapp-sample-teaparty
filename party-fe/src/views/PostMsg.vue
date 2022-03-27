@@ -21,7 +21,7 @@
 
         <span v-if="user && channel==='test'" style="font-size: 14px;color:#666;position:relative;top:-5px;">Post a 4800 blocks (8 hours) message for free.</span>
 
-        <el-button v-if="user" style="position:absolute; width:150px; right:0;" size="small" type="primary" :disabled="!form.msg" @click="submitForm()">Post message</el-button>
+        <el-button v-if="user" style="position:absolute; width:150px; right:0;" size="small" type="primary" :disabled="!trim(form.msg)" @click="submitForm()">Post message</el-button>
 
         <el-button v-if="!user" style="position:absolute; width:150px; right:0;" size="small" type="primary" @click="showLoginModal()">Click to login</el-button>
       </div>
@@ -112,7 +112,7 @@ export default {
       
       const cb = utils.mem.get('refresh-list__'+this.channel);
     
-      const msg = this.form.msg;
+      const msg = _.trim(this.form.msg);
       const ttl = this.channel==='test' ? 4800 : this.form.ttl;
       if(!msg){
         this.$root.showError('Please input message');
@@ -141,6 +141,9 @@ export default {
       }
       
       this.$root.loading(false);
+    },
+    trim(msg){
+      return _.trim(msg);
     },
 
     closeModal(){

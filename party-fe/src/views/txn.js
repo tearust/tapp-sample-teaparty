@@ -59,6 +59,7 @@ const F = {
     utils.sleep(5000);
 
     const step_3_hash = step_2_rs.hash;
+    const step_3_ts = step_2_rs.ts;
     const hash_uuid = "hash_"+_uuid;
     let step_3_rs = null;
     let step_4_rs = null;
@@ -76,6 +77,7 @@ const F = {
         console.log('Send query txn hash request...');
         step_3_rs = await _axios.post('/tapp/queryHashResult', {
           hash: step_3_hash,
+          ts: step_3_ts.toString(),
           uuid: hash_uuid,
         });
     
@@ -125,7 +127,7 @@ const F = {
     let step_5_uuid = step_4_rs.query_uuid || _uuid;
     let step_5_n = 0;
     const step_5_loop = async ()=>{
-      if(step_5_n > 3){
+      if(step_5_n > 5){
         throw 'query timeout...';
       }
       try{
