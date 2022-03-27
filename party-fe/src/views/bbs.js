@@ -135,7 +135,8 @@ const F = {
       throw 'Not login';
     }
     
-    msg = utils.forge.util.encodeUtf8(msg);
+    msg = encodeURIComponent(msg);
+    console.log(11, msg);
     const encrypted_message = utils.forge.util.encode64(msg);
     // console.log(121, utils.crypto.encode(address, msg));
     

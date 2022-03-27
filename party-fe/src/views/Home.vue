@@ -68,7 +68,11 @@ export default {
     await this.refreshList(true);
     this.startLoop();
 
-    utils.mem.set('refresh-list__'+this.channel, async ()=>{
+    utils.mem.set('refresh-list__test', async ()=>{
+      await this.refreshList(true);
+      this.startLoop();
+    });
+    utils.mem.set('refresh-list__default', async ()=>{
       await this.refreshList(true);
       this.startLoop();
     });
