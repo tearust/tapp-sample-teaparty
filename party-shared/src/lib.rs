@@ -1,12 +1,8 @@
 use bincode;
-use interface::{
-	txn::{Transferable, Txn, TxnSerial},
-	Account, AuthKey, Balance, TokenId,
-};
-use serde::{Deserialize, Serialize};
-use std::convert::{TryFrom, TryInto};
-use tea_actor_utility::actor_statemachine::new_txn_serial;
+use bincode::Result as SerdeResult;
 use thiserror::Error;
+use interface::{Account, Balance};
+use interface::txn::{Txn, TxnError, TxnSerial};
 
 pub const HANDLED_BY_ACTOR_NAME: &str = "TeapartyTxn";
 
