@@ -1,5 +1,6 @@
 use actor_txns::tappstore::TappstoreTxn;
 use bincode;
+use std::str::FromStr;
 use interface::txn::QuerySerial;
 use interface::{AuthKey, Followup, Ts};
 use party_shared::TeapartyTxn;
@@ -37,10 +38,11 @@ pub fn query_txn_hash_result(req: &QueryHashRequest) -> anyhow::Result<Vec<u8>> 
 
 	let txn_hash = hex::decode(req.hash.clone())?;
 	let uuid = &req.uuid;
+	let ts = bincode::serialize(&u128::from_str(&req.ts)?)?;
 
 	let req = tappstore::TappQueryRequest {
 		msg: Some(tappstore::tapp_query_request::Msg::FindExecutedTxnRequest(
-			replica::FindExecutedTxnRequest { txn_hash },
+			replica::FindExecutedTxnRequest { txn_hash, ts, },
 		)),
 	};
 
