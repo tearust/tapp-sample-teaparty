@@ -58,6 +58,7 @@ import Base from '../workflow/Base';
 import {_} from 'tearust_utils';
 import utils from '../tea/utils';
 import request from '../request';
+import {stringToHex} from 'tearust_layer1';
 
 import Consume from './tabs/Consume';
 import Expense from './tabs/Expense';
