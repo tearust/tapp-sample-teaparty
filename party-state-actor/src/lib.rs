@@ -19,7 +19,10 @@ use tea_actor_utility::{
 };
 use tea_codec::ops::crypto::KEY_TYPE_SR25519;
 use tea_codec::{ACTOR_PUBKEY_PARTY_CONTRACT, ACTOR_PUBKEY_TOKENSTATE_SERVICE};
-use token_state::token_context::TokenContext;
+use token_state::token::{
+	auth::TokenAuthOp, 
+	context::TokenContext,
+};
 use vmh_codec::message::structs_proto::tokenstate::*;
 use vmh_codec::message::structs_proto::{tappstore, tokenstate};
 use vmh_codec::message::{encode_protobuf, layer1::MinerClass, structs_proto::layer1};
@@ -240,6 +243,7 @@ fn txn_exec_inner(tsid: Tsid, txn_bytes: &[u8]) -> HandlerResult<()> {
 	}
 	let hidden_acct_balance_change_after_commit = actor_statemachine::commit(CommitRequest {
 		ctx: context_bytes,
+		gluedb_ctx: None,
 		auth_key: bincode::serialize(&auth_key)?,
 	})?;
 	if hidden_acct_balance_change_after_commit != (0, 0) {
