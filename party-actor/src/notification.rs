@@ -1,28 +1,17 @@
 use crate::types::*;
 use prost::Message;
-use serde_json::json;
-use std::collections::{HashMap, VecDeque};
-use str_utils::*;
 use tea_actor_utility::actor_crypto::{aes_decrypt, aes_encrypt};
-use tea_actor_utility::actor_env::current_timestamp;
-use tea_actor_utility::actor_raft::{
-	raft_delete_value, raft_get_value, raft_get_values, raft_set_value,
-};
-use tea_actor_utility::common::calculate_hash;
+use tea_actor_utility::{wascc_call,};
 use tea_codec;
-use tea_codec::{deserialize, serialize};
 
 use party_shared::TeapartyTxn;
 use vmh_codec::message::{
 	encode_protobuf,
-	structs_proto::{orbitdb, tokenstate},
+	structs_proto::{orbitdb,},
 };
-use wascc_actor::prelude::codec::messaging::BrokerMessage;
-use wascc_actor::prelude::*;
 
 use crate::help;
-use crate::request::{send_query, send_txn};
-use crate::types::*;
+use crate::request::{send_txn};
 use crate::user;
 use crate::utility::parse_to_acct;
 
@@ -82,14 +71,11 @@ pub fn add_message_to_db(req: &NotificationAddMessageRequest) -> anyhow::Result<
 	info!("notification add_message_data => {:?}", &add_message_data);
 
 	let res = orbitdb::OrbitBbsResponse::decode(
-		untyped::default()
-			.call(
-				tea_codec::ORBITDB_CAPABILITY_ID,
-				"notification_AddMessage",
-				encode_protobuf(add_message_data)?,
-			)
-			.map_err(|e| anyhow::anyhow!("{}", e))?
-			.as_slice(),
+		wascc_call(
+			tea_codec::ORBITDB_CAPABILITY_ID,
+			"notification_AddMessage",
+			&encode_protobuf(add_message_data)?,
+		)?.as_slice(),
 	)?;
 
 	info!("[notification] add_message response: {:?}", res);
@@ -121,14 +107,11 @@ pub fn get_message_list(req: &NotificationGetMessageRequest) -> anyhow::Result<V
 	info!("notification get_message_req => {:?}", &get_message_req);
 
 	let res = orbitdb::OrbitBbsResponse::decode(
-		untyped::default()
-			.call(
-				tea_codec::ORBITDB_CAPABILITY_ID,
-				"notification_GetMessage",
-				encode_protobuf(get_message_req)?,
-			)
-			.map_err(|e| anyhow::anyhow!("{}", e))?
-			.as_slice(),
+		wascc_call(
+			tea_codec::ORBITDB_CAPABILITY_ID,
+			"notification_GetMessage",
+			&encode_protobuf(get_message_req)?,
+		)?.as_slice(),
 	)?;
 
 	let mut rs: Vec<NotificationMessageItem> = Vec::new();

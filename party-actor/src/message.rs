@@ -1,27 +1,17 @@
-use interface::AuthKey;
 use prost::Message;
-use serde_json::json;
-use std::collections::{HashMap, VecDeque};
-use str_utils::*;
 use tea_actor_utility::actor_crypto::{aes_decrypt, aes_encrypt};
-use tea_actor_utility::actor_env::current_timestamp;
-use tea_actor_utility::actor_raft::{
-	raft_delete_value, raft_get_value, raft_get_values, raft_set_value,
-};
-use tea_actor_utility::common::calculate_hash;
+use tea_actor_utility::{wascc_call,};
 use tea_codec;
-use tea_codec::{deserialize, serialize};
 
 use party_shared::TeapartyTxn;
 use vmh_codec::message::{
 	encode_protobuf,
-	structs_proto::{orbitdb, tokenstate},
+	structs_proto::{orbitdb,},
 };
-use wascc_actor::prelude::codec::messaging::BrokerMessage;
-use wascc_actor::prelude::*;
+
 
 use crate::help;
-use crate::request::{send_query, send_txn};
+use crate::request::{send_txn};
 use crate::types::*;
 use crate::user;
 use crate::utility::parse_to_acct;
@@ -78,14 +68,11 @@ pub fn post_message_to_db(req: &PostMessageRequest) -> anyhow::Result<String> {
 	};
 
 	let res = orbitdb::OrbitBbsResponse::decode(
-		untyped::default()
-			.call(
-				tea_codec::ORBITDB_CAPABILITY_ID,
-				"bbs_AddMessage",
-				encode_protobuf(add_message_data)?,
-			)
-			.map_err(|e| anyhow::anyhow!("{}", e))?
-			.as_slice(),
+		wascc_call(
+			tea_codec::ORBITDB_CAPABILITY_ID,
+			"bbs_AddMessage",
+			&encode_protobuf(add_message_data)?,
+		)?.as_slice(),
 	)?;
 	info!("[bbs] post_message response: {:?}", res);
 
@@ -125,14 +112,11 @@ pub fn load_message_list(req: &LoadMessageRequest) -> anyhow::Result<Vec<u8>> {
 	};
 
 	let res = orbitdb::OrbitBbsResponse::decode(
-		untyped::default()
-			.call(
-				tea_codec::ORBITDB_CAPABILITY_ID,
-				"bbs_GetMessage",
-				encode_protobuf(get_message_data)?,
-			)
-			.map_err(|e| anyhow::anyhow!("{}", e))?
-			.as_slice(),
+		wascc_call(
+			tea_codec::ORBITDB_CAPABILITY_ID,
+			"bbs_GetMessage",
+			&encode_protobuf(get_message_data)?,
+		)?.as_slice(),
 	)?;
 
 	let mut rs: Vec<MessageItem> = Vec::new();
@@ -198,14 +182,11 @@ pub fn extend_message_to_db(req: &ExtendMessageRequest) -> anyhow::Result<()> {
 	};
 
 	let res = orbitdb::OrbitBbsResponse::decode(
-		untyped::default()
-			.call(
-				tea_codec::ORBITDB_CAPABILITY_ID,
-				"bbs_ExtendMessage",
-				encode_protobuf(extend_message_data)?,
-			)
-			.map_err(|e| anyhow::anyhow!("{}", e))?
-			.as_slice(),
+		wascc_call(
+			tea_codec::ORBITDB_CAPABILITY_ID,
+			"bbs_ExtendMessage",
+			&encode_protobuf(extend_message_data)?,
+		)?.as_slice(),
 	)?;
 	info!("[bbs] extend message response: {:?}", res);
 
@@ -245,23 +226,17 @@ pub fn delete_message_to_db(req: &DeleteMessageRequest) -> anyhow::Result<()> {
 	};
 
 	let res = orbitdb::OrbitBbsResponse::decode(
-		untyped::default()
-			.call(
-				tea_codec::ORBITDB_CAPABILITY_ID,
-				"bbs_DeleteMessage",
-				encode_protobuf(delete_message_data)?,
-			)
-			.map_err(|e| anyhow::anyhow!("{}", e))?
-			.as_slice(),
+		wascc_call(
+			tea_codec::ORBITDB_CAPABILITY_ID,
+			"bbs_DeleteMessage",
+			&encode_protobuf(delete_message_data)?,
+		)?.as_slice(),
 	)?;
 	info!("[bbs] delete message response: {:?}", res);
 
 	Ok(())
 }
 
-fn message_key(channel: &str, hash: u64) -> String {
-	format!("{}:{}", channel, hash)
-}
 
 fn db_name(tapp_id: u64, channel: &str) -> String {
 	if is_global_channel(&channel) {

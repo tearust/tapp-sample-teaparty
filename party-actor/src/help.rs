@@ -1,25 +1,11 @@
-use interface::Tsid;
-use prost::Message;
-
-use base64;
-use interface::sql::Payload;
-use serde_json::json;
 use tea_actor_utility::{
-	actor_enclave::{generate_uuid, get_my_tea_id},
-	actor_env::{get_system_time, time_since},
 	actor_kvp,
-	actor_layer1::general_remote_request,
-	actor_libp2p,
 };
-use tea_codec;
 use vmh_codec::message::{
-	encode_protobuf,
-	structs_proto::{layer1, libp2p, orbitdb, tappstore, tokenstate},
+	structs_proto::{layer1,},
 };
-use wascc_actor::untyped;
 
 use crate::types::BINDING_NAME;
-use crate::user;
 
 pub fn set_mem_cache(key: &str, val: Vec<u8>) -> anyhow::Result<()> {
 	actor_kvp::set(BINDING_NAME, &key, &val, 1800).map_err(|e| anyhow::anyhow!("{}", e))?;
@@ -34,10 +20,10 @@ pub fn get_mem_cache(key: &str) -> anyhow::Result<Vec<u8>> {
 	Ok(rs)
 }
 
-pub fn del_mem_cache(key: &str) -> anyhow::Result<()> {
-	actor_kvp::del(BINDING_NAME, &key)?;
-	Ok(())
-}
+// pub fn del_mem_cache(key: &str) -> anyhow::Result<()> {
+// 	actor_kvp::del(BINDING_NAME, &key)?;
+// 	Ok(())
+// }
 
 const CURRENT_BLOCK_NUMBER_KEY: &str = "tea_tapp_party_actor";
 pub(crate) fn persist_current_block(event: &layer1::NewBlockEvent) -> anyhow::Result<()> {

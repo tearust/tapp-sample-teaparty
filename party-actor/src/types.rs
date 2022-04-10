@@ -1,4 +1,4 @@
-use interface::{AuthKey, Balance};
+use interface::{Balance};
 
 pub const BINDING_NAME: &'static str = "tea_tapp_bbs";
 

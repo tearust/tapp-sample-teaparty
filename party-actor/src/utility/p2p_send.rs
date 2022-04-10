@@ -1,19 +1,11 @@
-// #![allow(dead_code)]
-// #![allow(unused_imports)]
-// #![allow(non_camel_case_types)]
-
-use base64;
 use bincode;
-use interface::sql::Payload;
-use interface::{Account, AuthKey, Balance, Followup, Hash, QuerySerial, Ts, Tsid, TxnSerial};
+use interface::{Followup, Hash, QuerySerial, Ts, TxnSerial};
 use prost::Message;
-use serde_json::json;
 use std::convert::TryInto;
 use tea_actor_utility::{
-	actor_crypto::{public_key_from_ss58, sha256},
+	actor_crypto::{sha256},
 	actor_enclave::get_my_tea_id,
-	actor_env::{get_system_time, time_since},
-	actor_kvp,
+	actor_env::{get_system_time},
 	actor_layer1::general_remote_request,
 	actor_libp2p,
 	actor_statemachine::new_txn_serial,
@@ -21,9 +13,8 @@ use tea_actor_utility::{
 use tea_codec;
 use vmh_codec::message::{
 	encode_protobuf,
-	structs_proto::{layer1, libp2p, orbitdb, tappstore, tokenstate},
+	structs_proto::{layer1, libp2p, tokenstate},
 };
-use wascc_actor::untyped;
 
 const AT_LEAST_A_NODES_TO_SEND: usize = 3;
 

@@ -1,30 +1,17 @@
-#![allow(dead_code)]
-#![allow(unused_imports)]
-#![allow(non_camel_case_types)]
-
-use actor::prelude::*;
-use codec::messaging::BrokerMessage;
 use prost::Message;
-use std::convert::TryInto;
-
 use tea_actor_utility::actor_layer1::register_layer1_event;
-
 use tea_actor_utility::{
 	action::reply_intercom,
 	actor_enclave::get_my_tea_id,
-	actor_env::{get_env_var, get_system_time},
 	actor_layer1::fetch_miner_info_remotely,
 	actor_rpc::register_adapter_http_dispatcher,
-	wascc_actor as actor,
+	prelude::*,
 };
 use types::*;
 use vmh_codec::error::DISCARD_MESSAGE_ERROR;
-use vmh_codec::message::encode_protobuf;
 use vmh_codec::message::layer1::MinerClass;
-use vmh_codec::message::structs_proto::{layer1, libp2p, orbitdb, rpc, tokenstate};
-use vmh_codec::rpc::adapter::AdapterDispatchType;
+use vmh_codec::message::structs_proto::{layer1, libp2p, rpc, tokenstate};
 
-use interface::txn::QuerySerial;
 
 #[macro_use]
 extern crate log;
@@ -46,8 +33,8 @@ mod test;
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 actor_handlers! {
-	codec::messaging::OP_DELIVER_MESSAGE => handle_message,
-	codec::core::OP_HEALTH_REQUEST => health
+	OP_DELIVER_MESSAGE => handle_message,
+	OP_HEALTH_REQUEST => health
 }
 
 fn handle_message(msg: BrokerMessage) -> HandlerResult<Vec<u8>> {
@@ -105,7 +92,7 @@ fn libp2p_back_message(msg: &BrokerMessage) -> HandlerResult<Vec<u8>> {
 	Ok(vec![])
 }
 
-fn health(_req: codec::core::HealthRequest) -> HandlerResult<()> {
+fn health(_req: HealthRequest) -> HandlerResult<()> {
 	Ok(())
 }
 

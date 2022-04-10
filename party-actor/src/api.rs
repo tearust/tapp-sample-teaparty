@@ -1,30 +1,17 @@
 use actor_txns::tappstore::TappstoreTxn;
 use bincode;
 use std::str::FromStr;
-use interface::txn::QuerySerial;
-use interface::{AuthKey, Followup, Ts};
 use party_shared::TeapartyTxn;
-use prost::Message;
-use serde_json::json;
-use str_utils::*;
-use tea_actor_utility::{
-	actor_crypto::{
-		aes_decrypt, aes_encrypt, generate_aes_key, generate_rsa_keypair, public_key_from_ss58,
-		public_key_to_ss58, rsa_decrypt, sign, verify,
-	},
-	actor_enclave::{get_my_ephemeral_id, get_my_ephemeral_key},
-	actor_kvp,
-};
+
 use vmh_codec::message::{
 	encode_protobuf,
-	structs_proto::{libp2p, replica, tappstore, tokenstate},
+	structs_proto::{replica, tappstore,},
 };
 
-use crate::help;
 use crate::message;
 use crate::notification;
 use crate::query_cb::query_callback;
-use crate::request::{send_query, send_txn};
+use crate::request::{send_query};
 use crate::types::*;
 use crate::user;
 use crate::utility::{self, p2p_send_txn};
