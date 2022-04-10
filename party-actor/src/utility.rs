@@ -1,4 +1,5 @@
 #![allow(unused_imports)]
+#![allow(dead_code)]
 
 use interface::Account;
 use std::convert::TryInto;
@@ -21,8 +22,8 @@ pub fn uuid_cb_key(uuid: &str, stype: &str) -> String {
 	let rs = format!("{}_msg_{}", stype, uuid);
 	rs.to_string()
 }
-// pub fn cb_key_to_uuid(key: &str, stype: &str) -> String {
-// 	let ss = format!("{}_msg_", stype);
-// 	let rs = str::replace(key, &ss, "");
-// 	rs.to_string()
-// }
+pub fn cb_key_to_uuid(key: &str, stype: &str) -> String {
+	let ss = format!("{}_msg_", stype);
+	let rs = str::replace(key, &ss, "");
+	rs.to_string()
+}

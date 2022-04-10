@@ -1,11 +1,11 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
-#![allow(non_camel_case_types)]
-#![allow(non_upper_case_globals)]
+#![feature(const_fn_trait_bound)]
+
 
 #[cfg(all(test, feature = "__test"))]
 mod tests {
-	use crate::*;
+	// use crate::*;
 	use tea_actor_utility::test_suite::TestSuite;
 	use tea_actor_utility::wascc_call;
 
@@ -38,7 +38,7 @@ mod tests {
 	fn utility_methods_work() -> anyhow::Result<()> {
 		TestSuite::default().run(|_host| {
 			
-      utility_methods()?;
+      // utility_methods()?;
       // help_methods()?;
 
 			Ok(())
