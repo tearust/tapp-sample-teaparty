@@ -5,9 +5,10 @@ use interface::{
 };
 
 use serde::{Deserialize, Serialize};
-use std::convert::{TryFrom, TryInto};
-use tea_actor_utility::actor_statemachine::new_txn_serial;
+use std::convert::TryFrom;
+use interface::txn::IntoSerial;
 use thiserror::Error;
+use tea_actor_utility::actor_enclave::random_u64;
 
 pub const HANDLED_BY_ACTOR_NAME: &str = "TeapartyTxn";
 
@@ -81,9 +82,9 @@ impl IntoSerial for TeapartyTxn {
 
 	fn into_serial(self, nonce: u64) -> Result<TxnSerial, Self::Error> {
 		Ok(TxnSerial::new(
-			ACTOR_PUBKEY_PARTY_CONTRACT.to_string(),
+			HANDLED_BY_ACTOR_NAME.to_string(),
 			bincode::serialize(&self)?,
-			nonce,
+      nonce,
 		))
 	}
 }
@@ -93,7 +94,8 @@ impl Txn<'static> for TeapartyTxn {}
 
 impl TeapartyTxn {
 	pub fn to_serial_bytes(self) -> anyhow::Result<Vec<u8>> {
-		let serial: TxnSerial = self.try_into()?;
+		let nonce = random_u64()?;
+		let serial: TxnSerial = self.into_serial(nonce)?;
 		let rtn = bincode::serialize(&serial)?;
 		Ok(rtn)
 	}
