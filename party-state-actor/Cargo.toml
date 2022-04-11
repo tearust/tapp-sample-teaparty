@@ -2,7 +2,7 @@
 name = "party-state-actor"
 version = "0.1.1"
 authors = ["kevingzhang <kevin.zhang.canada@gmail.com>"]
-edition = "2018"
+edition = "2021"
 
 [lib]
 crate-type = ["cdylib"]
@@ -23,7 +23,6 @@ bincode = "1.2.1"
 vmh-codec = { path = "../../mini-runtime/vmh-codec" }
 tea-codec = {path="../../tea-codec"}
 tea-actor-utility = { path="../../mini-runtime/actors/utility" }
-wascc-actor = { git = "https://github.com/tearust/wascc-actor", branch = "nitro" }
 interface = {path = "../../statemachine/interface"}
 token-state = { path = "../../statemachine/token_state"}
 party-shared = { path = "../party-shared" }

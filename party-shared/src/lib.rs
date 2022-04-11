@@ -1,8 +1,9 @@
 use bincode;
 use interface::{
-	txn::{Transferable, Txn, TxnSerial},
-	Account, Balance, TokenId,
+	txn::{Transferable, IntoSerial},
+	Account, Balance, TokenId, Txn, TxnSerial,
 };
+
 use serde::{Deserialize, Serialize};
 use std::convert::{TryFrom, TryInto};
 use tea_actor_utility::actor_statemachine::new_txn_serial;
@@ -75,16 +76,18 @@ impl TryFrom<TxnSerial> for TeapartyTxn {
 	}
 }
 
-impl TryInto<TxnSerial> for TeapartyTxn {
+impl IntoSerial for TeapartyTxn {
 	type Error = anyhow::Error;
 
-	fn try_into(self) -> Result<TxnSerial, Self::Error> {
-		Ok(new_txn_serial(
-			HANDLED_BY_ACTOR_NAME.to_string(),
-			bincode::serialize(&self).unwrap(),
-		)?)
+	fn into_serial(self, nonce: u64) -> Result<TxnSerial, Self::Error> {
+		Ok(TxnSerial::new(
+			ACTOR_PUBKEY_PARTY_CONTRACT.to_string(),
+			bincode::serialize(&self)?,
+			nonce,
+		))
 	}
 }
+
 
 impl Txn<'static> for TeapartyTxn {}
 
