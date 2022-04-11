@@ -6,7 +6,6 @@ use interface::{
 
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
-use interface::txn::IntoSerial;
 use thiserror::Error;
 use tea_actor_utility::actor_enclave::random_u64;
 
