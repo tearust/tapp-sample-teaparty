@@ -7,7 +7,7 @@ use interface::{
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 use thiserror::Error;
-use tea_actor_utility::actor_enclave::random_u64;
+use tea_actor_utility::actor::actor_enclave::random_u64;
 
 pub const HANDLED_BY_ACTOR_NAME: &str = "TeapartyTxn";
 
